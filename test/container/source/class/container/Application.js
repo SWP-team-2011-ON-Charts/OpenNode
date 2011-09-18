@@ -51,25 +51,25 @@ qx.Class.define("container.Application",
         qx.log.appender.Console;
       }
 
-      /*
-      -------------------------------------------------------------------------
-        Below is your actual application code...
-      -------------------------------------------------------------------------
-      */
 
-      // Create a button
-      var button1 = new qx.ui.form.Button("First Button", "container/test.png");
+      var graph = new container.Graph();
+      graph.set({ width: 200, height: 200 });
+      //graph.set({ width : null, allowGrowX: true });
+
+      var addComputeButton = new qx.ui.form.Button("Add VM", "container/list-add.png");
+
+      // Add an event listener
+      addComputeButton.addListener("execute", function(e) {
+        var icon = new qx.ui.basic.Image("container/computer.png");
+        graph.addItem(icon);
+      });
 
       // Document is the application root
       var doc = this.getRoot();
 
       // Add button to document at fixed coordinates
-      doc.add(button1, {left: 100, top: 50});
-
-      // Add an event listener
-      button1.addListener("execute", function(e) {
-        alert("Hello World!");
-      });
+      doc.add(addComputeButton, {left: 10, top: 10});
+      doc.add(graph, {left: 10, top: 60});
     }
   }
 });
