@@ -1,0 +1,3 @@
+[submodule "external/qooxdoo-1.5"]
+	path = external/qooxdoo-1.5
+	url = https://github.com/qooxdoo/qooxdoo.git
