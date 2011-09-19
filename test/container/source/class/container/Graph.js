@@ -67,8 +67,8 @@ qx.Class.define("container.Graph",
 
       this.__ispanning = true;
       this.__pananchor = {
-        left : e._native.clientX - this.__layoutProperties.left,
-        top : e._native.clientY - this.__layoutProperties.top}
+        left : e._native.clientX - this.__layoutProperties.left + this.getScrollX(),
+        top : e._native.clientY - this.__layoutProperties.top + this.getScrollY()}
       this.__grapharea.setCursor("help");
     },
     
@@ -100,6 +100,7 @@ qx.Class.define("container.Graph",
         
         //this.scrollToX(this.getScrollX() - (this.__pananchor.left - currentpos.left));
         this.scrollToX((this.__pananchor.left - currentpos.left));
+        this.scrollToY((this.__pananchor.top - currentpos.top));
         this.__grapharea.setCursor("help");
       }
     },
@@ -111,7 +112,7 @@ qx.Class.define("container.Graph",
       this.__grapharea.add((widget).set({
         allowShrinkY : false,
         allowShrinkX : false
-      }), {left: this.__posleft, top: 0});
+      }), {left: this.__posleft, top: this.__posleft});
 
       this.__posleft = this.__posleft + 70;
     }
