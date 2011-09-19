@@ -37,7 +37,7 @@
   "let" :
   {
     "APPLICATION"  : "container",
-    "QOOXDOO_PATH" : "D:/src/qooxdoo-1.5-sdk",
+    "QOOXDOO_PATH" : "../../external/qooxdoo-1.5/qooxdoo",
     "QXTHEME"      : "container.theme.Theme",
     "API_EXCLUDE"  : ["qx.test.*", "${APPLICATION}.theme.*", "${APPLICATION}.test.*", "${APPLICATION}.simulation.*"],
     "LOCALES"      : [ "en" ],
