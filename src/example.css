@@ -83,3 +83,7 @@ pre.code{
     margin-left: 17px;
     margin-bottom: 4px;
 }
+/*buttons*/
+.x-btn-default-large .add {
+    background-image: url(images/list-add.png) !important;
+}
