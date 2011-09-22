@@ -12,20 +12,26 @@ This file may be used under the terms of the GNU General Public License version 
 If you are unsure which license is appropriate for your use, please contact the sales department at http://www.sencha.com/contact.
 
 */
-Ext.require(['Ext.button.*', 'Ext.chart.*']);
+
+Ext.Loader.setConfig({enabled: true});
+
+Ext.require(['Ext.button.*', 'Ext.chart.*', 'Ext.ux.DataView.Draggable']);
 Ext.require(['Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.container.Fit']);
 Ext.require('Funcman.Graph');
+
+Ext.regModel('Funcman.OMSNode', {
+    extend: 'Funcman.GraphNode'
+    //image: 'images/computer.png'
+});
 
 Ext.onReady(function () {
 
     var graph;
 
     function addMachine() {
-      //alert('VM');
       var machine = Ext.ModelMgr.create({
-          image: 'images/computer.png',
           name: 'oms'
-      }, 'Funcman.GraphNode');
+      }, 'Funcman.OMSNode');
       graph.addNode(machine);
     }
 
@@ -43,7 +49,29 @@ Ext.onReady(function () {
 
     var el = body.createChild({});
 
+    var store = Ext.create('Ext.data.Store', {
+        model: 'Funcman.GraphNode',
+        data : [
+          {name: 'management server', image: 'images/computer.png'},
+          {name: 'Machine 1', image: 'images/computer.png'},
+          {name: 'Machine 2', image: 'images/computer.png'}
+        ],
+    });
+
     graph = Ext.create('Funcman.Graph', {
+        store: store,
+        tpl: [
+            '<tpl for=".">',
+                '<div class="thumb-wrap" id="{name}">',
+                '<div class="thumb"><img src="{image}" title="{name}"></div>',
+                '<span class="x-editable">{shortName}</span></div>',
+            '</tpl>',
+            '<div class="x-clear"></div>'
+        ],
+        //mixins: {
+            //draggable: 'Ext.ux.DataView.Draggable'
+        //},
+        id: 'name',
         renderTo: el
     });
 });
