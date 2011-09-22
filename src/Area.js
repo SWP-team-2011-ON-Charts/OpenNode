@@ -12,14 +12,21 @@ This file may be used under the terms of the GNU General Public License version 
 If you are unsure which license is appropriate for your use, please contact the sales department at http://www.sencha.com/contact.
 
 */
-Ext.require('Ext.button.*');
-Ext.require('Ext.chart.*');
+Ext.require(['Ext.button.*', 'Ext.chart.*']);
 Ext.require(['Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.container.Fit']);
+Ext.require('Funcman.Graph');
 
 Ext.onReady(function () {
 
+    var graph;
+
     function addMachine() {
-      alert('VM');
+      //alert('VM');
+      var machine = Ext.ModelMgr.create({
+          image: 'images/computer.png',
+          name: 'oms'
+      }, 'Funcman.GraphNode');
+      graph.addNode(machine);
     }
 
     var body = Ext.getBody();
@@ -36,4 +43,7 @@ Ext.onReady(function () {
 
     var el = body.createChild({});
 
+    graph = Ext.create('Funcman.Graph', {
+        renderTo: el
+    });
 });
