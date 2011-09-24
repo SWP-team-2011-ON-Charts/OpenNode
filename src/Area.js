@@ -22,7 +22,11 @@ Ext.require(['Funcman.Graph', 'Funcman.GraphNode']);
 Ext.onReady(function () {
 
     function addMachine() {
-      graph.addNode({name: 'Machine 1', image: 'images/computer.png'});
+        var vm = Ext.create('GraphNode', {
+            name : 'Machine',
+            image: 'images/computer.png'
+        });
+        graph.addNode(vm);
     }
 
     var body = Ext.getBody();
@@ -45,10 +49,15 @@ Ext.onReady(function () {
 
     // Add icons
     var vm = Ext.create('GraphNode', {
+        name : 'Machine',
+        image: 'images/computer.png',
+        children: []
+    });
+    var oms = Ext.create('GraphNode', {
         name : 'management server',
         image: 'images/network-server.png',
+        children: [vm]
     });
-    graph.addNode(vm);
-    graph.addNode({name: 'Machine 1', image: 'images/computer.png'});
-    graph.addNode({name: 'Machine 2', image: 'images/computer.png'});
+
+    graph.addNode(oms);
 });

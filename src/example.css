@@ -87,3 +87,9 @@ pre.code{
 .x-btn-default-large .add {
     background-image: url(images/list-add.png) !important;
 }
+div.x-item-selected {
+  background: #ccc;
+}
+.thumb {
+  width: 48px;
+}
