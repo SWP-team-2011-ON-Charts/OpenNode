@@ -17,12 +17,7 @@ Ext.Loader.setConfig({enabled: true});
 
 Ext.require(['Ext.button.*', 'Ext.chart.*', 'Ext.ux.DataView.Draggable']);
 Ext.require(['Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.container.Fit']);
-Ext.require('Funcman.Graph');
-
-Ext.regModel('Funcman.OMSNode', {
-    extend: 'Funcman.GraphNode'
-    //image: 'images/computer.png'
-});
+Ext.require(['Funcman.Graph', 'Funcman.GraphNode']);
 
 Ext.onReady(function () {
 
@@ -31,8 +26,9 @@ Ext.onReady(function () {
     function addMachine() {
       var machine = Ext.ModelMgr.create({
           name: 'oms'
-      }, 'Funcman.OMSNode');
+      }, 'Funcman.GraphNode');
       graph.addNode(machine);
+      store.add({name: 'Machine 2', image: 'images/computer.png'});
     }
 
     var body = Ext.getBody();
@@ -49,28 +45,24 @@ Ext.onReady(function () {
 
     var el = body.createChild({});
 
+    var model = Ext.ModelManager.getModel('Funcman.GraphNode');
+
     var store = Ext.create('Ext.data.Store', {
         model: 'Funcman.GraphNode',
-        data : [
-          {name: 'management server', image: 'images/computer.png'},
-          {name: 'Machine 1', image: 'images/computer.png'},
-          {name: 'Machine 2', image: 'images/computer.png'}
-        ],
+        //autoLoad: true,
+        autoSync: true
     });
+
+    var vm = Ext.create('Funcman.GraphNode', {
+        name : 'management server',
+        image: 'images/network-server.png',
+    });
+    store.add(vm);
+    store.add({name: 'Machine 1', image: 'images/computer.png'});
+    store.add({name: 'Machine 2', image: 'images/computer.png'});
 
     graph = Ext.create('Funcman.Graph', {
         store: store,
-        tpl: [
-            '<tpl for=".">',
-                '<div class="thumb-wrap" id="{name}">',
-                '<div class="thumb"><img src="{image}" title="{name}"></div>',
-                '<span class="x-editable">{shortName}</span></div>',
-            '</tpl>',
-            '<div class="x-clear"></div>'
-        ],
-        //mixins: {
-            //draggable: 'Ext.ux.DataView.Draggable'
-        //},
         id: 'name',
         renderTo: el
     });
