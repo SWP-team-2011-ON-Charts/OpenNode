@@ -21,14 +21,8 @@ Ext.require(['Funcman.Graph', 'Funcman.GraphNode']);
 
 Ext.onReady(function () {
 
-    var graph;
-
     function addMachine() {
-      var machine = Ext.ModelMgr.create({
-          name: 'oms'
-      }, 'Funcman.GraphNode');
-      graph.addNode(machine);
-      store.add({name: 'Machine 2', image: 'images/computer.png'});
+      graph.addNode({name: 'Machine 1', image: 'images/computer.png'});
     }
 
     var body = Ext.getBody();
@@ -44,26 +38,17 @@ Ext.onReady(function () {
     });
 
     var el = body.createChild({});
-
-    var model = Ext.ModelManager.getModel('Funcman.GraphNode');
-
-    var store = Ext.create('Ext.data.Store', {
-        model: 'Funcman.GraphNode',
-        //autoLoad: true,
-        autoSync: true
-    });
-
-    var vm = Ext.create('Funcman.GraphNode', {
-        name : 'management server',
-        image: 'images/network-server.png',
-    });
-    store.add(vm);
-    store.add({name: 'Machine 1', image: 'images/computer.png'});
-    store.add({name: 'Machine 2', image: 'images/computer.png'});
-
-    graph = Ext.create('Funcman.Graph', {
-        store: store,
+    var graph = Ext.create('Graph', {
         id: 'name',
         renderTo: el
     });
+
+    // Add icons
+    var vm = Ext.create('GraphNode', {
+        name : 'management server',
+        image: 'images/network-server.png',
+    });
+    graph.addNode(vm);
+    graph.addNode({name: 'Machine 1', image: 'images/computer.png'});
+    graph.addNode({name: 'Machine 2', image: 'images/computer.png'});
 });

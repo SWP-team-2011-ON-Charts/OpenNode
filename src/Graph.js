@@ -1,6 +1,7 @@
 Ext.require(['Ext.data.*']);
 
 Ext.regModel('Funcman.GraphNode', {
+    alias: 'GraphNode',
     fields: [
       {name: 'image', type: 'string'},
       {name: 'name', type: 'string'}
@@ -15,9 +16,7 @@ Ext.regModel('Funcman.GraphNode', {
 
 Ext.define('Funcman.Graph', {
     extend: 'Ext.view.View',
-    //alias: 'Graph',
-    /** @cfg {String} src The image src */
-    src: '',
+    alias: 'Graph',
     tpl: [
     '<tpl for=".">',
         //'<div class="thumb-wrap" style="position:relative; top:{top}px; left:{left}px;" id="{name}">',
@@ -26,36 +25,14 @@ Ext.define('Funcman.Graph', {
         '<span class="x-editable">{shortName}</span></div>',
     '</tpl>',
     '<div class="x-clear"></div>'
-],
-/*
-    getElConfig: function() {
-        return {
-            tag: 'img',
-            src: this.src
-        };
-    },
-    
-    // null out this function, we can't set any html inside the image
-    initRenderTpl: Ext.emptyFn,
-*/
+    ],
+    store: Ext.create('Ext.data.Store', {
+        model: 'Funcman.GraphNode',
+        //autoLoad: true,
+        autoSync: true
+    }),
+
     addNode: function(node) {
-        if (!this.store)
-        {
-            //this.store = 
-        }
-        this.setSrc(node.get('image'));
+        this.store.add(node);
     },
-
-    /**
-     * Updates the {@link #src} of the image
-     */
-    setSrc: function(src) {
-        var me = this,
-            img = me.el;
-        me.src = src;
-        if (img) {
-            img.dom.src = src;
-        }
-    }
-
 });
