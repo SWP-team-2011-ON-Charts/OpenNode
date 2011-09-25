@@ -1,8 +1,7 @@
-Ext.require(['Ext.data.*']);
-
 Ext.regModel('Funcman.GraphNode', {
     alias: 'GraphNode',
     fields: [
+      {name: 'id', type: 'int'},
       {name: 'image', type: 'string'},
       {name: 'name', type: 'string'}
     ],
@@ -17,19 +16,29 @@ Ext.regModel('Funcman.GraphNode', {
 Ext.define('Funcman.Graph', {
     extend: 'Ext.view.View',
     alias: 'Graph',
+    uses: 'Ext.data.Store',
     tpl: [
-    '<tpl for=".">',
-        //'<div class="thumb-wrap" style="position:relative; top:{top}px; left:{left}px;" id="{name}">',
-        '<div class="thumb"><img src="{image}" title="{name}"></div>',
-    '</tpl>',
-    '<div class="x-clear"></div>'
+        // '<div class="details">',
+            '<tpl for=".">',
+                '<div class="thumb-wrap">',
+                    '<div class="thumb">',
+                    (!Ext.isIE6? '<img src="{image}" />' : 
+                    '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+                    '</div>',
+                    '<span>{name}</span>',
+                '</div>',
+            '</tpl>'
+        // '</div>'
     ],
     store: Ext.create('Ext.data.Store', {
         model: 'Funcman.GraphNode',
         //autoLoad: true,
         autoSync: true
     }),
-    itemSelector: 'div.thumb',
+    overItemCls: 'x-view-over',
+    itemSelector: 'div.thumb-wrap',
+    resizable: false,
+    trackOver: true,
 
     addNode: function(node) {
         this.store.add(node);
@@ -37,4 +46,16 @@ Ext.define('Funcman.Graph', {
             alert(i.get('name'));
         }*/
     },
+    listeners: {
+      itemmousedown: function(a,b,c,d,e) {
+      },
+      itemmouseup: function(a,b,c,d,e) {
+      },
+      beforecontainermousedown: function(view, e, opts) {
+      },
+      containermousedown: function(view, e, opts) {
+      },
+      selectionchange: function(dv, nodes ) {
+      }
+    }
 });

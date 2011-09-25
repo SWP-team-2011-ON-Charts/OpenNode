@@ -42,10 +42,14 @@ Ext.onReady(function () {
     });
 
     var el = body.createChild({});
+    //el.setHeight(100);
+    //el.setWidth(100);
+
     var graph = Ext.create('Graph', {
         id: 'name',
         renderTo: el
     });
+    graph.addCls('img-chooser-view');
 
     // Add icons
     var vm = Ext.create('GraphNode', {
@@ -54,7 +58,7 @@ Ext.onReady(function () {
         children: []
     });
     var oms = Ext.create('GraphNode', {
-        name : 'management server',
+        name : 'OMS',
         image: 'images/network-server.png',
         children: [vm]
     });
