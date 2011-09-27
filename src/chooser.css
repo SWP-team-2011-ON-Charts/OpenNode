@@ -43,3 +43,6 @@
 .images img {
     margin: 20px;
 }
+.graphzoomslider {
+  position:absolute;
+}

@@ -16,7 +16,7 @@ Ext.regModel('Funcman.GraphNode', {
 Ext.define('Funcman.Graph', {
     extend: 'Ext.view.View',
     alias: 'Graph',
-    uses: 'Ext.data.Store',
+    uses: ['Ext.slider.Single', 'Ext.data.Store'],
     tpl: [
         // '<div class="details">',
             '<tpl for=".">',
@@ -46,6 +46,11 @@ Ext.define('Funcman.Graph', {
             alert(i.get('name'));
         }*/
     },
+    
+    removeNode: function(node) {
+        this.store.remove(node);
+    },
+    
     listeners: {
       itemmousedown: function(a,b,c,d,e) {
       },

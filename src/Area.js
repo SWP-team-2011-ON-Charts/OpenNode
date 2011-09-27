@@ -42,14 +42,30 @@ Ext.onReady(function () {
     });
 
     var el = body.createChild({});
-    //el.setHeight(100);
-    //el.setWidth(100);
+    el.setHeight(200);
+    el.setWidth(200);
+    el.addCls('showscrollbars');
 
     var graph = Ext.create('Graph', {
         id: 'name',
         renderTo: el
     });
     graph.addCls('img-chooser-view');
+
+    var slider = Ext.create('Ext.slider.Single', {
+        height: 70,
+        value: 5,
+        increment: 1,
+        minValue: 0,
+        maxValue: 10,
+        renderTo: el,
+        vertical: true,
+        listeners: {
+            change: function(el, val) {
+            }
+        }
+    });
+    slider.addCls('graphzoomslider');
 
     // Add icons
     var vm = Ext.create('GraphNode', {
