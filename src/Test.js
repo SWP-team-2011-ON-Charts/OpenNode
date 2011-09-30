@@ -14,20 +14,29 @@ Ext.require(['Funcman.Graph', 'Funcman.GraphNode']);
 
 Ext.onReady(function () {
 
+    var left1 = 0;
+    var left2 = 0;
+
     function addMachine() {
         var vm = Ext.create('GraphNode', {
             name : 'Machine',
-            image: 'images/computer.png'
+            image: 'images/computer.png',
+            top: 64,
+            left: left1,
         });
         graph.addNode(vm);
+        left1 += 64;
     }
 
     function addUser() {
         var user = Ext.create('GraphNode', {
             name : 'User',
-            image: 'images/user.png'
+            image: 'images/user.png',
+            top: 128,
+            left: left2,
         });
         graph.addNode(user);
+        left2 += 64;
     }
 
     var body = Ext.getBody();

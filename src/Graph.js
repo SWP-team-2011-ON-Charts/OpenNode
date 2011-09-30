@@ -27,7 +27,7 @@ Ext.define('Funcman.Graph', {
         tpl: [
             // '<div class="details">',
                 '<tpl for=".">',
-                    '<div class="thumb-wrap" style="width:50px;height:64px;">',
+                    '<div class="thumb-wrap" style="left:{left}px;top:{top}px;">',
                         '<div class="thumb">',
                         (!Ext.isIE6? '<img src="{image}" />' : 
                         '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
@@ -43,6 +43,7 @@ Ext.define('Funcman.Graph', {
         }),
         overItemCls: 'x-view-over',
         itemSelector: 'div.thumb-wrap',
+        cls: 'img-chooser-view',
         resizable: false,
         trackOver: true,
         
