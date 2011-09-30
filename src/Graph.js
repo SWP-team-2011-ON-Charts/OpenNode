@@ -45,6 +45,22 @@ Ext.define('Funcman.Graph', {
         itemSelector: 'div.thumb-wrap',
         resizable: false,
         trackOver: true,
+        
+        listeners: {
+            itemmousedown: function(a,b,c,d,e) {
+            },
+            itemmouseup: function(a,b,c,d,e) {
+            },
+            containermousedown: function(view, e, opts) {
+                //alert('moving');
+            },
+            selectionchange: function(dv, nodes ) {
+                //alert('selection changed');
+            },
+            mouseover: function(view, e, opts) {
+                //alert('dragging 2');
+            },
+        }
     }),
     Ext.create('Ext.slider.Single', {
         height: 60,
@@ -77,17 +93,4 @@ Ext.define('Funcman.Graph', {
     removeNode: function(node) {
         this.store.remove(node);
     },
-    
-    listeners: {
-      itemmousedown: function(a,b,c,d,e) {
-      },
-      itemmouseup: function(a,b,c,d,e) {
-      },
-      beforecontainermousedown: function(view, e, opts) {
-      },
-      containermousedown: function(view, e, opts) {
-      },
-      selectionchange: function(dv, nodes ) {
-      }
-    }
 });
