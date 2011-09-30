@@ -42,31 +42,45 @@ Ext.onReady(function () {
     });
 
     var el = body.createChild({});
-    el.setHeight(200);
-    el.setWidth(200);
-    el.addCls('showscrollbars');
 
     var graph = Ext.create('Graph', {
-        id: 'name',
+        //id: 'name',
         renderTo: el
     });
-    graph.addCls('img-chooser-view');
-
-    var slider = Ext.create('Ext.slider.Single', {
-        height: 70,
-        value: 5,
-        increment: 1,
-        minValue: 0,
-        maxValue: 10,
-        renderTo: el,
-        vertical: true,
-        listeners: {
-            change: function(el, val) {
+    graph.setHeight(200);
+    graph.setWidth(200);
+    graph.addCls('showscrollbars');
+/*
+    Ext.Ajax.request({
+        //url: 'http://kodu.ut.ee/~anthrax/opennode/test.json',
+        url: 'http://localhost:8080/computes',
+        disableCaching: false,
+        success: function(response) {
+          var o = Ext.JSON.decode(response.responseText, true);
+          alert('success');
+        },
+        failure: function(response) {
+          alert('failure');
+        }
+    });
+*/
+/*
+    var store = Ext.create('Ext.data.Store', {
+        autoLoad: true,
+        fields: ['id', 'name'],
+        proxy: {
+            type: 'ajax',
+            url: 'http://localhost:8080/computes',
+            reader: {
+                type: 'json',
+                root: ''
             }
         }
     });
-    slider.addCls('graphzoomslider');
-
+    store.load(function(records, operation, success) {
+        alert('blah');
+    });
+*/
     // Add icons
     var vm = Ext.create('GraphNode', {
         name : 'Machine',

@@ -14,34 +14,52 @@ Ext.regModel('Funcman.GraphNode', {
 });
 
 Ext.define('Funcman.Graph', {
-    extend: 'Ext.view.View',
+    extend: 'Ext.container.Container',
     alias: 'Graph',
-    uses: ['Ext.slider.Single', 'Ext.data.Store'],
-    tpl: [
-        // '<div class="details">',
-            '<tpl for=".">',
-                '<div class="thumb-wrap">',
-                    '<div class="thumb">',
-                    (!Ext.isIE6? '<img src="{image}" />' : 
-                    '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+
+    items: [Ext.create('Ext.view.View', {
+        uses: ['Ext.slider.Single', 'Ext.data.Store'],
+        tpl: [
+            // '<div class="details">',
+                '<tpl for=".">',
+                    '<div class="thumb-wrap">',
+                        '<div class="thumb">',
+                        (!Ext.isIE6? '<img src="{image}" />' : 
+                        '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+                        '</div>',
+                        '<span>{name}</span>',
                     '</div>',
-                    '<span>{name}</span>',
-                '</div>',
-            '</tpl>'
-        // '</div>'
-    ],
-    store: Ext.create('Ext.data.Store', {
-        model: 'Funcman.GraphNode',
-        //autoLoad: true,
-        autoSync: true
+                '</tpl>'
+            // '</div>'
+        ],
+        store: Ext.create('Ext.data.Store', {
+            model: 'Funcman.GraphNode',
+            //autoLoad: true,
+            autoSync: true
+        }),
+        overItemCls: 'x-view-over',
+        itemSelector: 'div.thumb-wrap',
+        resizable: false,
+        trackOver: true,
     }),
-    overItemCls: 'x-view-over',
-    itemSelector: 'div.thumb-wrap',
-    resizable: false,
-    trackOver: true,
+    Ext.create('Ext.slider.Single', {
+            height: 70,
+            value: 5,
+            increment: 1,
+            minValue: 0,
+            maxValue: 10,
+            //renderTo: this.renderTo,//this.getEl(),
+            vertical: true,
+            listeners: {
+                change: function(el, val) {
+                }
+            }
+        })
+    ],
 
     addNode: function(node) {
-        this.store.add(node);
+        var view = this.items.first();
+        view.store.add(node);
         /*for(var i in node.data.children) {
             alert(i.get('name'));
         }*/
