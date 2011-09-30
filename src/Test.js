@@ -29,6 +29,14 @@ Ext.onReady(function () {
         graph.addNode(vm);
     }
 
+    function addUser() {
+        var user = Ext.create('GraphNode', {
+            name : 'User',
+            image: 'images/user.png'
+        });
+        graph.addNode(user);
+    }
+
     var body = Ext.getBody();
 
     Ext.widget('button', {
@@ -39,6 +47,16 @@ Ext.onReady(function () {
         renderTo: body,
         cls: 'floater',
         handler: addMachine
+    });
+
+    Ext.widget('button', {
+        text : 'Add User',
+        scale: 'large',
+        iconCls: 'add',
+        iconAlign: 'left',
+        renderTo: body,
+        cls: 'floater',
+        handler: addUser
     });
 
     var el = body.createChild({});
