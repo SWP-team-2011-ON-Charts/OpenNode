@@ -1,5 +1,4 @@
 .img-chooser-view {
-    background: white;
     font: 11px Arial, Helvetica, sans-serif;
 }
 
@@ -45,4 +44,6 @@
 }
 .graphzoomslider {
   position:absolute;
+  top: 5px;
+  left: 2px;
 }

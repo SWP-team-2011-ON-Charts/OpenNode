@@ -17,12 +17,17 @@ Ext.define('Funcman.Graph', {
     extend: 'Ext.container.Container',
     alias: 'Graph',
 
+    style: {
+        backgroundColor:'#F8F8F8',
+        position: 'relative'
+    },
+
     items: [Ext.create('Ext.view.View', {
         uses: ['Ext.slider.Single', 'Ext.data.Store'],
         tpl: [
             // '<div class="details">',
                 '<tpl for=".">',
-                    '<div class="thumb-wrap">',
+                    '<div class="thumb-wrap" style="width:50px;height:64px;">',
                         '<div class="thumb">',
                         (!Ext.isIE6? '<img src="{image}" />' : 
                         '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
@@ -34,8 +39,7 @@ Ext.define('Funcman.Graph', {
         ],
         store: Ext.create('Ext.data.Store', {
             model: 'Funcman.GraphNode',
-            //autoLoad: true,
-            autoSync: true
+            //autoSync: true
         }),
         overItemCls: 'x-view-over',
         itemSelector: 'div.thumb-wrap',
@@ -43,23 +47,28 @@ Ext.define('Funcman.Graph', {
         trackOver: true,
     }),
     Ext.create('Ext.slider.Single', {
-            height: 70,
-            value: 5,
-            increment: 1,
-            minValue: 0,
-            maxValue: 10,
-            //renderTo: this.renderTo,//this.getEl(),
-            vertical: true,
-            listeners: {
-                change: function(el, val) {
-                }
+        height: 60,
+        value: 5,
+        increment: 1,
+        minValue: 0,
+        maxValue: 10,
+        vertical: true,
+        listeners: {
+            change: function(el, val) {
             }
-        })
+        },
+        cls: 'graphzoomslider',
+    })
     ],
 
+    initComponent: function() {
+        this.callParent();
+        this.view = this.items.items[0];
+        this.slider = this.items.items[1];
+    },
+
     addNode: function(node) {
-        var view = this.items.first();
-        view.store.add(node);
+        this.view.store.add(node);
         /*for(var i in node.data.children) {
             alert(i.get('name'));
         }*/
