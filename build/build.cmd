@@ -1,0 +1,1 @@
+CScript /nologo pack.wsf ../src/Graph.js >> Graph.js
