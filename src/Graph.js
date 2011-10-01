@@ -39,12 +39,10 @@ Ext.define('Funcman.Graph', {
         ],
         store: Ext.create('Ext.data.Store', {
             model: 'Funcman.GraphNode',
-            //autoSync: true
         }),
         overItemCls: 'x-view-over',
         itemSelector: 'div.thumb-wrap',
         cls: 'img-chooser-view',
-        resizable: false,
         trackOver: true,
         
         listeners: {
@@ -53,15 +51,21 @@ Ext.define('Funcman.Graph', {
             itemmouseup: function(a,b,c,d,e) {
             },
             containermousedown: function(view, e, opts) {
-                //alert('moving');
+                var parent = this.up();
+                parent.getEl().addListener('mousemove', function(e) {
+                    alert('move');
+                });
             },
             selectionchange: function(dv, nodes ) {
                 //alert('selection changed');
             },
-            mouseover: function(view, e, opts) {
-                //alert('dragging 2');
+            mousedown: {
+                element: 'el',
+                fn : function(view, e, opts) {
+                    //alert('mousedown');
+                }
             },
-        }
+        },
     }),
     Ext.create('Ext.slider.Single', {
         height: 60,
@@ -84,10 +88,49 @@ Ext.define('Funcman.Graph', {
     })
     ],
 
+    listeners: {
+        itemmousedown: function(a,b,c,d,e) {
+        },
+        itemmouseup: function(a,b,c,d,e) {
+        },
+        beforecontainermousedown: function(view, e, opts) {
+            var parent = this.up();
+            parent.getEl().addListener('mousemove', function(e) {
+                alert('move');
+            });
+        },
+        selectionchange: function(dv, nodes ) {
+            //alert('selection changed');
+        },
+        /*
+        mousedown: {
+            element: 'el',
+            fn : this.mousedownlistener
+        },
+        mouseup: {
+            element: 'el',
+            fn : function(e, t, opts) {
+                if (this._isDragging == true) {
+                    this.addListener('mousemove', function(e) {
+                        alert('move');
+                    });
+                }
+            }
+        },
+        */
+    },
+
+    mousewheellistener: function(e, t, opts) {
+        this.slider.setValue(this.slider.getValue() + e.getWheelDelta());
+        e.stopEvent();
+    },
+
     initComponent: function() {
         this.callParent();
         this.view = this.items.getAt(0);
         this.slider = this.items.getAt(1);
+        this._isDragging = false;
+        this.addListener('mousewheel', this.mousewheellistener, this, {element: 'el'});
     },
 
     getZoom: function() {
