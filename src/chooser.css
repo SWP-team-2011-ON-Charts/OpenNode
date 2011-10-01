@@ -1,5 +1,9 @@
 .img-chooser-view {
     font: 11px Arial, Helvetica, sans-serif;
+    overflow: auto;
+    //width: inherit;
+    //height: inherit;
+    border: 1px solid #cc0000;
 }
 
 .img-chooser-view .thumb {
@@ -8,15 +12,14 @@
 
 .img-chooser-view .thumb-wrap {
     float: left;
-    margin: 4px;
-    margin-right: 0;
+    margin: 2px;
     padding: 5px;
     position:absolute;
 }
 
 .img-chooser-view .thumb-wrap span {
     display: block;
-    overflow: hidden;
+    //overflow: hidden;
     text-align: center;
 }
 
@@ -41,7 +44,15 @@
 }
 
 .graphzoomslider {
-  position:absolute;
-  top: 5px;
-  left: 2px;
+    position:absolute;
+    top: 5px;
+    left: 2px;
+}
+.movecursor {
+    cursor: move;
+}
+.graph {
+    background-color: #F8F8F8;
+    position: relative;
+    //overflow: hidden;
 }

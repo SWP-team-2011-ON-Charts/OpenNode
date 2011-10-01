@@ -61,15 +61,11 @@ Ext.onReady(function () {
         handler: addUser
     });
 
-    var el = body.createChild({});
-
     var graph = Ext.create('Graph', {
-        //id: 'name',
-        renderTo: el
+        renderTo: body
     });
     graph.setHeight(250);
     graph.setWidth(250);
-    graph.addCls('showscrollbars');
 /*
     Ext.Ajax.request({
         //url: 'http://kodu.ut.ee/~anthrax/opennode/test.json',

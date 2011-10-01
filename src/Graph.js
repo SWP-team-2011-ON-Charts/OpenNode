@@ -16,17 +16,15 @@ Ext.regModel('Funcman.GraphNode', {
 Ext.define('Funcman.Graph', {
     extend: 'Ext.container.Container',
     alias: 'Graph',
-
-    style: {
-        backgroundColor:'#F8F8F8',
-        position: 'relative'
-    },
+    cls: 'graph',
+    layout: 'fit',
 
     items: [Ext.create('Ext.view.View', {
         uses: ['Ext.slider.Single', 'Ext.data.Store'],
         tpl: [
             // '<div class="details">',
                 '<tpl for=".">',
+                    //'<div class="thumb-wrap">',
                     '<div class="thumb-wrap" style="left:{left-computed}px;top:{top-computed}px;">',
                         '<div class="thumb">',
                         (!Ext.isIE6? '<img src="{image}" />' : 
@@ -42,28 +40,17 @@ Ext.define('Funcman.Graph', {
         }),
         overItemCls: 'x-view-over',
         itemSelector: 'div.thumb-wrap',
-        cls: 'img-chooser-view',
+        cls: 'img-chooser-view showscrollbars',
         trackOver: true,
+        layout:'absolute',
         
         listeners: {
             itemmousedown: function(a,b,c,d,e) {
             },
             itemmouseup: function(a,b,c,d,e) {
             },
-            containermousedown: function(view, e, opts) {
-                var parent = this.up();
-                parent.getEl().addListener('mousemove', function(e) {
-                    alert('move');
-                });
-            },
             selectionchange: function(dv, nodes ) {
                 //alert('selection changed');
-            },
-            mousedown: {
-                element: 'el',
-                fn : function(view, e, opts) {
-                    //alert('mousedown');
-                }
             },
         },
     }),
@@ -93,36 +80,37 @@ Ext.define('Funcman.Graph', {
         },
         itemmouseup: function(a,b,c,d,e) {
         },
-        beforecontainermousedown: function(view, e, opts) {
-            var parent = this.up();
-            parent.getEl().addListener('mousemove', function(e) {
-                alert('move');
-            });
-        },
         selectionchange: function(dv, nodes ) {
             //alert('selection changed');
         },
-        /*
-        mousedown: {
-            element: 'el',
-            fn : this.mousedownlistener
-        },
-        mouseup: {
-            element: 'el',
-            fn : function(e, t, opts) {
-                if (this._isDragging == true) {
-                    this.addListener('mousemove', function(e) {
-                        alert('move');
-                    });
-                }
-            }
-        },
-        */
     },
 
     mousewheellistener: function(e, t, opts) {
         this.slider.setValue(this.slider.getValue() + e.getWheelDelta());
         e.stopEvent();
+    },
+
+    mousedownlistener: function(e, t, opts) {
+        if (!this._isDragging) {
+            this.addCls('movecursor');
+            this.addListener('mousemove', this.mousemovelistener, this, {element: 'el'});
+            this._isDragging = true;
+            e.stopEvent();
+        }
+    },
+
+    mouseuplistener: function(e, t, opts) {
+        if (this._isDragging) {
+            this.removeCls('movecursor');
+            this.removeListener('mousemove', this.mousemovelistener);
+            this._isDragging = false;
+        }
+    },
+
+    mousemovelistener: function(e, t, opts) {
+        if (this._isDragging) {
+            //this.getEl().scroll("r", 1);
+        }
     },
 
     initComponent: function() {
@@ -131,6 +119,8 @@ Ext.define('Funcman.Graph', {
         this.slider = this.items.getAt(1);
         this._isDragging = false;
         this.addListener('mousewheel', this.mousewheellistener, this, {element: 'el'});
+        this.addListener('mousedown', this.mousedownlistener, this, {element: 'el'});
+        this.addListener('mouseup', this.mouseuplistener, this, {element: 'el'});
     },
 
     getZoom: function() {
