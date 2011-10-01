@@ -16,15 +16,18 @@ Ext.regModel('Funcman.GraphNode', {
 Ext.define('Funcman.Graph', {
     extend: 'Ext.container.Container',
     alias: 'Graph',
+    uses: ['Ext.slider.Single'],
     cls: 'graphcontainer',
     layout: 'fit',
 
     items: [
       Ext.create('Ext.container.Container', {
       cls: 'graphviewcontainer',
+      _isDragging: false,
+
       items: [
         Ext.create('Ext.view.View', {
-        uses: ['Ext.slider.Single', 'Ext.data.Store'],
+        uses: ['Ext.data.Store'],
         tpl: [
             // '<div class="details">',
                 '<tpl for=".">',
@@ -128,14 +131,14 @@ Ext.define('Funcman.Graph', {
 
     initComponent: function() {
         this.callParent();
-        this.viewcontainer = this.items.getAt(0);
+        var vc = this.viewcontainer = this.items.getAt(0);
         this.view = this.viewcontainer.items.getAt(0);
         this.slider = this.items.getAt(1);
-        this._isDragging = false;
-        this.addListener('mousewheel', this.mousewheellistener, this, {element: 'el'});
-        this.addListener('mousedown', this.mousedownlistener, this, {element: 'el'});
-        this.addListener('mouseup', this.stopdrag, this, {element: 'el'});
-        this.addListener('mouseout', this.stopdrag, this, {element: 'el'});
+
+        vc.addListener('mousewheel', this.mousewheellistener, this, {element: 'el'});
+        vc.addListener('mousedown', this.mousedownlistener, this, {element: 'el'});
+        vc.addListener('mouseup', this.stopdrag, this, {element: 'el'});
+        //vc.addListener('mouseout', this.stopdrag, this, {element: 'el'});
     },
 
     getZoom: function() {
