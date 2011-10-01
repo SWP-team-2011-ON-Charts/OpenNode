@@ -99,6 +99,9 @@ Ext.define('Funcman.Graph', {
         if (!this._isDragging) {
             this.addCls('movecursor');
             this.addListener('mousemove', this.mousemovelistener, this, {element: 'el'});
+            var containerpos = this.viewcontainer.getPosition();
+            var currentscroll = this.viewcontainer.getEl().getScroll();
+            this._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
             this._isDragging = true;
             e.stopEvent();
         }
@@ -114,13 +117,19 @@ Ext.define('Funcman.Graph', {
 
     mousemovelistener: function(e, t, opts) {
         if (this._isDragging) {
-            //this.getEl().scroll("r", 1);
+            var el = this.viewcontainer.getEl();
+            var currentpos = e.getXY();
+            var containerpos = this.viewcontainer.getPosition();
+            el.scrollTo("right", (containerpos[0] + this._pananchor[0] - currentpos[0]));
+            el.scrollTo("top", (containerpos[1] + this._pananchor[1] - currentpos[1]));
+            e.stopEvent();
         }
     },
 
     initComponent: function() {
         this.callParent();
-        this.view = this.items.getAt(0).items.getAt(0);
+        this.viewcontainer = this.items.getAt(0);
+        this.view = this.viewcontainer.items.getAt(0);
         this.slider = this.items.getAt(1);
         this._isDragging = false;
         this.addListener('mousewheel', this.mousewheellistener, this, {element: 'el'});
