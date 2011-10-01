@@ -27,7 +27,7 @@ Ext.define('Funcman.Graph', {
         tpl: [
             // '<div class="details">',
                 '<tpl for=".">',
-                    '<div class="thumb-wrap" style="left:{left}px;top:{top}px;">',
+                    '<div class="thumb-wrap" style="left:{left-computed}px;top:{top-computed}px;">',
                         '<div class="thumb">',
                         (!Ext.isIE6? '<img src="{image}" />' : 
                         '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
@@ -65,13 +65,19 @@ Ext.define('Funcman.Graph', {
     }),
     Ext.create('Ext.slider.Single', {
         height: 60,
-        value: 5,
+        value: 3,
         increment: 1,
         minValue: 0,
         maxValue: 10,
         vertical: true,
         listeners: {
             change: function(el, val) {
+                var parent = this.up();
+                var zoom = parent.getZoom();
+                parent.view.store.each( function(record) {
+                    parent.computePositionByZoom(record, zoom);
+                });
+                parent.view.store.sync();
             }
         },
         cls: 'graphzoomslider',
@@ -80,11 +86,27 @@ Ext.define('Funcman.Graph', {
 
     initComponent: function() {
         this.callParent();
-        this.view = this.items.items[0];
-        this.slider = this.items.items[1];
+        this.view = this.items.getAt(0);
+        this.slider = this.items.getAt(1);
+    },
+
+    getZoom: function() {
+        return 1.0 + (this.slider.getValue() / 10.0);
+    },
+
+    computePosition: function(record) {
+        this.computePositionByZoom(record, this.getZoom());
+    },
+
+    computePositionByZoom: function(record, zoom) {
+        var left = record.get('left');
+        var top = record.get('top');
+        record.set('left-computed', (left == undefined) ? 0 : parseInt(left * zoom));
+        record.set('top-computed', (top == undefined) ? 0 : parseInt(top * zoom));
     },
 
     addNode: function(node) {
+        this.computePosition(node);
         this.view.store.add(node);
         /*for(var i in node.data.children) {
             alert(i.get('name'));

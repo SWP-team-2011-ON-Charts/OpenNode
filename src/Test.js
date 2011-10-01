@@ -67,8 +67,8 @@ Ext.onReady(function () {
         //id: 'name',
         renderTo: el
     });
-    graph.setHeight(200);
-    graph.setWidth(200);
+    graph.setHeight(250);
+    graph.setWidth(250);
     graph.addCls('showscrollbars');
 /*
     Ext.Ajax.request({
