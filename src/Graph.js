@@ -16,7 +16,6 @@ Ext.regModel('Funcman.GraphNode', {
 Ext.define('Funcman.Graph', {
     extend: 'Ext.container.Container',
     alias: 'Graph',
-    uses: ['Ext.slider.Single'],
     cls: 'graphcontainer',
     layout: 'fit',
 
@@ -27,7 +26,6 @@ Ext.define('Funcman.Graph', {
 
       items: [
         Ext.create('Ext.view.View', {
-        uses: ['Ext.data.Store'],
         tpl: [
             // '<div class="details">',
                 '<tpl for=".">',
@@ -59,7 +57,22 @@ Ext.define('Funcman.Graph', {
                 //alert('selection changed');
             },
         },
-      })
+        }),
+        Ext.create('Ext.draw.Component', {
+            style: {
+                width: '100%',
+            },
+            width: 500,
+            height: 500,
+            viewBox: false,
+            items: [{
+                type: 'circle',
+                fill: '#79BB3F',
+                radius: 100,
+                x: 100,
+                y: 100
+            }]
+        })
       ],
     }),
     Ext.create('Ext.slider.Single', {
@@ -133,6 +146,7 @@ Ext.define('Funcman.Graph', {
         this.callParent();
         var vc = this.viewcontainer = this.items.getAt(0);
         this.view = this.viewcontainer.items.getAt(0);
+        this.draw = this.viewcontainer.items.getAt(1);
         this.slider = this.items.getAt(1);
 
         vc.addListener('mousewheel', this.mousewheellistener, this, {element: 'el'});

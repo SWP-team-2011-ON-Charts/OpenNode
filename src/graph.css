@@ -44,5 +44,5 @@
 }
 .graphviewcontainer {
     position: relative;
-    overflow: auto;
+    overflow: hidden;
 }
