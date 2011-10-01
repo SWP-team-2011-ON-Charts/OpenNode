@@ -16,10 +16,14 @@ Ext.regModel('Funcman.GraphNode', {
 Ext.define('Funcman.Graph', {
     extend: 'Ext.container.Container',
     alias: 'Graph',
-    cls: 'graph',
+    cls: 'graphcontainer',
     layout: 'fit',
 
-    items: [Ext.create('Ext.view.View', {
+    items: [
+      Ext.create('Ext.container.Container', {
+      cls: 'graphviewcontainer',
+      items: [
+        Ext.create('Ext.view.View', {
         uses: ['Ext.slider.Single', 'Ext.data.Store'],
         tpl: [
             // '<div class="details">',
@@ -41,8 +45,7 @@ Ext.define('Funcman.Graph', {
         overItemCls: 'x-view-over',
         itemSelector: 'div.thumb-wrap',
         cls: 'img-chooser-view showscrollbars',
-        trackOver: true,
-        layout:'absolute',
+        //trackOver: true,
         
         listeners: {
             itemmousedown: function(a,b,c,d,e) {
@@ -53,6 +56,8 @@ Ext.define('Funcman.Graph', {
                 //alert('selection changed');
             },
         },
+      })
+      ],
     }),
     Ext.create('Ext.slider.Single', {
         height: 60,
@@ -99,7 +104,7 @@ Ext.define('Funcman.Graph', {
         }
     },
 
-    mouseuplistener: function(e, t, opts) {
+    stopdrag: function() {
         if (this._isDragging) {
             this.removeCls('movecursor');
             this.removeListener('mousemove', this.mousemovelistener);
@@ -115,12 +120,13 @@ Ext.define('Funcman.Graph', {
 
     initComponent: function() {
         this.callParent();
-        this.view = this.items.getAt(0);
+        this.view = this.items.getAt(0).items.getAt(0);
         this.slider = this.items.getAt(1);
         this._isDragging = false;
         this.addListener('mousewheel', this.mousewheellistener, this, {element: 'el'});
         this.addListener('mousedown', this.mousedownlistener, this, {element: 'el'});
-        this.addListener('mouseup', this.mouseuplistener, this, {element: 'el'});
+        this.addListener('mouseup', this.stopdrag, this, {element: 'el'});
+        this.addListener('mouseout', this.stopdrag, this, {element: 'el'});
     },
 
     getZoom: function() {
