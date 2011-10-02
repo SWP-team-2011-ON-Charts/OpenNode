@@ -14,10 +14,6 @@ Ext.define('Funcman.GraphRef', {
     extend: "Ext.data.Model",
     alias: 'GraphRef',
     fields: ['id'],
-    proxy: {
-        type: 'memory',
-        id  : 'graph-node-refs'
-    },
     belongsTo: 'Funcman.GraphNode'
 });
 
@@ -92,61 +88,62 @@ Ext.define('Funcman.Graph', {
                 var parent = this.up();
                 var zoom = parent.getZoom();
                 
-                parent.draw.surface.removeAll(true);
-                parent.draw.setSize(0, 0);
-                parent.draw.surface.setSize(0, 0);
-                
                 // Move nodes further from or closer to each other depending on zoom
                 // Also find graph size
-                var maxx = 0, maxy = 0;
                 parent.view.store.each( function(record) {
                     parent.computePositionByZoom(record, zoom);
-                    var x = record.get('left');
-                    var y = record.get('top');
-                    if (maxx < x) maxx = x;
-                    if (maxy < y) maxy = y;
                 });
-                maxx += parent.iconSize;
-                maxy += parent.iconSize;
                 parent.view.store.sync();
-                
-                // Connect nodes with their child nodes
-                var halfIcon = parent.iconSize / 2;
-                parent.view.store.each( function(record) {
-                    record.children().each( function(child) {
-                        var childrecord = parent.view.store.findRecord('id', child.get('id'));
-                        var path =
-                          'M ' + (record.get('x') + halfIcon) + ' ' + (record.get('y') + halfIcon) + ' ' +
-                          'L ' + (childrecord.get('x') + halfIcon) + ' ' + (childrecord.get('y') + halfIcon)+ ' z';
-                        parent.draw.surface.add({
-                            //scale: { x: 1, y: 1, cx: 200, cy: 200 },
-                            type: 'path',
-                            path: path,
-                            stroke: "#000",
-                            "stroke-width": '3',
-                            opacity: 0.5,
-                            group: 'lines'
-                        });
-                    });
-                });
-                
-                parent.draw.surface.items.items.forEach( function(d){
-                    //d.setAttributes({scale: { x: zoom, y: zoom, cx: 50, cy: 50}}, true);
-                });
-                
-                var el = parent.viewcontainer.getEl().dom;
-                parent.draw.setSize(maxx, maxy);
-                parent.draw.surface.setSize(maxx, maxy);
+
+                parent.connecticons(parent);
             }
         },
         cls: 'graphzoomslider',
     })
     ],
 
-    listeners: {
-        selectionchange: function(dv, nodes ) {
-            //alert('selection changed');
-        },
+    connecticons: function(parent) {
+        var maxx = 0, maxy = 0;
+
+        parent.draw.surface.removeAll(true);
+        parent.draw.setSize(0, 0);
+        parent.draw.surface.setSize(0, 0);
+
+        // Connect nodes with their child nodes
+        var halfIcon = parent.iconSize / 2;
+        parent.view.store.each( function(record) {
+            record.children().each( function(child) {
+                var childrecord = parent.view.store.findRecord('id', child.get('id'));
+                var path =
+                  'M ' + (record.get('x') + halfIcon) + ' ' + (record.get('y') + halfIcon) + ' ' +
+                  'L ' + (childrecord.get('x') + halfIcon) + ' ' + (childrecord.get('y') + halfIcon)+ ' z';
+                parent.draw.surface.add({
+                    //scale: { x: 1, y: 1, cx: 200, cy: 200 },
+                    type: 'path',
+                    path: path,
+                    stroke: "#0CC",
+                    "stroke-width": '3',
+                    opacity: 0.5,
+                    group: 'lines'
+                });
+            });
+            
+            var x = record.get('x');
+            var y = record.get('y');
+            if (maxx < x) maxx = x;
+            if (maxy < y) maxy = y;
+        });
+
+        maxx += parent.iconSize;
+        maxy += parent.iconSize;
+        
+        parent.draw.surface.items.items.forEach( function(d){
+            d.setAttributes({scale: { x: 1, y: 1 }}, true);
+        });
+        
+        var el = parent.viewcontainer.getEl().dom;
+        parent.draw.setSize(maxx, maxy);
+        parent.draw.surface.setSize(maxx, maxy);
     },
 
     mousewheellistener: function(e, t, opts) {
@@ -216,6 +213,7 @@ Ext.define('Funcman.Graph', {
     addNode: function(node) {
         this.computePosition(node);
         this.view.store.add(node);
+        this.connecticons(this);
         
         /*for(var i in node.data.children) {
             alert(i.get('name'));

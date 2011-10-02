@@ -14,7 +14,7 @@ Ext.require(['Funcman.Graph', 'Funcman.GraphNode']);
 
 Ext.onReady(function () {
 
-    var left1 = 0;
+    var left1 = 192;
     var left2 = 0;
 
     function addMachine() {
@@ -98,11 +98,26 @@ Ext.onReady(function () {
     });
 */
     // Add icons
-    var vm = Ext.create('GraphNode', {
+    var vm1 = Ext.create('GraphNode', {
         id: '1',
         name : 'Machine',
         image: 'images/computer.png',
-        top: 64
+        top: 64,
+        left: 0
+    });
+    var vm2 = Ext.create('GraphNode', {
+        id: '2',
+        name : 'Machine',
+        image: 'images/computer.png',
+        top: 64,
+        left: 64
+    });
+    var vm3 = Ext.create('GraphNode', {
+        id: '3',
+        name : 'Machine',
+        image: 'images/computer.png',
+        top: 64,
+        left: 128
     });
     var oms = Ext.create('GraphNode', {
         id: '0',
@@ -113,8 +128,12 @@ Ext.onReady(function () {
 
     var children = oms.children();
     children.add({id: '1'});
+    children.add({id: '2'});
+    children.add({id: '3'});
     children.sync();
 
+    graph.addNode(vm1);
+    graph.addNode(vm2);
+    graph.addNode(vm3);
     graph.addNode(oms);
-    graph.addNode(vm);
 });
