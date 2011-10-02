@@ -99,15 +99,22 @@ Ext.onReady(function () {
 */
     // Add icons
     var vm = Ext.create('GraphNode', {
+        id: '1',
         name : 'Machine',
         image: 'images/computer.png',
-        children: []
+        top: 64
     });
     var oms = Ext.create('GraphNode', {
+        id: '0',
         name : 'OMS',
         image: 'images/network-server.png',
-        children: [vm]
+        left: 64
     });
 
+    var children = oms.children();
+    children.add({id: '1'});
+    children.sync();
+
     graph.addNode(oms);
+    graph.addNode(vm);
 });

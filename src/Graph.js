@@ -1,7 +1,31 @@
-Ext.regModel('Funcman.GraphNode', {
+/*
+* Layout of the component:
+* graph
+*   viewcontainer
+*     view
+*       store
+*         nodes
+*     drawcomponent
+*       lines
+*   zoomslider
+*/
+
+Ext.define('Funcman.GraphRef', {
+    extend: "Ext.data.Model",
+    alias: 'GraphRef',
+    fields: ['id'],
+    proxy: {
+        type: 'memory',
+        id  : 'graph-node-refs'
+    },
+    belongsTo: 'Funcman.GraphNode'
+});
+
+Ext.define('Funcman.GraphNode', {
+    extend: "Ext.data.Model",
     alias: 'GraphNode',
     fields: [
-      {name: 'id', type: 'int'},
+      {name: 'id', type: 'string'},
       {name: 'image', type: 'string'},
       {name: 'name', type: 'string'}
     ],
@@ -9,8 +33,7 @@ Ext.regModel('Funcman.GraphNode', {
         type: 'memory',
         id  : 'graph-nodes'
     },
-    belongsTo: 'Funcman.GraphNode',
-    hasMany  : {model: 'Funcman.GraphNode', name: 'children'}
+    hasMany  : {model: 'Funcman.GraphRef', name: 'children'}
 });
 
 Ext.define('Funcman.Graph', {
@@ -18,6 +41,7 @@ Ext.define('Funcman.Graph', {
     alias: 'Graph',
     cls: 'graphcontainer',
     layout: 'fit',
+    iconSize: 64,
 
     items: [
       Ext.create('Ext.container.Container', {
@@ -27,57 +51,38 @@ Ext.define('Funcman.Graph', {
       items: [
         Ext.create('Ext.view.View', {
         tpl: [
-            // '<div class="details">',
-                '<tpl for=".">',
-                    //'<div class="thumb-wrap">',
-                    '<div class="thumb-wrap" style="left:{left-computed}px;top:{top-computed}px;">',
-                        '<div class="thumb">',
-                        (!Ext.isIE6? '<img src="{image}" />' : 
-                        '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
-                        '</div>',
-                        '<span>{name}</span>',
+            '<tpl for=".">',
+                //'<div class="thumb-wrap">',
+                '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
+                    '<div class="thumb">',
+                    (!Ext.isIE6? '<img src="{image}" />' : 
+                    '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
                     '</div>',
-                '</tpl>'
-            // '</div>'
+                    '<span>{name}</span>',
+                '</div>',
+            '</tpl>'
         ],
-        store: Ext.create('Ext.data.Store', {
-            model: 'Funcman.GraphNode',
-        }),
+        store: Ext.create('Ext.data.Store', { model: 'Funcman.GraphNode' }),
         overItemCls: 'x-view-over',
         itemSelector: 'div.thumb-wrap',
         cls: 'img-chooser-view showscrollbars',
         //trackOver: true,
         
         listeners: {
-            itemmousedown: function(a,b,c,d,e) {
-            },
-            itemmouseup: function(a,b,c,d,e) {
-            },
             selectionchange: function(dv, nodes ) {
                 //alert('selection changed');
             },
         },
         }),
         Ext.create('Ext.draw.Component', {
-            style: {
-                width: '100%',
-            },
-            width: 500,
-            height: 500,
             viewBox: false,
-            items: [{
-                type: 'circle',
-                fill: '#79BB3F',
-                radius: 100,
-                x: 100,
-                y: 100
-            }]
+            autoSize: true,
         })
       ],
     }),
     Ext.create('Ext.slider.Single', {
         height: 60,
-        value: 3,
+        value: 0,
         increment: 1,
         minValue: 0,
         maxValue: 10,
@@ -86,10 +91,52 @@ Ext.define('Funcman.Graph', {
             change: function(el, val) {
                 var parent = this.up();
                 var zoom = parent.getZoom();
+                
+                parent.draw.surface.removeAll(true);
+                parent.draw.setSize(0, 0);
+                parent.draw.surface.setSize(0, 0);
+                
+                // Move nodes further from or closer to each other depending on zoom
+                // Also find graph size
+                var maxx = 0, maxy = 0;
                 parent.view.store.each( function(record) {
                     parent.computePositionByZoom(record, zoom);
+                    var x = record.get('left');
+                    var y = record.get('top');
+                    if (maxx < x) maxx = x;
+                    if (maxy < y) maxy = y;
                 });
+                maxx += parent.iconSize;
+                maxy += parent.iconSize;
                 parent.view.store.sync();
+                
+                // Connect nodes with their child nodes
+                var halfIcon = parent.iconSize / 2;
+                parent.view.store.each( function(record) {
+                    record.children().each( function(child) {
+                        var childrecord = parent.view.store.findRecord('id', child.get('id'));
+                        var path =
+                          'M ' + (record.get('x') + halfIcon) + ' ' + (record.get('y') + halfIcon) + ' ' +
+                          'L ' + (childrecord.get('x') + halfIcon) + ' ' + (childrecord.get('y') + halfIcon)+ ' z';
+                        parent.draw.surface.add({
+                            //scale: { x: 1, y: 1, cx: 200, cy: 200 },
+                            type: 'path',
+                            path: path,
+                            stroke: "#000",
+                            "stroke-width": '3',
+                            opacity: 0.5,
+                            group: 'lines'
+                        });
+                    });
+                });
+                
+                parent.draw.surface.items.items.forEach( function(d){
+                    //d.setAttributes({scale: { x: zoom, y: zoom, cx: 50, cy: 50}}, true);
+                });
+                
+                var el = parent.viewcontainer.getEl().dom;
+                parent.draw.setSize(maxx, maxy);
+                parent.draw.surface.setSize(maxx, maxy);
             }
         },
         cls: 'graphzoomslider',
@@ -97,10 +144,6 @@ Ext.define('Funcman.Graph', {
     ],
 
     listeners: {
-        itemmousedown: function(a,b,c,d,e) {
-        },
-        itemmouseup: function(a,b,c,d,e) {
-        },
         selectionchange: function(dv, nodes ) {
             //alert('selection changed');
         },
@@ -166,13 +209,14 @@ Ext.define('Funcman.Graph', {
     computePositionByZoom: function(record, zoom) {
         var left = record.get('left');
         var top = record.get('top');
-        record.set('left-computed', (left == undefined) ? 0 : parseInt(left * zoom));
-        record.set('top-computed', (top == undefined) ? 0 : parseInt(top * zoom));
+        record.set('x', (left == undefined) ? 0 : parseInt(left * zoom));
+        record.set('y', (top == undefined) ? 0 : parseInt(top * zoom));
     },
 
     addNode: function(node) {
         this.computePosition(node);
         this.view.store.add(node);
+        
         /*for(var i in node.data.children) {
             alert(i.get('name'));
         }*/
