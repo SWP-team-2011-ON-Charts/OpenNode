@@ -23,7 +23,8 @@ Ext.define('Funcman.GraphNode', {
     fields: [
       {name: 'id', type: 'string'},
       {name: 'image', type: 'string'},
-      {name: 'name', type: 'string'}
+      {name: 'name', type: 'string'},
+      {name: 'info', type: 'string'}
     ],
     proxy: {
         type: 'memory',
@@ -65,7 +66,24 @@ Ext.define('Funcman.Graph', {
         
         listeners: {
             selectionchange: function(dv, nodes ) {
-                //alert('selection changed');
+                var node = nodes[0];
+                if (this.infownd)
+                    this.infownd.destroy();
+
+                this.infownd = Ext.create('Ext.Window', {
+                    title: node.get('name'),
+                    width: 100,
+                    height: 100,
+                    x: 100,
+                    y: 200,
+                    constrain: true,
+                    layout: 'fit',
+                    items: [{
+                        xtype: 'label',
+                        text: node.get('info')
+                     }]
+                });
+                this.infownd.show();
             },
         },
         }),

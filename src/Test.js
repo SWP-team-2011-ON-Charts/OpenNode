@@ -20,6 +20,7 @@ Ext.onReady(function () {
             id: 'm'+mid,
             name : 'Machine ' + mid,
             image: 'images/computer.png',
+            info: 'Virtual machine status: running',
             top: 64,
             left: mid * 64,
         });
@@ -39,6 +40,7 @@ Ext.onReady(function () {
             id: 'u'+uid,
             name : 'User',
             image: 'images/user.png',
+            info: 'User',
             top: 128,
             left: uid * 64,
         });
@@ -116,6 +118,7 @@ Ext.onReady(function () {
         id: '0',
         name : 'OMS',
         image: 'images/network-server.png',
+        info: 'OMS Status: running',
         left: 64
     });
 
