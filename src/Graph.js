@@ -4,7 +4,7 @@
 *   viewcontainer
 *     view
 *       store
-*         nodes
+*         GraphNodes
 *     drawcomponent
 *       lines
 *   zoomslider
@@ -62,7 +62,6 @@ Ext.define('Funcman.Graph', {
         overItemCls: 'x-view-over',
         itemSelector: 'div.thumb-wrap',
         cls: 'img-chooser-view showscrollbars',
-        //trackOver: true,
         
         listeners: {
             selectionchange: function(dv, nodes ) {
@@ -81,15 +80,15 @@ Ext.define('Funcman.Graph', {
         value: 0,
         increment: 1,
         minValue: 0,
-        maxValue: 10,
+        maxValue: 15,
         vertical: true,
+        cls: 'graphzoomslider',
         listeners: {
             change: function(el, val) {
                 var parent = this.up();
-                var zoom = parent.getZoom();
                 
                 // Move nodes further from or closer to each other depending on zoom
-                // Also find graph size
+                var zoom = parent.getZoom();
                 parent.view.store.each( function(record) {
                     parent.computePositionByZoom(record, zoom);
                 });
@@ -97,35 +96,39 @@ Ext.define('Funcman.Graph', {
 
                 parent.connecticons(parent);
             }
-        },
-        cls: 'graphzoomslider',
+        }
     })
     ],
 
+    // Create lines connecting the icons
     connecticons: function(parent) {
         var maxx = 0, maxy = 0;
+        var halfIcon = parent.iconSize / 2;
+        var draw = parent.draw;
 
-        parent.draw.surface.removeAll(true);
-        parent.draw.setSize(0, 0);
-        parent.draw.surface.setSize(0, 0);
+        // Clear all lines
+        draw.surface.removeAll(true);
+        draw.setSize(0, 0);
 
         // Connect nodes with their child nodes
-        var halfIcon = parent.iconSize / 2;
+        // Also find graph size
         parent.view.store.each( function(record) {
             record.children().each( function(child) {
                 var childrecord = parent.view.store.findRecord('id', child.get('id'));
+
+                // Create a path from the center of one icon to the center of the other
                 var path =
                   'M ' + (record.get('x') + halfIcon) + ' ' + (record.get('y') + halfIcon) + ' ' +
                   'L ' + (childrecord.get('x') + halfIcon) + ' ' + (childrecord.get('y') + halfIcon)+ ' z';
-                parent.draw.surface.add({
-                    //scale: { x: 1, y: 1, cx: 200, cy: 200 },
+                var sprite = {
                     type: 'path',
                     path: path,
                     stroke: "#0CC",
                     "stroke-width": '3',
                     opacity: 0.5,
                     group: 'lines'
-                });
+                };
+                draw.surface.add(sprite);
             });
             
             var x = record.get('x');
@@ -134,18 +137,19 @@ Ext.define('Funcman.Graph', {
             if (maxy < y) maxy = y;
         });
 
+        draw.surface.items.items.forEach( function(d){
+            d.redraw();
+        });
+
         maxx += parent.iconSize;
         maxy += parent.iconSize;
-        
-        parent.draw.surface.items.items.forEach( function(d){
-            d.setAttributes({scale: { x: 1, y: 1 }}, true);
-        });
-        
+
+        // Set drawing area
         var el = parent.viewcontainer.getEl().dom;
-        parent.draw.setSize(maxx, maxy);
-        parent.draw.surface.setSize(maxx, maxy);
+        draw.setSize(maxx, maxy);
     },
 
+    // Mouse wheel controls the zoom slider
     mousewheellistener: function(e, t, opts) {
         this.slider.setValue(this.slider.getValue() + e.getWheelDelta());
         e.stopEvent();
@@ -184,11 +188,14 @@ Ext.define('Funcman.Graph', {
 
     initComponent: function() {
         this.callParent();
+        
+        // Create shortcuts to subelements
         var vc = this.viewcontainer = this.items.getAt(0);
-        this.view = this.viewcontainer.items.getAt(0);
-        this.draw = this.viewcontainer.items.getAt(1);
+        this.view = vc.items.getAt(0);
+        this.draw = vc.items.getAt(1);
         this.slider = this.items.getAt(1);
 
+        // Set up mouse listeners
         vc.addListener('mousewheel', this.mousewheellistener, this, {element: 'el'});
         vc.addListener('mousedown', this.mousedownlistener, this, {element: 'el'});
         vc.addListener('mouseup', this.stopdrag, this, {element: 'el'});
@@ -199,6 +206,7 @@ Ext.define('Funcman.Graph', {
         return 1.0 + (this.slider.getValue() / 10.0);
     },
 
+    // Reads a node's left/top fields, multiplies by zoom and writes back x/y fields
     computePosition: function(record) {
         this.computePositionByZoom(record, this.getZoom());
     },
@@ -214,10 +222,6 @@ Ext.define('Funcman.Graph', {
         this.computePosition(node);
         this.view.store.add(node);
         this.connecticons(this);
-        
-        /*for(var i in node.data.children) {
-            alert(i.get('name'));
-        }*/
     },
     
     removeNode: function(node) {
