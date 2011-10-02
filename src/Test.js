@@ -5,8 +5,6 @@ Copyright (c) 2011 OpenNode Interactive Charts team
 GNU General Public License Usage
 This file may be used under the terms of the GNU General Public License version 3.0 as published by the Free Software Foundation and appearing in the file LICENSE included in the packaging of this file.  Please review the following information to ensure the GNU General Public License version 3.0 requirements will be met: http://www.gnu.org/copyleft/gpl.html.
 
-If you are unsure which license is appropriate for your use, please contact the sales department at http://www.sencha.com/contact.
-
 */
 
 Ext.require(['Ext.button.*']);
@@ -14,29 +12,45 @@ Ext.require(['Funcman.Graph', 'Funcman.GraphNode']);
 
 Ext.onReady(function () {
 
-    var left1 = 192;
-    var left2 = 0;
+    var mid = 0, uid = 0;
+    var vm0 = null;
 
     function addMachine() {
         var vm = Ext.create('GraphNode', {
-            name : 'Machine',
+            id: 'm'+mid,
+            name : 'Machine ' + mid,
             image: 'images/computer.png',
             top: 64,
-            left: left1,
+            left: mid * 64,
         });
+
+        if (vm0 === null) vm0 = vm;
+        
+        var children = oms.children();
+        children.add({id: 'm'+mid});
+        children.sync();
+        
         graph.addNode(vm);
-        left1 += 64;
+        mid++;
     }
 
     function addUser() {
         var user = Ext.create('GraphNode', {
+            id: 'u'+uid,
             name : 'User',
             image: 'images/user.png',
             top: 128,
-            left: left2,
+            left: uid * 64,
         });
+
+        if (vm0) {
+            var children = vm0.children();
+            children.add({id: 'u'+uid});
+            children.sync();
+        }
+
         graph.addNode(user);
-        left2 += 64;
+        uid++;
     }
 
     var body = Ext.getBody();
@@ -64,8 +78,8 @@ Ext.onReady(function () {
     var graph = Ext.create('Graph', {
         renderTo: body
     });
-    graph.setHeight(250);
-    graph.setWidth(250);
+    graph.setHeight(300);
+    graph.setWidth(300);
 /*
     Ext.Ajax.request({
         //url: 'http://kodu.ut.ee/~anthrax/opennode/test.json',
@@ -98,27 +112,6 @@ Ext.onReady(function () {
     });
 */
     // Add icons
-    var vm1 = Ext.create('GraphNode', {
-        id: '1',
-        name : 'Machine',
-        image: 'images/computer.png',
-        top: 64,
-        left: 0
-    });
-    var vm2 = Ext.create('GraphNode', {
-        id: '2',
-        name : 'Machine',
-        image: 'images/computer.png',
-        top: 64,
-        left: 64
-    });
-    var vm3 = Ext.create('GraphNode', {
-        id: '3',
-        name : 'Machine',
-        image: 'images/computer.png',
-        top: 64,
-        left: 128
-    });
     var oms = Ext.create('GraphNode', {
         id: '0',
         name : 'OMS',
@@ -126,14 +119,8 @@ Ext.onReady(function () {
         left: 64
     });
 
-    var children = oms.children();
-    children.add({id: '1'});
-    children.add({id: '2'});
-    children.add({id: '3'});
-    children.sync();
+    addMachine();
+    addUser();
 
-    graph.addNode(vm1);
-    graph.addNode(vm2);
-    graph.addNode(vm3);
     graph.addNode(oms);
 });
