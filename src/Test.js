@@ -59,7 +59,7 @@ Ext.onReady(function () {
         });
 
         var children = node.children();
-        children.add({childid: newid});
+        children.add({childid: newid, id: newid});
         children.sync();
         
         graph.addNode(vm);
@@ -80,7 +80,7 @@ Ext.onReady(function () {
         });
 
         var children = node.children();
-        children.add({childid: newid});
+        children.add({childid: newid, id: newid});
         children.sync();
         
         graph.addNode(vm);
