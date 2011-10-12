@@ -41,8 +41,6 @@ Ext.define('Funcman.Graph', {
     layout: 'fit',
     iconSize: 64,
 
-    selectionChanged: null,
-
     items: [
       Ext.create('Ext.container.Container', {
       cls: 'graphviewcontainer',
@@ -172,34 +170,37 @@ Ext.define('Funcman.Graph', {
     },
 
     mousedownlistener: function(e, t, opts) {
-        if (!this._isDragging) {
-            this.addCls('movecursor');
-            this.addListener('mousemove', this.mousemovelistener, this, {element: 'el'});
-            var containerpos = this.viewcontainer.getPosition();
-            var currentscroll = this.viewcontainer.getEl().getScroll();
-            this._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
-            this._isDragging = true;
-            e.stopEvent();
-        }
+        if (this._isDragging)
+            return;
+
+        this.addCls('movecursor');
+        this.addListener('mousemove', this.mousemovelistener, this, {element: 'el'});
+        var containerpos = this.viewcontainer.getPosition();
+        var currentscroll = this.viewcontainer.getEl().getScroll();
+        this._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
+        this._isDragging = true;
+        e.stopEvent();
     },
 
     stopdrag: function() {
-        if (this._isDragging) {
-            this.removeCls('movecursor');
-            this.removeListener('mousemove', this.mousemovelistener);
-            this._isDragging = false;
-        }
+        if (!this._isDragging)
+            return;
+
+        this.removeCls('movecursor');
+        this.removeListener('mousemove', this.mousemovelistener);
+        this._isDragging = false;
     },
 
     mousemovelistener: function(e, t, opts) {
-        if (this._isDragging) {
-            var el = this.viewcontainer.getEl();
-            var currentpos = e.getXY();
-            var containerpos = this.viewcontainer.getPosition();
-            el.scrollTo("right", (containerpos[0] + this._pananchor[0] - currentpos[0]));
-            el.scrollTo("top", (containerpos[1] + this._pananchor[1] - currentpos[1]));
-            e.stopEvent();
-        }
+        if (!this._isDragging)
+            return;
+
+        var el = this.viewcontainer.getEl();
+        var currentpos = e.getXY();
+        var containerpos = this.viewcontainer.getPosition();
+        el.scrollTo("right", (containerpos[0] + this._pananchor[0] - currentpos[0]));
+        el.scrollTo("top", (containerpos[1] + this._pananchor[1] - currentpos[1]));
+        e.stopEvent();
     },
 
     initComponent: function() {
@@ -255,10 +256,13 @@ Ext.define('Funcman.Graph', {
     },
     
     removeNode: function(node) {
+        var store = this.view.store;
+        
         node.children().each( function(child) {
             var childrecord = store.findRecord('id', child.get('childid'));
-            this.view.store.remove(childrecord);
+            store.remove(childrecord);
         });
+
         this.view.store.remove(node);
         this.connecticons(this);
     },
