@@ -24,8 +24,8 @@ Ext.onReady(function () {
         renderTo: body,
     });
 
-    graph.setHeight(300);
-    graph.setWidth(300);
+    graph.setHeight(600);
+    graph.setWidth(900);
 
     button.setHandler(graph.addDatacenter, graph);
     
