@@ -84,8 +84,11 @@ pre.code{
     margin-bottom: 4px;
 }
 /*buttons*/
-.x-btn-default-large .add {
+.x-btn-default-medium .add {
     background-image: url(images/list-add.png) !important;
+}
+.x-btn-default-medium .remove {
+    background-image: url(images/list-remove.png) !important;
 }
 div.x-item-selected {
   background: #ccc;

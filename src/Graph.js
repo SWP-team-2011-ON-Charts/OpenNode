@@ -13,8 +13,9 @@
 Ext.define('Funcman.GraphRef', {
     extend: "Ext.data.Model",
     alias: 'GraphRef',
-    fields: ['id'],
-    belongsTo: 'Funcman.GraphNode'
+    fields: ['childid'],
+    belongsTo: 'Funcman.GraphNode',
+    idgen: 'sequential'
 });
 
 Ext.define('Funcman.GraphNode', {
@@ -28,7 +29,7 @@ Ext.define('Funcman.GraphNode', {
     ],
     proxy: {
         type: 'memory',
-        id  : 'graph-nodes'
+        id  : 'graph-nodes',
     },
     hasMany  : {model: 'Funcman.GraphRef', name: 'children'}
 });
@@ -61,7 +62,21 @@ Ext.define('Funcman.Graph', {
                 '</div>',
             '</tpl>'
         ],
-        store: Ext.create('Ext.data.Store', { model: 'Funcman.GraphNode' }),
+        store: Ext.create('Ext.data.Store', {
+            model: 'Funcman.GraphNode',
+            listeners: {
+              add: {
+                fn: function (store, record) {
+                  //alert('add');
+                }
+              },
+              remove: {
+                fn: function (store, record) {
+                  //alert('remove');
+                }
+              }
+            }
+        }),
         overItemCls: 'x-view-over',
         itemSelector: 'div.thumb-wrap',
         cls: 'img-chooser-view showscrollbars'
@@ -110,9 +125,10 @@ Ext.define('Funcman.Graph', {
 
         // Connect nodes with their child nodes
         // Also find graph size
-        parent.view.store.each( function(record) {
+        var store = parent.view.store;
+        store.each( function(record) {
             record.children().each( function(child) {
-                var childrecord = parent.view.store.findRecord('id', child.get('id'));
+                var childrecord = store.findRecord('id', child.get('childid'));
                 
                 if (childrecord) {
                     // Create a path from the center of one icon to the center of the other
@@ -239,6 +255,11 @@ Ext.define('Funcman.Graph', {
     },
     
     removeNode: function(node) {
-        this.store.remove(node);
+        node.children().each( function(child) {
+            var childrecord = store.findRecord('id', child.get('childid'));
+            this.view.store.remove(childrecord);
+        });
+        this.view.store.remove(node);
+        this.connecticons(this);
     },
 });

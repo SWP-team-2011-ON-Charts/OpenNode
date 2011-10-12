@@ -38,7 +38,7 @@ Ext.onReady(function () {
         });
 
         var children = node.children();
-        children.add({id: newid});
+        children.add({childid: newid, id: newid});
         children.sync();
         
         graph.addNode(pm);
@@ -59,7 +59,7 @@ Ext.onReady(function () {
         });
 
         var children = node.children();
-        children.add({id: newid});
+        children.add({childid: newid});
         children.sync();
         
         graph.addNode(vm);
@@ -80,18 +80,28 @@ Ext.onReady(function () {
         });
 
         var children = node.children();
-        children.add({id: newid});
+        children.add({childid: newid});
         children.sync();
         
         graph.addNode(vm);
         uid++;
     }
 
+    function remove(button, e) {
+        var node = button.node;
+
+        var children = node.children();
+        children.removeAll();
+        children.sync();
+        
+        graph.removeNode(node);
+    }
+
     var body = Ext.getBody();
 
     Ext.widget('button', {
         text : 'Register datacenter',
-        scale: 'large',
+        scale: 'medium',
         iconCls: 'add',
         iconAlign: 'left',
         renderTo: body,
@@ -103,6 +113,9 @@ Ext.onReady(function () {
         renderTo: body,
         listeners: {
         selectionChange: function(dv, nodes) {
+            if (nodes.length == 0)
+                return;
+        
             var node = nodes[0];
             if (this.infownd)
                 this.infownd.destroy();
@@ -113,14 +126,17 @@ Ext.onReady(function () {
             var nodetype = id.substring(0,2);
             if (nodetype == "dc") {
                 addtext = "Register Machine";
+                remtext = "Remove Datacenter";
                 handler = addMachine;
             }
             else if (nodetype == "pm") {
                 addtext = "Add VM";
+                remtext = "Remove Machine";
                 handler = addVM;
             }
             else if (nodetype == "vm") {
                 addtext = "Add User";
+                remtext = "Remove VM";
                 handler = addUser;
             }
             else {
@@ -130,11 +146,14 @@ Ext.onReady(function () {
             
             this.infownd = Ext.create('Ext.Window', {
                 title: name,
-                width: 100,
-                height: 100,
+                width: 80,
+                height: 120,
                 x: 100,
                 y: 200,
-                constrain: true,
+                collapsible: true,
+                //preventHeader: true,
+                //renderTo: this.getEl(),
+                //constrain: true,
                 layout: 'fit',
                 items: [{
                     xtype: 'label',
@@ -142,10 +161,18 @@ Ext.onReady(function () {
                 }, {
                     xtype: 'button',
                     text : addtext,
-                    scale: 'large',
+                    scale: 'medium',
                     iconCls: 'add',
                     iconAlign: 'left',
                     handler: handler,
+                    node: node
+                }, {
+                    xtype: 'button',
+                    text : remtext,
+                    scale: 'medium',
+                    iconCls: 'remove',
+                    iconAlign: 'left',
+                    handler: remove,
                     node: node
                 }]
             });
