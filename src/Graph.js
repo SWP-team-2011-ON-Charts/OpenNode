@@ -256,14 +256,15 @@ Ext.define('Funcman.Graph', {
     },
     
     removeNode: function(node) {
-        var store = this.view.store;
+        var me = this;
+        var store = me.view.store;
         
         node.children().each( function(child) {
             var childrecord = store.findRecord('id', child.get('childid'));
-            store.remove(childrecord);
+            me.removeNode(childrecord);
         });
 
-        this.view.store.remove(node);
-        this.connecticons(this);
+        me.view.store.remove(node);
+        me.connecticons(this);
     },
 });
