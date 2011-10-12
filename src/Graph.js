@@ -40,6 +40,8 @@ Ext.define('Funcman.Graph', {
     layout: 'fit',
     iconSize: 64,
 
+    selectionChanged: null,
+
     items: [
       Ext.create('Ext.container.Container', {
       cls: 'graphviewcontainer',
@@ -62,30 +64,7 @@ Ext.define('Funcman.Graph', {
         store: Ext.create('Ext.data.Store', { model: 'Funcman.GraphNode' }),
         overItemCls: 'x-view-over',
         itemSelector: 'div.thumb-wrap',
-        cls: 'img-chooser-view showscrollbars',
-        
-        listeners: {
-            selectionchange: function(dv, nodes ) {
-                var node = nodes[0];
-                if (this.infownd)
-                    this.infownd.destroy();
-
-                this.infownd = Ext.create('Ext.Window', {
-                    title: node.get('name'),
-                    width: 100,
-                    height: 100,
-                    x: 100,
-                    y: 200,
-                    constrain: true,
-                    layout: 'fit',
-                    items: [{
-                        xtype: 'label',
-                        text: node.get('info')
-                     }]
-                });
-                this.infownd.show();
-            },
-        },
+        cls: 'img-chooser-view showscrollbars'
         }),
         Ext.create('Ext.draw.Component', {
             viewBox: false,
@@ -112,6 +91,7 @@ Ext.define('Funcman.Graph', {
                 });
                 parent.view.store.sync();
 
+                // Redraw lines
                 parent.connecticons(parent);
             }
         }
@@ -133,20 +113,22 @@ Ext.define('Funcman.Graph', {
         parent.view.store.each( function(record) {
             record.children().each( function(child) {
                 var childrecord = parent.view.store.findRecord('id', child.get('id'));
-
-                // Create a path from the center of one icon to the center of the other
-                var path =
-                  'M ' + (record.get('x') + halfIcon) + ' ' + (record.get('y') + halfIcon) + ' ' +
-                  'L ' + (childrecord.get('x') + halfIcon) + ' ' + (childrecord.get('y') + halfIcon)+ ' z';
-                var sprite = {
-                    type: 'path',
-                    path: path,
-                    stroke: "#0CC",
-                    "stroke-width": '3',
-                    opacity: 0.5,
-                    group: 'lines'
-                };
-                draw.surface.add(sprite);
+                
+                if (childrecord) {
+                    // Create a path from the center of one icon to the center of the other
+                    var path =
+                      'M ' + (record.get('x') + halfIcon) + ' ' + (record.get('y') + halfIcon) + ' ' +
+                      'L ' + (childrecord.get('x') + halfIcon) + ' ' + (childrecord.get('y') + halfIcon)+ ' z';
+                    var sprite = {
+                        type: 'path',
+                        path: path,
+                        stroke: "#0CC",
+                        "stroke-width": '3',
+                        opacity: 0.5,
+                        group: 'lines'
+                    };
+                    draw.surface.add(sprite);
+                }
             });
             
             var x = record.get('x');
@@ -218,6 +200,20 @@ Ext.define('Funcman.Graph', {
         vc.addListener('mousedown', this.mousedownlistener, this, {element: 'el'});
         vc.addListener('mouseup', this.stopdrag, this, {element: 'el'});
         //vc.addListener('mouseout', this.stopdrag, this, {element: 'el'});
+        
+        var me = this;
+
+        me.addEvents(
+            /**
+             * @event selectionchange
+             * Fires when the selected nodes change. Relayed event from the underlying selection model.
+             * @param {Ext.view.View} this
+             * @param {Array} selections Array of the selected nodes
+             */
+            'selectionchange'
+        );
+        
+        me.relayEvents(me.view, ['selectionchange']);
     },
 
     getZoom: function() {
