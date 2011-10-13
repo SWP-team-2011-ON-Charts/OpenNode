@@ -39,7 +39,7 @@ Ext.define('Funcman.Graph', {
     alias: 'Graph',
     cls: 'graphcontainer',
     layout: 'fit',
-    iconSize: 64,
+    iconSize: 40,
 
     items: [
       Ext.create('Ext.container.Container', {
@@ -87,8 +87,8 @@ Ext.define('Funcman.Graph', {
             viewBox: false,
             autoSize: true,
         }),
+
         
- 
       ],
       
       
@@ -141,8 +141,8 @@ Ext.define('Funcman.Graph', {
                 if (childrecord) {
                     // Create a path from the center of one icon to the center of the other
                     var path =
-                      'M ' + (record.get('x') + halfIcon) + ' ' + (record.get('y') + halfIcon) + ' ' +
-                      'L ' + (childrecord.get('x') + halfIcon) + ' ' + (childrecord.get('y') + halfIcon)+ ' z';
+                      'M ' + (record.get('x') + record.get('icon_size')/2) + ' ' + (record.get('y') + record.get('icon_size')/2) + ' ' +
+                      'L ' + (childrecord.get('x') + record.get('icon_size')/2) + ' ' + (childrecord.get('y') + record.get('icon_size')/2)+ ' z';
                     var sprite = {
                         type: 'path',
                         path: path,
@@ -157,7 +157,6 @@ Ext.define('Funcman.Graph', {
             
             var x = record.get('x');
             var y = record.get('y');
-            //var icon_size = record.get('icon_size');
             if (maxx < x) maxx = x;
             if (maxy < y) maxy = y;
         });
@@ -257,10 +256,13 @@ Ext.define('Funcman.Graph', {
     computePositionByZoom: function(record, zoom) {
         var left = record.get('left');
         var top = record.get('top');
+
+        
+        var icon_size = this.iconSize;
         record.set('x', (left == undefined) ? 0 : parseInt(left * zoom));
         record.set('y', (top == undefined) ? 0 : parseInt(top * zoom));
         
-        record.set('icon_size', parseInt(40 * zoom));
+        record.set('icon_size', (icon_size == undefined) ? 0 : parseInt(icon_size * zoom));
         //record.set('y_size', (top == undefined) ? 0 : parseInt(iconSize * zoom));
     },
 
