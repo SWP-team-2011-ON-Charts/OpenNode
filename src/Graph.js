@@ -88,41 +88,7 @@ Ext.define('Funcman.Graph', {
             autoSize: true,
         }),
         
-        Ext.create('Ext.view.View', {
-            
-            tpl: 
-            	[
-                '<tpl for=".">',
-                    //'<div class="thumb-wrap">',
-                    '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                        '<div class="thumb">',
-                        (!Ext.isIE6? '<img src="{image}"/>' : 
-                        '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
-                        '</div>',
-                    '</div>',
-                '</tpl>'
-            ],
-
-            store: Ext.create('Ext.data.Store', {
-                model: 'Funcman.GraphNode',
-                listeners: {
-                  add: {
-                    fn: function (store, record) {
-                      //alert('add');
-                    }
-                  },
-                  remove: {
-                    fn: function (store, record) {
-                      //alert('remove');
-                    }
-                  }
-                }
-            }),
-            
-            overItemCls: 'x-view-over',
-            itemSelector: 'div.thumb-wrap',
-            cls: 'img-chooser-view showscrollbars'
-            }),
+ 
       ],
       
       
