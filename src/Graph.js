@@ -54,11 +54,11 @@ Ext.define('Funcman.Graph', {
             '<tpl for=".">',
                 //'<div class="thumb-wrap">',
                 '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                    '<div class="thumb">',
+                    '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
                     (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
                     '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
                     '</div>',
-                    '<span>{name}</span>',
+                    '<span class = "name">{name}</span>',
                 '</div>',
             '</tpl>'
         ],
@@ -95,7 +95,7 @@ Ext.define('Funcman.Graph', {
     }),
     Ext.create('Ext.slider.Single', {
         height: 60,
-        value: 0,
+        value: 5,
         increment: 1,
         minValue: 0,
         maxValue: 15,
@@ -115,7 +115,18 @@ Ext.define('Funcman.Graph', {
                 // Redraw lines
                 parent.connecticons(parent);
                 
-
+                if (zoom < 1.4){
+                	var text = document.getElementsByClassName('name');
+                	for (var i=0;i<text.length;i++) {
+                		text[i].innerHTML = null;
+            	  }  
+                }
+                else{
+                	var text = document.getElementsByClassName('name');
+                	for (var i=0;i<text.length;i++) {
+                		text[i].innerHTML = "<span class='name'>"+parent.parent.name+"</span>";                		  
+                	} 
+                }
             }
         }
     })

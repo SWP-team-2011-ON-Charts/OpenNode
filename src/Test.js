@@ -29,35 +29,5 @@ Ext.onReady(function () {
 
     button.setHandler(graph.addDatacenter, graph);
     
-/*
-    Ext.Ajax.request({
-        //url: 'http://kodu.ut.ee/~anthrax/opennode/test.json',
-        url: 'http://localhost:8080/computes',
-        disableCaching: false,
-        success: function(response) {
-          var o = Ext.JSON.decode(response.responseText, true);
-          alert('success');
-        },
-        failure: function(response) {
-          alert('failure');
-        }
-    });
-*/
-/*
-    var store = Ext.create('Ext.data.Store', {
-        autoLoad: true,
-        fields: ['id', 'name'],
-        proxy: {
-            type: 'ajax',
-            url: 'http://localhost:8080/computes',
-            reader: {
-                type: 'json',
-                root: ''
-            }
-        }
-    });
-    store.load(function(records, operation, success) {
-        alert('blah');
-    });
-*/
+
 });
