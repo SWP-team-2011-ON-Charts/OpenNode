@@ -48,18 +48,21 @@ Ext.define('Funcman.Graph', {
 
       items: [
         Ext.create('Ext.view.View', {
-        tpl: [
+        
+        tpl: 
+        	[
             '<tpl for=".">',
                 //'<div class="thumb-wrap">',
                 '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
                     '<div class="thumb">',
-                    (!Ext.isIE6? '<img src="{image}" />' : 
+                    (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
                     '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
                     '</div>',
                     '<span>{name}</span>',
                 '</div>',
             '</tpl>'
         ],
+
         store: Ext.create('Ext.data.Store', {
             model: 'Funcman.GraphNode',
             listeners: {
@@ -75,6 +78,7 @@ Ext.define('Funcman.Graph', {
               }
             }
         }),
+        
         overItemCls: 'x-view-over',
         itemSelector: 'div.thumb-wrap',
         cls: 'img-chooser-view showscrollbars'
@@ -82,8 +86,46 @@ Ext.define('Funcman.Graph', {
         Ext.create('Ext.draw.Component', {
             viewBox: false,
             autoSize: true,
-        })
+        }),
+        
+        Ext.create('Ext.view.View', {
+            
+            tpl: 
+            	[
+                '<tpl for=".">',
+                    //'<div class="thumb-wrap">',
+                    '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
+                        '<div class="thumb">',
+                        (!Ext.isIE6? '<img src="{image}"/>' : 
+                        '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+                        '</div>',
+                    '</div>',
+                '</tpl>'
+            ],
+
+            store: Ext.create('Ext.data.Store', {
+                model: 'Funcman.GraphNode',
+                listeners: {
+                  add: {
+                    fn: function (store, record) {
+                      //alert('add');
+                    }
+                  },
+                  remove: {
+                    fn: function (store, record) {
+                      //alert('remove');
+                    }
+                  }
+                }
+            }),
+            
+            overItemCls: 'x-view-over',
+            itemSelector: 'div.thumb-wrap',
+            cls: 'img-chooser-view showscrollbars'
+            }),
       ],
+      
+      
     }),
     Ext.create('Ext.slider.Single', {
         height: 60,
@@ -106,6 +148,8 @@ Ext.define('Funcman.Graph', {
 
                 // Redraw lines
                 parent.connecticons(parent);
+                
+
             }
         }
     })
@@ -147,6 +191,7 @@ Ext.define('Funcman.Graph', {
             
             var x = record.get('x');
             var y = record.get('y');
+            //var icon_size = record.get('icon_size');
             if (maxx < x) maxx = x;
             if (maxy < y) maxy = y;
         });
@@ -212,6 +257,7 @@ Ext.define('Funcman.Graph', {
         this.draw = vc.items.getAt(1);
         this.slider = this.items.getAt(1);
 
+
         // Set up mouse listeners
         vc.addListener('mousewheel', this.mousewheellistener, this, {element: 'el'});
         vc.addListener('mousedown', this.mousedownlistener, this, {element: 'el'});
@@ -247,6 +293,9 @@ Ext.define('Funcman.Graph', {
         var top = record.get('top');
         record.set('x', (left == undefined) ? 0 : parseInt(left * zoom));
         record.set('y', (top == undefined) ? 0 : parseInt(top * zoom));
+        
+        record.set('icon_size', parseInt(40 * zoom));
+        //record.set('y_size', (top == undefined) ? 0 : parseInt(iconSize * zoom));
     },
 
     addNode: function(node) {

@@ -11,6 +11,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             image: 'images/data-center.png',
             info: 'Data center status: running',
             left: 64 + this.dcid * 192,
+
         });
         
         this.addNode(dc);
