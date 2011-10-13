@@ -278,7 +278,10 @@ Ext.define('Funcman.Graph', {
         
         node.children().each( function(child) {
             var childrecord = store.findRecord('id', child.get('childid'));
-            me.removeNode(childrecord);
+            if (childrecord != null){
+            	me.removeNode(childrecord);
+            }
+            
         });
 
         me.view.store.remove(node);

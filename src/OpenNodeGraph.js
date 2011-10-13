@@ -62,9 +62,9 @@ Ext.define('Funcman.OpenNodeGraph', {
 
     addUser: function(button, e) {
         var node = button.node;
-        var newid = 'u'+this.uid+node.get('id');
+        var newid = 'uu'+this.uid+node.get('id');
 
-        var vm = Ext.create('GraphNode', {
+        var uu = Ext.create('GraphNode', {
             id: newid,
             name : 'User ' + this.uid,
             image: 'images/user.png',
@@ -77,7 +77,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         children.add({childid: newid, id: newid});
         children.sync();
         
-        this.addNode(vm);
+        this.addNode(uu);
         this.uid++;
     },
 
@@ -116,46 +116,84 @@ Ext.define('Funcman.OpenNodeGraph', {
                 remtext = "Remove VM";
                 handler = this.addUser;
             }
+            else if (nodetype == "uu") {
+                remtext = "Remove User";
+                handler = this.addUser;
+            }
             else {
                 // Unknown node type
                 return;
             }
             
-            this.infownd = Ext.create('Ext.Window', {
-                title: name,
-                width: 80,
-                height: 120,
-                x: 100,
-                y: 200,
-                collapsible: true,
-                //preventHeader: true,
-                //renderTo: this.getEl(),
-                //constrain: true,
-                layout: 'fit',
-                items: [{
-                    xtype: 'label',
-                    text: node.get('info')
-                }, {
-                    xtype: 'button',
-                    text : addtext,
-                    scale: 'medium',
-                    iconCls: 'add',
-                    iconAlign: 'left',
-                    node: node
-                }, {
-                    xtype: 'button',
-                    text : remtext,
-                    scale: 'medium',
-                    iconCls: 'remove',
-                    iconAlign: 'left',
-                    node: node
-                }]
-            });
             
-            this.infownd.items.getAt(1).setHandler(handler, this);
-            this.infownd.items.getAt(2).setHandler(this.remove, this);
+            if (nodetype == "uu") {
+                this.infownd = Ext.create('Ext.Window', {
+                    title: name,
+                    width: 80,
+                    height: 120,
+                    x: 100,
+                    y: 200,
+                    collapsible: true,
+                    layout: 'fit',
+                    items: [{
+                        xtype: 'label',
+                        text: node.get('info')
+                    }, {
+                        xtype: 'button',
+                        text : remtext,
+                        scale: 'medium',
+                        iconCls: 'remove',
+                        iconAlign: 'left',
+                        node: node
+                    }]
+                });
+                
+                this.infownd.items.getAt(1).setHandler(this.remove, this);
+                
+                this.infownd.show();
+            }
             
-            this.infownd.show();
+                
+            else {
+            	this.infownd = Ext.create('Ext.Window', {
+                    title: name,
+                    width: 80,
+                    height: 120,
+                    x: 100,
+                    y: 200,
+                    collapsible: true,
+                    //preventHeader: true,
+                    //renderTo: this.getEl(),
+                    //constrain: true,
+                    layout: 'fit',
+                    items: [{
+                        xtype: 'label',
+                        text: node.get('info')
+                    }, {
+                        xtype: 'button',
+                        text : addtext,
+                        scale: 'medium',
+                        iconCls: 'add',
+                        iconAlign: 'left',
+                        node: node
+                    }, {
+                        xtype: 'button',
+                        text : remtext,
+                        scale: 'medium',
+                        iconCls: 'remove',
+                        iconAlign: 'left',
+                        node: node
+                    }]
+                });
+            	
+                this.infownd.items.getAt(1).setHandler(handler, this);
+                this.infownd.items.getAt(2).setHandler(this.remove, this);
+                
+                this.infownd.show();
+            }
+            
+            
+
         }
     }
 });
