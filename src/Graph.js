@@ -1,4 +1,14 @@
 /*
+
+Copyright (c) 2011 OpenNode Interactive Charts team
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as published by the Free Software Foundation and appearing in the file LICENSE included in the packaging of this file.  Please review the following information to ensure the GNU General Public License version 3.0 requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+*/
+
+
+/*
 * Layout of the component:
 * graph
 *   viewcontainer
@@ -23,9 +33,11 @@ Ext.define('Funcman.GraphNode', {
     alias: 'GraphNode',
     fields: [
       {name: 'id', type: 'string'},
+      {name: 'nodeType', type: 'string'},
       {name: 'image', type: 'string'},
       {name: 'name', type: 'string'},
-      {name: 'info', type: 'string'}
+      {name: 'info', type: 'string'},
+      {name: 'infoWindow', type: 'object'}
     ],
     proxy: {
         type: 'memory',
@@ -121,11 +133,24 @@ Ext.define('Funcman.Graph', {
                 		text[i].innerHTML = null;
             	  }  
                 }
+                
+                else if (zoom > 2.2) {
+                	/*var text = document.getElementsByClassName('name');
+                	parent.view.store.each( function(record) {
+                		record.get('infoWindow').hide();
+                		record.get('infoWindow').show();
+                    });*/
+                }
                 else{
-                	var text = document.getElementsByClassName('name');
-                	for (var i=0;i<text.length;i++) {
-                		text[i].innerHTML = "<span class='name'>"+parent.parent.name+"</span>";                		  
-                	} 
+                	/*var text = document.getElementsByClassName('name');
+                	parent.view.store.each( function(record) {
+                		record.get('infoWindow').hide();
+                		record.get('infoWindow').show();
+                    });*/
+                	//var text = document.getElementsByClassName('name');
+                	//for (var i=0;i<text.length;i++) {
+                		//text[i].innerHTML = "<span class='name'>"+parent.parent.name+"</span>";                		  
+                	//} 
                 }
             }
         }
@@ -261,7 +286,7 @@ Ext.define('Funcman.Graph', {
 
     // Reads a node's left/top fields, multiplies by zoom and writes back x/y fields
     computePosition: function(record) {
-        this.computePositionByZoom(record, this.getZoom());
+    	this.computePositionByZoom(record, this.getZoom());
     },
 
     computePositionByZoom: function(record, zoom) {
@@ -273,13 +298,56 @@ Ext.define('Funcman.Graph', {
         record.set('x', (left == undefined) ? 0 : parseInt(left * zoom));
         record.set('y', (top == undefined) ? 0 : parseInt(top * zoom));
         
+        record.get('infoWindow').x = ('x', (left == undefined) ? 0 : parseInt(left * zoom));
+        record.get('infoWindow').y = ('y', (top == undefined) ? 0 : parseInt(top * zoom)) + 230;
+        
         record.set('icon_size', (icon_size == undefined) ? 0 : parseInt(icon_size * zoom));
         //record.set('y_size', (top == undefined) ? 0 : parseInt(iconSize * zoom));
+    },
+    
+    reorderNodes: function() {
+    	var me = this;
+    	var store = this.view.store;
+    	var zoom = this.getZoom();
+    	var dcCount = 0;
+    	var pmCount = 0;
+    	var vmCount = 0;
+    	var uuCount = 0;
+    	
+    	this.view.store.each( function(record) {
+    		var nodetype = record.get('nodeType');
+    		if (nodetype == "dc") {
+                record.set('left', (64 + dcCount * 192));
+                dcCount++;
+            }
+            else if (nodetype == "pm") {
+            	record.set('left', (pmCount * 64));
+                pmCount++;
+            }
+            else if (nodetype == "vm") {
+            	record.set('left', (vmCount * 64));
+                vmCount++;
+            }
+    		
+            else if (nodetype == "uu") {
+            	record.set('left', (uuCount * 64));
+                uuCount++;
+            }
+            else {
+                // Unknown node type
+                return;
+            }
+        });
+    	store.each( function(record) {
+            me.computePositionByZoom(record, zoom);
+        });
     },
 
     addNode: function(node) {
         this.computePosition(node);
         this.view.store.add(node);
+        this.view.store.sort('id', 'ASC');
+        this.reorderNodes();
         this.connecticons(this);
     },
     
@@ -297,5 +365,6 @@ Ext.define('Funcman.Graph', {
 
         me.view.store.remove(node);
         me.connecticons(this);
+        me.reorderNodes();
     },
 });
