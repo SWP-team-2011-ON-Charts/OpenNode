@@ -62,30 +62,47 @@ Ext.define('Funcman.Graph', {
 
             // tpl itself is set later
             tpl_text: new Ext.XTemplate(
-                    '<tpl for=".">',
-                        //'<div class="thumb-wrap">',
-                        '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                            '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
-                            (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
-                            '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
-                            '</div>',
-                            '<span class = "name">{name}</span>',
+                '<tpl for=".">',
+                    //'<div class="thumb-wrap">',
+                    '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
+                        '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
+                        (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
+                        '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
                         '</div>',
-                    '</tpl>'
+                        '<span class = "name">{name}</span>',
+                    '</div>',
+                '</tpl>'
             ),
             tpl_notext: new Ext.XTemplate(
-                    '<tpl for=".">',
-                        //'<div class="thumb-wrap">',
-                        '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                            '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
-                            (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
-                            '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
-                            '</div>',
+                '<tpl for=".">',
+                    //'<div class="thumb-wrap">',
+                    '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
+                        '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
+                        (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
+                        '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
                         '</div>',
-                    '</tpl>'
+                    '</div>',
+                '</tpl>'
             ),
 
             store: Ext.create('Ext.data.Store', { model: 'Funcman.GraphNode' }),
+            listeners: {
+                selectionChange: function(dv, nodes) {
+                    var me = this.up().up();
+                    if (nodes.length == 0) {
+                        me.selected_node = null;
+                        return;
+                    }
+
+                    var node = nodes[0];
+
+                    var prev_node = me.selected_node;
+                    me.selected_node = node;
+
+                    if (prev_node) me.computePosition(prev_node);
+                    if (me.selected_node) me.computePosition(me.selected_node);
+                }
+            },
             
             overItemCls: 'x-view-over',
             itemSelector: 'div.thumb-wrap',
@@ -170,12 +187,8 @@ Ext.define('Funcman.Graph', {
             d.redraw();
         });
 
-        maxx += parent.iconSize;
-        maxy += parent.iconSize;
-
-        // Set drawing area
-        var el = parent.viewcontainer.getEl().dom;
-        draw.setSize(maxx, maxy);
+        // Set line drawing area
+        draw.setSize(maxx + parent.iconSize, maxy + parent.iconSize);
     },
 
     // Mouse wheel controls the zoom slider
@@ -266,16 +279,22 @@ Ext.define('Funcman.Graph', {
         left = (left == undefined) ? 0 : parseInt(left * zoom);
         top = (top == undefined) ? 0 : parseInt(top * zoom);
 
-        record.set('x', left);
-        record.set('y', top);
-        if (zoom > 2) {
+        if (record.infowindow)
+        {
+            record.set('x', left);
+            record.set('y', top);
             record.infowindow.setPosition(left, top + icon_size);
-            record.infowindow.show();
+            if (zoom > 2) {
+                record.infowindow.show();
+            }
+            else {
+                if (record === this.selected_node) {
+                    record.infowindow.show();
+                } else {
+                    record.infowindow.hide();
+                }
+            }
         }
-        else {
-            record.infowindow.hide();
-        }
-        
         record.set('icon_size', icon_size);
         //record.set('y_size', (top == undefined) ? 0 : parseInt(iconSize * zoom));
     },
