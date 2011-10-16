@@ -146,6 +146,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         
         this.addNode(dc);
         this.dcid++;
+        return dc;
     },
 
     addMachine: function(button) {
@@ -166,7 +167,7 @@ Ext.define('Funcman.OpenNodeGraph', {
 
         var children = node.children();
         children.add({childid: newid, id: newid});
-        children.sync();        
+        children.sync();
         this.addNode(pm);
         this.pmid++;
     },
@@ -223,7 +224,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         this.removeNode(button.node);
     },
 
-    addMachineFromServer: function(name) {
+    addMachineFromServer: function(name, dc) {
         var newid = 'pm'+this.pmid;
 
         var pm = Ext.create('GraphNode', {
@@ -238,27 +239,34 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
         this.attachInfoWindow(pm);
 
+        var children = dc.children();
+        children.add({childid: newid, id: newid});
+        children.sync();
+
         this.addNode(pm);
         this.pmid++;
     },
     
-    syncWithServer: function() {
+    syncWithServer: function(server_name) {
         var me = this;
         me.view.setLoading(true);
 
         Ext.Ajax.request({
             cors: true,
-            url: 'http://anthrax11.homeip.net:8080/computes/',
+            url: server_name + '/computes/',
             success: function(response, opts, x) {
-              var o = Ext.JSON.decode(response.responseText, true);
-              for(var i in o) {
-                me.addMachineFromServer(o[i][i]);
-              }
-              me.view.setLoading(false);
+                var dc = me.addDatacenter();
+            
+                var o = Ext.JSON.decode(response.responseText, true);
+                for(var i in o) {
+                    me.addMachineFromServer(o[i][i], dc);
+                }
+                me.server_name = server_name;
+                me.view.setLoading(false);
             },
             failure: function(response, opts) {
-              alert('Could not connect to management server '+opts.url);
-              me.view.setLoading(false);
+                alert('Could not connect to management server '+opts.url);
+                me.view.setLoading(false);
             }
         });
     },
@@ -271,7 +279,7 @@ Ext.define('Funcman.OpenNodeGraph', {
 
         Ext.Ajax.request({
             cors: true,
-            url: 'http://anthrax11.homeip.net:8080/computes/'+node.get('idnum'),
+            url: me.server_name + '/computes/'+node.get('idnum'),
             success: function(response, opts, x) {
                 var o = Ext.JSON.decode(response.responseText, true);
                 var text = '';

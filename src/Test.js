@@ -19,17 +19,6 @@ Ext.onReady(function () {
         cls: 'floater',
     });
 
-    Ext.widget('button', {
-        text : 'Connect to server',
-        scale: 'medium',
-        iconCls: 'add',
-        renderTo: body,
-        cls: 'floater',
-        handler: function() {
-            graph.syncWithServer();
-        }
-    });
-
     var graph = Ext.create('OpenNodeGraph', {
         renderTo: body,
     });
@@ -37,5 +26,27 @@ Ext.onReady(function () {
     graph.setHeight(600);
     graph.setWidth(900);
 
-    button.setHandler(graph.addDatacenter, graph);
+    button.setHandler(function() {
+        var me = this;
+        var register = Ext.create('Ext.Window', {
+            title: 'Register datacenter',
+            height: 100,
+            width: 400,
+            layout: 'vbox',
+            items: [{
+                xtype: 'textfield',
+                fieldLabel: 'server',
+                value: 'http://anthrax11.homeip.net:8080',
+                width: 350,
+            }, {
+                xtype: 'button',
+                text: 'register',
+                handler: function() {
+                    me.syncWithServer(register.items.getAt(0).getValue());
+                    register.hide();
+                }
+            }]
+        });
+        register.show();
+    }, graph);
 });
