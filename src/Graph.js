@@ -32,6 +32,7 @@ Ext.define('Funcman.GraphNode', {
     alias: 'GraphNode',
     fields: [
       {name: 'id', type: 'string'},
+      {name: 'idnum', type: 'int'},
       {name: 'nodeType', type: 'string'},
       {name: 'image', type: 'string'},
       {name: 'name', type: 'string'},

@@ -39,7 +39,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             iw = Ext.create('Ext.Panel', {
                 title: name,
                 width: 100,
-                height: 120,
+                height: 110,
                 renderTo: me.viewcontainer.getEl(),
                 layout: 'fit',
                 floating: true,
@@ -60,10 +60,9 @@ Ext.define('Funcman.OpenNodeGraph', {
             iw.show();
         }
         else {
-            var items = [{
-                    xtype: 'label',
-                    text: node.get('info')
-                }, {
+            var items = null;
+            if (nodetype == "pm") {
+                items = [{
                     xtype: 'button',
                     text : addtext,
                     scale: 'medium',
@@ -75,19 +74,49 @@ Ext.define('Funcman.OpenNodeGraph', {
                     scale: 'medium',
                     iconCls: 'remove',
                     node: node
+                }, {
+                    xtype: 'button',
+                    text : 'Get Info',
+                    scale: 'medium',
+                    iconCls: 'refresh',
+                    node: node
+                }, {
+                    xtype: 'textarea',
+                    multiline: true
                 }];
+            } else {
+                items = [{
+                    xtype: 'button',
+                    text : addtext,
+                    scale: 'medium',
+                    iconCls: 'add',
+                    node: node
+                }, {
+                    xtype: 'button',
+                    text : remtext,
+                    scale: 'medium',
+                    iconCls: 'remove',
+                    node: node
+                }, {
+                    xtype: 'label',
+                    text: node.get('info')
+                }];
+            }
             iw = Ext.create('Ext.Panel', {
                 title: name,
-                width: 100,
-                height: 120,
+                layout: 'vbox',
+                //width: 100,
+                height: 180,
                 renderTo: me.viewcontainer.getEl(),
-                layout: 'fit',
                 floating: true,
                 items: items
             });
             
-            iw.items.getAt(1).setHandler(handler, me);
-            iw.items.getAt(2).setHandler(me.remove, me);
+            iw.items.getAt(0).setHandler(handler, me);
+            iw.items.getAt(1).setHandler(me.remove, me);
+            if (nodetype == "pm")
+                iw.items.getAt(2).setHandler(me.getComputeInfo, me);
+
             iw.show();
         }
         node.infowindow = iw;
@@ -97,6 +126,7 @@ Ext.define('Funcman.OpenNodeGraph', {
     	
         var dc = Ext.create('GraphNode', {
             id: 'dc'+this.dcid,
+            idnum: this.dcid,
             nodeType: 'dc',
             name : 'datacenter ' + this.dcid,
             image: 'images/data-center.png',
@@ -115,6 +145,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         
         var pm = Ext.create('GraphNode', {
             id: newid,
+            idnum: this.pmid,
             nodeType: 'pm',
             name : 'Machine ' + this.pmid,
             image: 'images/network-server.png',
@@ -137,6 +168,7 @@ Ext.define('Funcman.OpenNodeGraph', {
 
         var vm = Ext.create('GraphNode', {
             id: newid,
+            idnum: this.vmid,
             nodeType: 'vm',
             name : 'VM ' + this.vmid,
             image: 'images/computer.png',
@@ -160,6 +192,7 @@ Ext.define('Funcman.OpenNodeGraph', {
 
         var uu = Ext.create('GraphNode', {
             id: newid,
+            idnum: this.uid,
             nodeType: 'uu',
             name : 'User ' + this.uid,
             image: 'images/user.png',
@@ -186,6 +219,7 @@ Ext.define('Funcman.OpenNodeGraph', {
 
         var pm = Ext.create('GraphNode', {
             id: newid,
+            idnum: this.pmid,
             nodeType: 'pm',
             name : name,
             image: 'images/network-server.png',
@@ -220,20 +254,25 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
     },
     
-    getComputeInfo: function(node, iw) {
+    getComputeInfo: function(button, e) {
         var me = this;
+        var node = button.node;
+
+        var infolabel = node.infowindow.items.getAt(3);
 
         Ext.Ajax.request({
             cors: true,
-            url: 'http://anthrax11.homeip.net:8080/computes/'+id,
+            url: 'http://anthrax11.homeip.net:8080/computes/'+node.get('idnum'),
             success: function(response, opts, x) {
-              var o = Ext.JSON.decode(response.responseText, true);
-              for(var i in o) {
-                me.addMachineFromServer(o[i][i]);
-              }
+                var o = Ext.JSON.decode(response.responseText, true);
+                var text = '';
+                for(var i in o) {
+                    text += i+': '+o[i]+'\n';
+                }
+                infolabel.setValue(text);
             },
             failure: function(response, opts) {
-              alert('Could not connect to management server '+opts.url);
+                alert('Could not connect to management server '+opts.url);
             }
         });
     }
