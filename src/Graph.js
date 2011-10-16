@@ -25,7 +25,6 @@ Ext.define('Funcman.GraphRef', {
     alias: 'GraphRef',
     fields: ['childid'],
     belongsTo: 'Funcman.GraphNode',
-    idgen: 'sequential'
 });
 
 Ext.define('Funcman.GraphNode', {
@@ -40,7 +39,6 @@ Ext.define('Funcman.GraphNode', {
     ],
     proxy: {
         type: 'memory',
-        id  : 'graph-nodes',
     },
     infowindow: null,
     hasMany  : {model: 'Funcman.GraphRef', name: 'children'}
@@ -62,50 +60,36 @@ Ext.define('Funcman.Graph', {
       items: [
         Ext.create('Ext.view.View', {
 
-        // tpl itself is set later
-        tpl_text: new Ext.XTemplate(
-                '<tpl for=".">',
-                    //'<div class="thumb-wrap">',
-                    '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                        '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
-                        (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
-                        '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+            // tpl itself is set later
+            tpl_text: new Ext.XTemplate(
+                    '<tpl for=".">',
+                        //'<div class="thumb-wrap">',
+                        '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
+                            '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
+                            (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
+                            '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+                            '</div>',
+                            '<span class = "name">{name}</span>',
                         '</div>',
-                        '<span class = "name">{name}</span>',
-                    '</div>',
-                '</tpl>'
-        ),
-        tpl_notext: new Ext.XTemplate(
-                '<tpl for=".">',
-                    //'<div class="thumb-wrap">',
-                    '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                        '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
-                        (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
-                        '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+                    '</tpl>'
+            ),
+            tpl_notext: new Ext.XTemplate(
+                    '<tpl for=".">',
+                        //'<div class="thumb-wrap">',
+                        '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
+                            '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
+                            (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
+                            '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+                            '</div>',
                         '</div>',
-                    '</div>',
-                '</tpl>'
-        ),
+                    '</tpl>'
+            ),
 
-        store: Ext.create('Ext.data.Store', {
-            model: 'Funcman.GraphNode',
-            listeners: {
-              add: {
-                fn: function (store, record) {
-                  //alert('add');
-                }
-              },
-              remove: {
-                fn: function (store, record) {
-                  //alert('remove');
-                }
-              }
-            }
-        }),
-        
-        overItemCls: 'x-view-over',
-        itemSelector: 'div.thumb-wrap',
-        cls: 'img-chooser-view showscrollbars'
+            store: Ext.create('Ext.data.Store', { model: 'Funcman.GraphNode' }),
+            
+            overItemCls: 'x-view-over',
+            itemSelector: 'div.thumb-wrap',
+            cls: 'img-chooser-view showscrollbars'
         }),
         Ext.create('Ext.draw.Component', {
             viewBox: false,
@@ -346,15 +330,27 @@ Ext.define('Funcman.Graph', {
         var me = this;
         var store = me.view.store;
 
+        me.removeNodeWithChildren(node);
+
+        me.reorderNodes();
+        me.connecticons(me);
+    },
+
+    // This doesn't immediately redraw the whole graph
+    removeNodeWithChildren: function(node) {
+        var me = this;
+        var store = me.view.store;
+
+        if (node.infowindow)
+            node.infowindow.destroy();
+
         node.children().each( function(childref) {
             var child = store.findRecord('id', childref.get('childid'));
             if (child != null){
-            	me.removeNode(child);
+            	me.removeNodeWithChildren(child);
             }
         });
 
         store.remove(node);
-        me.reorderNodes();
-        me.connecticons(me);
     },
 });
