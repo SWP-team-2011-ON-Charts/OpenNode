@@ -89,12 +89,6 @@ Ext.define('Funcman.Graph', {
                 selectionChange: function(dv, nodes) {
                     var me = this.up().up();
                     me.refresh(me);
-                },
-                mousedown: {
-                    fn: function(e) {
-                        e.stopEvent();
-                    },
-                    element: 'el',
                 }
             },
             
@@ -208,18 +202,21 @@ Ext.define('Funcman.Graph', {
         me._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
         me._isDragging = true;
 
-        me.setSelectedNode(null);
-
         e.stopEvent();
     },
 
-    stopdrag: function() {
-        if (!this._isDragging)
+    stopdrag: function(e) {
+        var me = this;
+
+        if (!me._isDragging)
             return;
 
-        this.removeCls('movecursor');
-        this.removeListener('mousemove', this.mousemovelistener);
-        this._isDragging = false;
+        me.removeCls('movecursor');
+        me.removeListener('mousemove', me.mousemovelistener);
+        me._isDragging = false;
+
+        if (e.getTarget().id == me.viewcontainer.getEl().id)
+            me.setSelectedNode(null);
     },
 
     mousemovelistener: function(e, t, opts) {

@@ -60,14 +60,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             iw.show();
         }
         else {
-            iw = Ext.create('Ext.Panel', {
-                title: name,
-                width: 100,
-                height: 120,
-                renderTo: me.viewcontainer.getEl(),
-                layout: 'fit',
-                floating: true,
-                items: [{
+            var items = [{
                     xtype: 'label',
                     text: node.get('info')
                 }, {
@@ -82,7 +75,15 @@ Ext.define('Funcman.OpenNodeGraph', {
                     scale: 'medium',
                     iconCls: 'remove',
                     node: node
-                }]
+                }];
+            iw = Ext.create('Ext.Panel', {
+                title: name,
+                width: 100,
+                height: 120,
+                renderTo: me.viewcontainer.getEl(),
+                layout: 'fit',
+                floating: true,
+                items: items
             });
             
             iw.items.getAt(1).setHandler(handler, me);
@@ -215,6 +216,24 @@ Ext.define('Funcman.OpenNodeGraph', {
             failure: function(response, opts) {
               alert('Could not connect to management server '+opts.url);
               me.view.setLoading(false);
+            }
+        });
+    },
+    
+    getComputeInfo: function(node, iw) {
+        var me = this;
+
+        Ext.Ajax.request({
+            cors: true,
+            url: 'http://anthrax11.homeip.net:8080/computes/'+id,
+            success: function(response, opts, x) {
+              var o = Ext.JSON.decode(response.responseText, true);
+              for(var i in o) {
+                me.addMachineFromServer(o[i][i]);
+              }
+            },
+            failure: function(response, opts) {
+              alert('Could not connect to management server '+opts.url);
             }
         });
     }
