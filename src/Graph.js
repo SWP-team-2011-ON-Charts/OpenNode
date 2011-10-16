@@ -37,12 +37,12 @@ Ext.define('Funcman.GraphNode', {
       {name: 'image', type: 'string'},
       {name: 'name', type: 'string'},
       {name: 'info', type: 'string'},
-      {name: 'infoWindow', type: 'object'}
     ],
     proxy: {
         type: 'memory',
         id  : 'graph-nodes',
     },
+    infowindow: null,
     hasMany  : {model: 'Funcman.GraphRef', name: 'children'}
 });
 
@@ -292,16 +292,22 @@ Ext.define('Funcman.Graph', {
     computePositionByZoom: function(record, zoom) {
         var left = record.get('left');
         var top = record.get('top');
+        var icon_size = this.iconSize * zoom;
+        
+        left = (left == undefined) ? 0 : parseInt(left * zoom);
+        top = (top == undefined) ? 0 : parseInt(top * zoom);
 
+        record.set('x', left);
+        record.set('y', top);
+        if (zoom > 2) {
+            record.infowindow.setPosition(left, top + icon_size);
+            record.infowindow.show();
+        }
+        else {
+            record.infowindow.hide();
+        }
         
-        var icon_size = this.iconSize;
-        record.set('x', (left == undefined) ? 0 : parseInt(left * zoom));
-        record.set('y', (top == undefined) ? 0 : parseInt(top * zoom));
-        
-        record.get('infoWindow').x = ('x', (left == undefined) ? 0 : parseInt(left * zoom));
-        record.get('infoWindow').y = ('y', (top == undefined) ? 0 : parseInt(top * zoom)) + 230;
-        
-        record.set('icon_size', (icon_size == undefined) ? 0 : parseInt(icon_size * zoom));
+        record.set('icon_size', icon_size);
         //record.set('y_size', (top == undefined) ? 0 : parseInt(iconSize * zoom));
     },
     
@@ -364,7 +370,7 @@ Ext.define('Funcman.Graph', {
         });
 
         me.view.store.remove(node);
-        me.connecticons(this);
         me.reorderNodes();
+        me.connecticons(this);
     },
 });

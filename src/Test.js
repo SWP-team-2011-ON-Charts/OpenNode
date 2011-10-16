@@ -15,9 +15,19 @@ Ext.onReady(function () {
         text : 'Register datacenter',
         scale: 'medium',
         iconCls: 'add',
-        iconAlign: 'left',
         renderTo: body,
         cls: 'floater',
+    });
+
+    Ext.widget('button', {
+        text : 'Connect to server',
+        scale: 'medium',
+        iconCls: 'add',
+        renderTo: body,
+        cls: 'floater',
+        handler: function() {
+            graph.syncWithServer();
+        }
     });
 
     var graph = Ext.create('OpenNodeGraph', {
@@ -28,6 +38,4 @@ Ext.onReady(function () {
     graph.setWidth(900);
 
     button.setHandler(graph.addDatacenter, graph);
-    
-
 });

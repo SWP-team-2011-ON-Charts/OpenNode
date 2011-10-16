@@ -4,15 +4,95 @@ Ext.define('Funcman.OpenNodeGraph', {
     
     dcid: 0, pmid: 0, vmid: 0, uid: 0,
 
+    attachInfoWindow: function(node) {
+        var me = this;
+    
+        var name = node.get('name');
+        var nodetype = node.get('nodeType');
+
+        if (nodetype == "dc") {
+            addtext = "Register Machine";
+            remtext = "Remove Datacenter";
+            handler = me.addMachine;
+        }
+        else if (nodetype == "pm") {
+            addtext = "Add VM";
+            remtext = "Remove Machine";
+            handler = me.addVM;
+        }
+        else if (nodetype == "vm") {
+            addtext = "Add User";
+            remtext = "Remove VM";
+            handler = me.addUser;
+        }
+        else if (nodetype == "uu") {
+            remtext = "Remove User";
+            handler = me.addUser;
+        }
+        else {
+            // Unknown node type
+            return;
+        }
+
+        var iw = null;
+        if (nodetype == "uu") {
+            iw = Ext.create('Ext.Panel', {
+                title: name,
+                width: 100,
+                height: 120,
+                renderTo: me.viewcontainer.getEl(),
+                layout: 'fit',
+                floating: true,
+                items: [{
+                    xtype: 'label',
+                    text: node.get('info')
+                }, {
+                    xtype: 'button',
+                    text : remtext,
+                    scale: 'medium',
+                    iconCls: 'remove',
+                    iconAlign: 'left',
+                    node: node
+                }]
+            });
+            
+            iw.items.getAt(1).setHandler(me.remove, me);
+            iw.show();
+        }
+        else {
+            iw = Ext.create('Ext.Panel', {
+                title: name,
+                width: 100,
+                height: 120,
+                renderTo: me.viewcontainer.getEl(),
+                layout: 'fit',
+                floating: true,
+                items: [{
+                    xtype: 'label',
+                    text: node.get('info')
+                }, {
+                    xtype: 'button',
+                    text : addtext,
+                    scale: 'medium',
+                    iconCls: 'add',
+                    node: node
+                }, {
+                    xtype: 'button',
+                    text : remtext,
+                    scale: 'medium',
+                    iconCls: 'remove',
+                    node: node
+                }]
+            });
+            
+            iw.items.getAt(1).setHandler(handler, me);
+            iw.items.getAt(2).setHandler(me.remove, me);
+            iw.show();
+        }
+        node.infowindow = iw;
+    },
+
     addDatacenter: function() {
-    	
-    	var iw = Ext.create('Ext.Window', {
-        	title: 'Datacenter ' + this.dcid,
-        	x: 0,
-        	y: 0,
-			width: 80,
-            height: 120,
-		});
     	
         var dc = Ext.create('GraphNode', {
             id: 'dc'+this.dcid,
@@ -21,25 +101,16 @@ Ext.define('Funcman.OpenNodeGraph', {
             image: 'images/data-center.png',
             info: 'Data center status: running',
             left: 64 + this.dcid * 192,
-            infoWindow: iw,
-
         });
+        this.attachInfoWindow(dc);
         
         this.addNode(dc);
         this.dcid++;
     },
 
-    addMachine: function(button, e) {
+    addMachine: function(button) {
         var node = button.node;
         var newid = node.get('id')+'pm'+this.pmid;
-
-        var iw = Ext.create('Ext.Window', {
-        	title: 'Machine ' + this.pmid,
-        	x: 0,
-        	y: 0,
-			width: 80,
-            height: 120,
-		});
         
         var pm = Ext.create('GraphNode', {
             id: newid,
@@ -49,9 +120,8 @@ Ext.define('Funcman.OpenNodeGraph', {
             info: 'Physical machine status: running',
             top: 64,
             left: this.pmid * 64,
-            infoWindow: iw,
-            
         });
+        this.attachInfoWindow(pm);
 
         var children = node.children();
         children.add({childid: newid, id: newid});
@@ -60,17 +130,9 @@ Ext.define('Funcman.OpenNodeGraph', {
         this.pmid++;
     },
 
-    addVM: function(button, e) {
+    addVM: function(button) {
         var node = button.node;
         var newid = node.get('id')+'vm'+this.vmid;
-        
-        var iw = Ext.create('Ext.Window', {
-        	title: 'VM ' + this.vmid,
-        	x: 0,
-        	y: 0,
-			width: 80,
-            height: 120,
-		});
 
         var vm = Ext.create('GraphNode', {
             id: newid,
@@ -80,8 +142,8 @@ Ext.define('Funcman.OpenNodeGraph', {
             info: 'Physical machine status: running',
             top: 128,
             left: this.vmid * 64,
-            infoWindow: iw,
         });
+        this.attachInfoWindow(vm);
 
         var children = node.children();
         children.add({childid: newid, id: newid});
@@ -91,17 +153,9 @@ Ext.define('Funcman.OpenNodeGraph', {
         this.vmid++;
     },
 
-    addUser: function(button, e) {
+    addUser: function(button) {
         var node = button.node;
         var newid = node.get('id')+'uu'+this.uid;
-        
-        var iw = Ext.create('Ext.Window', {
-        	title: 'User ' + this.uid,
-        	x: 0,
-        	y: 0,
-			width: 80,
-            height: 120,
-		});
 
         var uu = Ext.create('GraphNode', {
             id: newid,
@@ -111,8 +165,8 @@ Ext.define('Funcman.OpenNodeGraph', {
             info: 'user',
             top: 192,
             left: this.uid * 64,
-            infoWindow: iw,
         });
+        this.attachInfoWindow(uu);
 
         var children = node.children();
         children.add({childid: newid, id: newid});
@@ -123,117 +177,42 @@ Ext.define('Funcman.OpenNodeGraph', {
     },
 
     remove: function(button, e) {
-        if (this.infownd)
-            this.infownd.destroy();
-    
         this.removeNode(button.node);
     },
+
+    addMachineFromServer: function(name) {
+        var newid = 'pm'+this.pmid;
+
+        var pm = Ext.create('GraphNode', {
+            id: newid,
+            nodeType: 'pm',
+            name : name,
+            image: 'images/network-server.png',
+            info: 'Physical machine status: running',
+            top: 64,
+            left: this.pmid * 64,
+        });
+        this.attachInfoWindow(pm);
+
+        this.addNode(pm);
+        this.pmid++;
+    },
     
-    listeners: {
-        selectionChange: function(dv, nodes) {
-            if (nodes.length == 0)
-                return;
-        
-            var node = nodes[0];
-            if (this.infownd)
-                this.infownd.destroy();
-				
-			var name = node.get('name');
+    syncWithServer: function() {
+        var me = this;
 
-            var nodetype = node.get('nodeType');
-            if (nodetype == "dc") {
-                addtext = "Register Machine";
-                remtext = "Remove Datacenter";
-                handler = this.addMachine;
+        Ext.Ajax.request({
+            cors: true,
+            url: 'http://anthrax11.homeip.net:8080/computes/',
+            success: function(response, opts, x) {
+              var o = Ext.JSON.decode(response.responseText, true);
+              for(var i in o) {
+                me.addMachineFromServer(o[i][i]);
+              }
+            },
+            failure: function(response, opts) {
+              alert('Could not connect to management server '+opts.url);
             }
-            else if (nodetype == "pm") {
-                addtext = "Add VM";
-                remtext = "Remove Machine";
-                handler = this.addVM;
-            }
-            else if (nodetype == "vm") {
-                addtext = "Add User";
-                remtext = "Remove VM";
-                handler = this.addUser;
-            }
-            else if (nodetype == "uu") {
-                remtext = "Remove User";
-                handler = this.addUser;
-            }
-            else {
-                // Unknown node type
-                return;
-            }
-            
-            
-            if (nodetype == "uu") {
-                this.infownd = Ext.create('Ext.Window', {
-                    title: name,
-                    width: 80,
-                    height: 120,
-                    x: 100,
-                    y: 200,
-                    collapsible: true,
-                    layout: 'fit',
-                    items: [{
-                        xtype: 'label',
-                        text: node.get('info')
-                    }, {
-                        xtype: 'button',
-                        text : remtext,
-                        scale: 'medium',
-                        iconCls: 'remove',
-                        iconAlign: 'left',
-                        node: node
-                    }]
-                });
-                
-                this.infownd.items.getAt(1).setHandler(this.remove, this);
-                
-                this.infownd.show();
-            }
-            
-                
-            else {
-            	this.infownd = Ext.create('Ext.Window', {
-                    title: name,
-                    width: 80,
-                    height: 120,
-                    x: 100,
-                    y: 200,
-                    collapsible: true,
-                    //preventHeader: true,
-                    //renderTo: this.getEl(),
-                    //constrain: true,
-                    layout: 'fit',
-                    items: [{
-                        xtype: 'label',
-                        text: node.get('info')
-                    }, {
-                        xtype: 'button',
-                        text : addtext,
-                        scale: 'medium',
-                        iconCls: 'add',
-                        iconAlign: 'left',
-                        node: node
-                    }, {
-                        xtype: 'button',
-                        text : remtext,
-                        scale: 'medium',
-                        iconCls: 'remove',
-                        iconAlign: 'left',
-                        node: node
-                    }]
-                });
-            	
-                this.infownd.items.getAt(1).setHandler(handler, this);
-                this.infownd.items.getAt(2).setHandler(this.remove, this);
-                
-                this.infownd.show();
-            }
-            
-            
-
-        }
+        });
     }
 });
