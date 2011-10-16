@@ -56,7 +56,6 @@ Ext.define('Funcman.Graph', {
       cls: 'graphviewcontainer',
       _isDragging: false,
 
-
       items: [
         Ext.create('Ext.view.View', {
 
@@ -89,21 +88,17 @@ Ext.define('Funcman.Graph', {
             listeners: {
                 selectionChange: function(dv, nodes) {
                     var me = this.up().up();
-                    if (nodes.length == 0) {
-                        me.selected_node = null;
-                        return;
-                    }
-
-                    var node = nodes[0];
-
-                    var prev_node = me.selected_node;
-                    me.selected_node = node;
-
-                    if (prev_node) me.computePosition(prev_node);
-                    if (me.selected_node) me.computePosition(me.selected_node);
+                    me.refresh(me);
+                },
+                mousedown: {
+                    fn: function(e) {
+                        e.stopEvent();
+                    },
+                    element: 'el',
                 }
             },
             
+            allowDeselect: true,
             overItemCls: 'x-view-over',
             itemSelector: 'div.thumb-wrap',
             cls: 'img-chooser-view showscrollbars'
@@ -125,29 +120,33 @@ Ext.define('Funcman.Graph', {
         listeners: {
             change: function(el, val) {
                 var me = this.up();
-                var zoom = me.getZoom();
-                var view = me.view;
-                
-                view.tpl = (zoom < 1.4) ? view.tpl_notext : view.tpl_text;
-                
-                // Move nodes further from or closer to each other depending on zoom
-                view.store.each( function(record) {
-                    me.computePositionByZoom(record, zoom);
-                });
-                view.store.sync();
-
-                // Redraw lines
-                me.connecticons(me);
+                me.refresh(me);
             }
         }
     })
     ],
 
+    refresh: function(me) {
+        var zoom = me.getZoom();
+        var view = me.view;
+        
+        view.tpl = (zoom < 1.4) ? view.tpl_notext : view.tpl_text;
+        
+        // Move nodes further from or closer to each other depending on zoom
+        view.store.each( function(record) {
+            me.computePositionByZoom(record, zoom);
+        });
+        view.store.sync();
+
+        // Redraw lines
+        me.connecticons(me);
+    },
+
     // Create lines connecting the icons
-    connecticons: function(parent) {
+    connecticons: function(me) {
         var maxx = 0, maxy = 0;
-        var halfIcon = parent.iconSize / 2;
-        var draw = parent.draw;
+        var halfIcon = me.iconSize / 2;
+        var draw = me.draw;
 
         // Clear all lines
         draw.surface.removeAll(true);
@@ -155,16 +154,16 @@ Ext.define('Funcman.Graph', {
 
         // Connect nodes with their child nodes
         // Also find graph size
-        var store = parent.view.store;
+        var store = me.view.store;
         store.each( function(record) {
-            record.children().each( function(child) {
-                var childrecord = store.findRecord('id', child.get('childid'));
+            record.children().each( function(childref) {
+                var child = store.findRecord('id', childref.get('childid'));
                 
-                if (childrecord) {
+                if (child) {
                     // Create a path from the center of one icon to the center of the other
                     var path =
                       'M ' + (record.get('x') + record.get('icon_size')/2) + ' ' + (record.get('y') + record.get('icon_size')/2) + ' ' +
-                      'L ' + (childrecord.get('x') + record.get('icon_size')/2) + ' ' + (childrecord.get('y') + record.get('icon_size')/2)+ ' z';
+                      'L ' + (child.get('x') + child.get('icon_size')/2) + ' ' + (child.get('y') + child.get('icon_size')/2)+ ' z';
                     var sprite = {
                         type: 'path',
                         path: path,
@@ -188,7 +187,7 @@ Ext.define('Funcman.Graph', {
         });
 
         // Set line drawing area
-        draw.setSize(maxx + parent.iconSize, maxy + parent.iconSize);
+        draw.setSize(maxx + me.iconSize, maxy + me.iconSize);
     },
 
     // Mouse wheel controls the zoom slider
@@ -198,15 +197,19 @@ Ext.define('Funcman.Graph', {
     },
 
     mousedownlistener: function(e, t, opts) {
-        if (this._isDragging)
+        var me = this;
+        if (me._isDragging)
             return;
 
-        this.addCls('movecursor');
-        this.addListener('mousemove', this.mousemovelistener, this, {element: 'el'});
-        var containerpos = this.viewcontainer.getPosition();
-        var currentscroll = this.viewcontainer.getEl().getScroll();
-        this._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
-        this._isDragging = true;
+        me.addCls('movecursor');
+        me.addListener('mousemove', me.mousemovelistener, me, {element: 'el'});
+        var containerpos = me.viewcontainer.getPosition();
+        var currentscroll = me.viewcontainer.getEl().getScroll();
+        me._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
+        me._isDragging = true;
+
+        me.setSelectedNode(null);
+
         e.stopEvent();
     },
 
@@ -262,6 +265,19 @@ Ext.define('Funcman.Graph', {
         me.relayEvents(me.view, ['selectionchange']);
     },
 
+    getSelectedNode: function() {
+        return this.view.getSelectionModel().getSelection()[0];
+    },
+
+    setSelectedNode: function(node) {
+        var sm = this.view.getSelectionModel();
+        if (node) {
+            sm.select([node], false);
+        } else {
+            sm.deselectAll();
+        }
+    },
+
     getZoom: function() {
         return 1.0 + (this.slider.getValue() / 10.0);
     },
@@ -278,17 +294,16 @@ Ext.define('Funcman.Graph', {
         
         left = (left == undefined) ? 0 : parseInt(left * zoom);
         top = (top == undefined) ? 0 : parseInt(top * zoom);
+        record.set('x', left);
+        record.set('y', top);
 
-        if (record.infowindow)
-        {
-            record.set('x', left);
-            record.set('y', top);
+        if (record.infowindow) {
             record.infowindow.setPosition(left, top + icon_size);
             if (zoom > 2) {
                 record.infowindow.show();
             }
             else {
-                if (record === this.selected_node) {
+                if (record === this.getSelectedNode()) {
                     record.infowindow.show();
                 } else {
                     record.infowindow.hide();
@@ -365,7 +380,7 @@ Ext.define('Funcman.Graph', {
 
         node.children().each( function(childref) {
             var child = store.findRecord('id', childref.get('childid'));
-            if (child != null){
+            if (child != null) {
             	me.removeNodeWithChildren(child);
             }
         });
