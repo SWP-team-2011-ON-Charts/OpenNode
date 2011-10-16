@@ -58,22 +58,34 @@ Ext.define('Funcman.Graph', {
       cls: 'graphviewcontainer',
       _isDragging: false,
 
+
       items: [
         Ext.create('Ext.view.View', {
-        
-        tpl: 
-        	[
-            '<tpl for=".">',
-                //'<div class="thumb-wrap">',
-                '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                    '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
-                    (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
-                    '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+
+        // tpl itself is set later
+        tpl_text: new Ext.XTemplate(
+                '<tpl for=".">',
+                    //'<div class="thumb-wrap">',
+                    '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
+                        '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
+                        (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
+                        '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+                        '</div>',
+                        '<span class = "name">{name}</span>',
                     '</div>',
-                    '<span class = "name">{name}</span>',
-                '</div>',
-            '</tpl>'
-        ],
+                '</tpl>'
+        ),
+        tpl_notext: new Ext.XTemplate(
+                '<tpl for=".">',
+                    //'<div class="thumb-wrap">',
+                    '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
+                        '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
+                        (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
+                        '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
+                        '</div>',
+                    '</div>',
+                '</tpl>'
+        ),
 
         store: Ext.create('Ext.data.Store', {
             model: 'Funcman.GraphNode',
@@ -99,11 +111,7 @@ Ext.define('Funcman.Graph', {
             viewBox: false,
             autoSize: true,
         }),
-
-        
       ],
-      
-      
     }),
     Ext.create('Ext.slider.Single', {
         height: 60,
@@ -115,43 +123,20 @@ Ext.define('Funcman.Graph', {
         cls: 'graphzoomslider',
         listeners: {
             change: function(el, val) {
-                var parent = this.up();
+                var me = this.up();
+                var zoom = me.getZoom();
+                var view = me.view;
+                
+                view.tpl = (zoom < 1.4) ? view.tpl_notext : view.tpl_text;
                 
                 // Move nodes further from or closer to each other depending on zoom
-                var zoom = parent.getZoom();
-                parent.view.store.each( function(record) {
-                    parent.computePositionByZoom(record, zoom);
+                view.store.each( function(record) {
+                    me.computePositionByZoom(record, zoom);
                 });
-                parent.view.store.sync();
+                view.store.sync();
 
                 // Redraw lines
-                parent.connecticons(parent);
-                
-                if (zoom < 1.4){
-                	var text = document.getElementsByClassName('name');
-                	for (var i=0;i<text.length;i++) {
-                		text[i].innerHTML = null;
-            	  }  
-                }
-                
-                else if (zoom > 2.2) {
-                	/*var text = document.getElementsByClassName('name');
-                	parent.view.store.each( function(record) {
-                		record.get('infoWindow').hide();
-                		record.get('infoWindow').show();
-                    });*/
-                }
-                else{
-                	/*var text = document.getElementsByClassName('name');
-                	parent.view.store.each( function(record) {
-                		record.get('infoWindow').hide();
-                		record.get('infoWindow').show();
-                    });*/
-                	//var text = document.getElementsByClassName('name');
-                	//for (var i=0;i<text.length;i++) {
-                		//text[i].innerHTML = "<span class='name'>"+parent.parent.name+"</span>";                		  
-                	//} 
-                }
+                me.connecticons(me);
             }
         }
     })
@@ -250,23 +235,23 @@ Ext.define('Funcman.Graph', {
     },
 
     initComponent: function() {
-        this.callParent();
+        var me = this;
+        me.callParent();
         
         // Create shortcuts to subelements
-        var vc = this.viewcontainer = this.items.getAt(0);
-        this.view = vc.items.getAt(0);
-        this.draw = vc.items.getAt(1);
-        this.slider = this.items.getAt(1);
-
+        var vc = me.viewcontainer = me.items.getAt(0);
+        me.view = vc.items.getAt(0);
+        me.draw = vc.items.getAt(1);
+        me.slider = me.items.getAt(1);
 
         // Set up mouse listeners
-        vc.addListener('mousewheel', this.mousewheellistener, this, {element: 'el'});
-        vc.addListener('mousedown', this.mousedownlistener, this, {element: 'el'});
-        vc.addListener('mouseup', this.stopdrag, this, {element: 'el'});
+        vc.addListener('mousewheel', me.mousewheellistener, me, {element: 'el'});
+        vc.addListener('mousedown', me.mousedownlistener, me, {element: 'el'});
+        vc.addListener('mouseup', me.stopdrag, me, {element: 'el'});
         //vc.addListener('mouseout', this.stopdrag, this, {element: 'el'});
         
-        var me = this;
-
+        me.view.tpl = me.view.tpl_text;
+        
         me.addEvents(
             /**
              * @event selectionchange
@@ -313,14 +298,14 @@ Ext.define('Funcman.Graph', {
     
     reorderNodes: function() {
     	var me = this;
-    	var store = this.view.store;
-    	var zoom = this.getZoom();
+    	var store = me.view.store;
+    	var zoom = me.getZoom();
     	var dcCount = 0;
     	var pmCount = 0;
     	var vmCount = 0;
     	var uuCount = 0;
     	
-    	this.view.store.each( function(record) {
+    	store.each( function(record) {
     		var nodetype = record.get('nodeType');
     		if (nodetype == "dc") {
                 record.set('left', (64 + dcCount * 192));
@@ -343,34 +328,33 @@ Ext.define('Funcman.Graph', {
                 // Unknown node type
                 return;
             }
-        });
-    	store.each( function(record) {
             me.computePositionByZoom(record, zoom);
         });
     },
 
     addNode: function(node) {
-        this.computePosition(node);
-        this.view.store.add(node);
-        this.view.store.sort('id', 'ASC');
-        this.reorderNodes();
-        this.connecticons(this);
+        var me = this;
+
+        me.computePosition(node);
+        me.view.store.add(node);
+        me.view.store.sort('id', 'ASC');
+        me.reorderNodes();
+        me.connecticons(me);
     },
     
     removeNode: function(node) {
         var me = this;
         var store = me.view.store;
-        
-        node.children().each( function(child) {
-            var childrecord = store.findRecord('id', child.get('childid'));
-            if (childrecord != null){
-            	me.removeNode(childrecord);
+
+        node.children().each( function(childref) {
+            var child = store.findRecord('id', childref.get('childid'));
+            if (child != null){
+            	me.removeNode(child);
             }
-            
         });
 
-        me.view.store.remove(node);
+        store.remove(node);
         me.reorderNodes();
-        me.connecticons(this);
+        me.connecticons(me);
     },
 });

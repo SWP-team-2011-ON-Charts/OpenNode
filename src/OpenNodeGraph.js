@@ -200,6 +200,7 @@ Ext.define('Funcman.OpenNodeGraph', {
     
     syncWithServer: function() {
         var me = this;
+        me.view.setLoading(true);
 
         Ext.Ajax.request({
             cors: true,
@@ -209,9 +210,11 @@ Ext.define('Funcman.OpenNodeGraph', {
               for(var i in o) {
                 me.addMachineFromServer(o[i][i]);
               }
+              me.view.setLoading(false);
             },
             failure: function(response, opts) {
               alert('Could not connect to management server '+opts.url);
+              me.view.setLoading(false);
             }
         });
     }
