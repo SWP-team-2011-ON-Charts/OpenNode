@@ -51,6 +51,7 @@ Ext.define('Funcman.Graph', {
     cls: 'graphcontainer',
     layout: 'fit',
     iconSize: 40,
+    graph_tree_container_size: 0,
 
     items: [
       Ext.create('Ext.container.Container', {
@@ -69,7 +70,7 @@ Ext.define('Funcman.Graph', {
                         (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
                         '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
                         '</div>',
-                        '<span class = "name">{name}</span>',
+                        '<span>{name}</span>',
                     '</div>',
                 '</tpl>'
             ),
@@ -313,6 +314,7 @@ Ext.define('Funcman.Graph', {
     },
     
     reorderNodes: function() {
+    	var pos_x = this.graph_tree_container_size;
     	var me = this;
     	var store = me.view.store;
     	var zoom = me.getZoom();
@@ -320,6 +322,7 @@ Ext.define('Funcman.Graph', {
     	var pmCount = 0;
     	var vmCount = 0;
     	var uuCount = 0;
+    	
     	
     	store.each( function(record) {
     		var nodetype = record.get('nodeType');
@@ -345,7 +348,10 @@ Ext.define('Funcman.Graph', {
                 return;
             }
             me.computePositionByZoom(record, zoom);
+            
+
         });
+ 
     },
 
     addNode: function(node) {
