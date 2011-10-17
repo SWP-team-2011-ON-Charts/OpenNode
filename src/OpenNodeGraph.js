@@ -279,7 +279,7 @@ Ext.define('Funcman.OpenNodeGraph', {
 
         Ext.Ajax.request({
             cors: true,
-            url: me.server_name + '/computes/'+node.get('idnum'),
+            url: me.server_name + '/computes/'+node.get('idnum')+'/',
             success: function(response, opts, x) {
                 var o = Ext.JSON.decode(response.responseText, true);
                 var text = '';
