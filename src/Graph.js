@@ -320,8 +320,8 @@ Ext.define('Funcman.Graph', {
   
     	store.each( function(record) {
     		var nodetype = record.get('nodeType');
-    		var starting_point = 0;
-    		var counter = 0;
+    		var starting_point = 0 - me.iconSize;
+    		var vm_counter = 0;
     		var pm_counter = 0;
     		
     		if (nodetype == "dc") {
@@ -334,24 +334,24 @@ Ext.define('Funcman.Graph', {
                         	child.children().each(function (ccref){
                         		var child_child = store.findRecord('id', ccref.get('childid'));
                         		if (child_child != null){
-                        			starting_point = starting_point + me.iconSize * 2;
+                        			starting_point = starting_point + me.iconSize * 1.2;
                         			child_child.set('left', (starting_point));
-                        			counter++;
+                        			vm_counter++;
                         		}
                         	});                        	
                             starting_point = starting_point  + me.iconSize/2.0;
-                            if (counter != 0){
-                            	child.set('left', (starting_point - counter - counter * me.iconSize));                                
+                            if (vm_counter != 0){
+                            	child.set('left', (starting_point  - vm_counter * me.iconSize/2.0));                                
                             }
                             else{
                             	child.set('left', (starting_point));                                
                             }                            
-                            counter = 0;
+                            vm_counter = 0;
                             pm_counter++;
                         }                        
-                    });            		
-            		 record.set('left', (starting_point - pm_counter * me.iconSize/2.0));                     
-    			}        		
+                    });            		                   
+    				record.set('left', (starting_point/2.0));                     
+        		}  
     		}    		
             me.computePositionByZoom(record, zoom);            
         }); 
