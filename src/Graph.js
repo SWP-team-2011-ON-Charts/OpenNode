@@ -66,7 +66,7 @@ Ext.define('Funcman.Graph', {
                 '<tpl for=".">',
                     //'<div class="thumb-wrap">',
                     '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                        '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
+                        '<div id = "{id}" class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
                         (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
                         '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
                         '</div>',
@@ -78,7 +78,7 @@ Ext.define('Funcman.Graph', {
                 '<tpl for=".">',
                     //'<div class="thumb-wrap">',
                     '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                        '<div class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
+                        '<div id = "{id}" class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
                         (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
                         '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
                         '</div>',
@@ -314,44 +314,48 @@ Ext.define('Funcman.Graph', {
     },
     
     reorderNodes: function() {
-    	var pos_x = this.graph_tree_container_size;
     	var me = this;
     	var store = me.view.store;
     	var zoom = me.getZoom();
-    	var dcCount = 0;
-    	var pmCount = 0;
-    	var vmCount = 0;
-    	var uuCount = 0;
-    	
-    	
+  
     	store.each( function(record) {
     		var nodetype = record.get('nodeType');
-    		if (nodetype == "dc") {
-                record.set('left', (64 + dcCount * 192));
-                dcCount++;
-            }
-            else if (nodetype == "pm") {
-            	record.set('left', (pmCount * 64));
-                pmCount++;
-            }
-            else if (nodetype == "vm") {
-            	record.set('left', (vmCount * 64));
-                vmCount++;
-            }
+    		var starting_point = 0;
+    		var counter = 0;
+    		var pm_counter = 0;
     		
-            else if (nodetype == "uu") {
-            	record.set('left', (uuCount * 64));
-                uuCount++;
-            }
-            else {
-                // Unknown node type
-                return;
-            }
-            me.computePositionByZoom(record, zoom);
-            
-
-        });
- 
+    		if (nodetype == "dc") {
+    			if (record != null){
+    				record.children().each( function(childref) {            			
+            			var child = store.findRecord('id', childref.get('childid'));
+                        if (child != null) {
+                            starting_point = starting_point  + me.iconSize/2.0;
+                            child.set('left', (starting_point));                            
+                        	child.children().each(function (ccref){
+                        		var child_child = store.findRecord('id', ccref.get('childid'));
+                        		if (child_child != null){
+                        			starting_point = starting_point + me.iconSize * 2;
+                        			child_child.set('left', (starting_point));
+                        			counter++;
+                        		}
+                        	});                        	
+                            starting_point = starting_point  + me.iconSize/2.0;
+                            if (counter != 0){
+                            	child.set('left', (starting_point - counter - counter * me.iconSize));                                
+                            }
+                            else{
+                            	child.set('left', (starting_point));                                
+                            }                            
+                            counter = 0;
+                            pm_counter++;
+                        }                        
+                    });            		
+            		 record.set('left', (starting_point - pm_counter * me.iconSize/2.0));                     
+    			}        		
+    		}    		
+            me.computePositionByZoom(record, zoom);            
+        }); 
+    	
     },
 
     addNode: function(node) {
