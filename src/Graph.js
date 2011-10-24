@@ -363,7 +363,6 @@ Ext.define('Funcman.Graph', {
 
         me.computePosition(node);
         me.view.store.add(node);
-        me.view.store.sort('id', 'ASC');
         me.reorderNodes();
         me.connecticons(me);
     },
