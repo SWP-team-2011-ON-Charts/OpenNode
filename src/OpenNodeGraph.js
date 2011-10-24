@@ -166,9 +166,9 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
         this.attachInfoWindow(pm);
 
-        var children = node.children();
-        children.add({childid: newid, id: newid});
-        children.sync();
+        var childrefs = node.children();
+        childrefs.add({id: newid});
+        childrefs.sync();
         this.addNode(pm);
         this.pmid++;
     },
@@ -189,9 +189,9 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
         this.attachInfoWindow(vm);
 
-        var children = node.children();
-        children.add({childid: newid, id: newid});
-        children.sync();
+        var childrefs = node.children();
+        childrefs.add({id: newid});
+        childrefs.sync();
         
         this.addNode(vm);
         this.vmid++;
@@ -213,24 +213,38 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
         this.attachInfoWindow(uu);
 
-        var children = node.children();
-        children.add({childid: newid, id: newid});
-        children.sync();
+        var childrefs = node.children();
+        childrefs.add({id: newid});
+        childrefs.sync();
         
         this.addNode(uu);
         this.uid++;
     },
 
     remove: function(button, e) {
-        this.removeNode(button.node);
+        var me = this;
+        var node = button.node;
+
+        Ext.Ajax.request({
+            cors: true,
+            method: 'DELETE',
+            url: me.server_name + '/computes/'+node.get('idnum')+'/',
+            success: function(response, opts, x) {
+                var o = Ext.JSON.decode(response.responseText, true);
+                me.removeNode(button.node);
+            },
+            failure: function(response, opts) {
+                alert('Could not connect to management server '+opts.url);
+            }
+        });
     },
 
-    addMachineFromServer: function(name, dc) {
-        var newid = 'pm'+this.pmid;
+    addMachineFromServer: function(name, id, dc) {
+        var newid = dc.get('id')+'pm'+id;
 
         var pm = Ext.create('GraphNode', {
             id: newid,
-            idnum: this.pmid,
+            idnum: id,
             nodeType: 'pm',
             name : name,
             image: 'images/network-server.png',
@@ -240,9 +254,9 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
         this.attachInfoWindow(pm);
 
-        var children = dc.children();
-        children.add({childid: newid, id: newid});
-        children.sync();
+        var childrefs = dc.children();
+        childrefs.add({id: newid});
+        childrefs.sync();
 
         this.addNode(pm);
         this.pmid++;
@@ -260,7 +274,9 @@ Ext.define('Funcman.OpenNodeGraph', {
             
                 var o = Ext.JSON.decode(response.responseText, true);
                 for(var i in o) {
-                    me.addMachineFromServer(o[i][i], dc);
+                    var pms = o[i];
+                    for (pm in pms)
+                        me.addMachineFromServer(pms[pm], pm, dc);
                 }
                 me.server_name = server_name;
                 me.view.setLoading(false);

@@ -23,7 +23,7 @@ This file may be used under the terms of the GNU General Public License version 
 Ext.define('Funcman.GraphRef', {
     extend: "Ext.data.Model",
     alias: 'GraphRef',
-    fields: ['childid'],
+    fields: ['id'],
     belongsTo: 'Funcman.GraphNode',
 });
 
@@ -153,7 +153,7 @@ Ext.define('Funcman.Graph', {
         var store = me.view.store;
         store.each( function(record) {
             record.children().each( function(childref) {
-                var child = store.findRecord('id', childref.get('childid'));
+                var child = store.findRecord('id', childref.get('id'));
                 
                 if (child) {
                     // Create a path from the center of one icon to the center of the other
@@ -327,12 +327,12 @@ Ext.define('Funcman.Graph', {
     		if (nodetype == "dc") {
     			if (record != null){
     				record.children().each( function(childref) {            			
-            			var child = store.findRecord('id', childref.get('childid'));
+            			var child = store.findRecord('id', childref.get('id'));
                         if (child != null) {
                             starting_point = starting_point  + me.iconSize/2.0;
                             child.set('left', (starting_point));                            
                         	child.children().each(function (ccref){
-                        		var child_child = store.findRecord('id', ccref.get('childid'));
+                        		var child_child = store.findRecord('id', ccref.get('id'));
                         		if (child_child != null){
                         			starting_point = starting_point + me.iconSize * 1.2;
                         			child_child.set('left', (starting_point));
@@ -387,7 +387,7 @@ Ext.define('Funcman.Graph', {
             node.infowindow.destroy();
 
         node.children().each( function(childref) {
-            var child = store.findRecord('id', childref.get('childid'));
+            var child = store.findRecord('id', childref.get('id'));
             if (child != null) {
             	me.removeNodeWithChildren(child);
             }
