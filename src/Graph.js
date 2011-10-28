@@ -31,12 +31,12 @@ Ext.define('Funcman.GraphNode', {
     extend: "Ext.data.Model",
     alias: 'GraphNode',
     fields: [
-      {name: 'id', type: 'string'},
-      {name: 'idnum', type: 'int'},
-      {name: 'nodeType', type: 'string'},
-      {name: 'image', type: 'string'},
-      {name: 'name', type: 'string'},
-      {name: 'info', type: 'string'},
+      {name: 'id', type: 'string'},    // unique local id - "dc0pm0vm1"
+      {name: 'res_id', type: 'int'},   // resource id     - 0
+      {name: 'path', type: 'string'},  // unique path     - "http://oms/computes/0/"
+      {name: 'type', type: 'string'},  // node type       - "vm", "pm", "dc", "user"
+      {name: 'image', type: 'string'}, // image to use    - "../machine.png"
+      {name: 'name', type: 'string'},  // name to display - "Machine 1"
     ],
     proxy: {
         type: 'memory',
@@ -61,7 +61,7 @@ Ext.define('Funcman.Graph', {
       items: [
         Ext.create('Ext.view.View', {
 
-            // tpl itself is set later
+            // tpl itself is set later according to zoom
             tpl_text: new Ext.XTemplate(
                 '<tpl for=".">',
                     //'<div class="thumb-wrap">',
@@ -101,7 +101,7 @@ Ext.define('Funcman.Graph', {
         }),
         Ext.create('Ext.draw.Component', {
             viewBox: false,
-            autoSize: true,
+            autoSize: true
         }),
       ],
     }),
@@ -149,7 +149,7 @@ Ext.define('Funcman.Graph', {
         draw.setSize(0, 0);
 
         // Connect nodes with their child nodes
-        // Also find graph size
+        // Also find graph area
         var store = me.view.store;
         store.each( function(record) {
             record.children().each( function(childref) {
@@ -298,15 +298,10 @@ Ext.define('Funcman.Graph', {
 
         if (record.infowindow) {
             record.infowindow.setPosition(left, top + icon_size);
-            if (zoom > 2) {
+            if (zoom > 2 || record === this.getSelectedNode()) {
                 record.infowindow.show();
-            }
-            else {
-                if (record === this.getSelectedNode()) {
-                    record.infowindow.show();
-                } else {
-                    record.infowindow.hide();
-                }
+            } else {
+                record.infowindow.hide();
             }
         }
         record.set('icon_size', icon_size);
@@ -319,18 +314,18 @@ Ext.define('Funcman.Graph', {
     	var zoom = me.getZoom();
   
     	store.each( function(record) {
-    		var nodetype = record.get('nodeType');
+    		var type = record.get('type');
     		var starting_point = 0 - me.iconSize;
     		var vm_counter = 0;
     		var pm_counter = 0;
     		
-    		if (nodetype == "dc") {
+    		if (type == "dc") {
     			if (record != null){
-    				record.children().each( function(childref) {            			
+    				record.children().each( function(childref) {
             			var child = store.findRecord('id', childref.get('id'));
                         if (child != null) {
                             starting_point = starting_point  + me.iconSize/2.0;
-                            child.set('left', (starting_point));                            
+                            child.set('left', (starting_point));
                         	child.children().each(function (ccref){
                         		var child_child = store.findRecord('id', ccref.get('id'));
                         		if (child_child != null){
@@ -338,24 +333,23 @@ Ext.define('Funcman.Graph', {
                         			child_child.set('left', (starting_point));
                         			vm_counter++;
                         		}
-                        	});                        	
+                        	});
                             starting_point = starting_point  + me.iconSize/2.0;
                             if (vm_counter != 0){
-                            	child.set('left', (starting_point  - vm_counter * me.iconSize/2.0));                                
+                            	child.set('left', (starting_point  - vm_counter * me.iconSize/2.0));
                             }
                             else{
-                            	child.set('left', (starting_point));                                
-                            }                            
+                            	child.set('left', (starting_point));
+                            }
                             vm_counter = 0;
                             pm_counter++;
-                        }                        
-                    });            		                   
-    				record.set('left', (starting_point/2.0));                     
-        		}  
-    		}    		
-            me.computePositionByZoom(record, zoom);            
-        }); 
-    	
+                        }
+                    });
+    				record.set('left', (starting_point/2.0));
+        		}
+    		}
+            me.computePositionByZoom(record, zoom);
+        });
     },
 
     addNode: function(node) {
@@ -366,7 +360,7 @@ Ext.define('Funcman.Graph', {
         me.reorderNodes();
         me.connecticons(me);
     },
-    
+
     removeNode: function(node) {
         var me = this;
         var store = me.view.store;

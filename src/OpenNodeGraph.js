@@ -17,24 +17,24 @@ Ext.define('Funcman.OpenNodeGraph', {
         var me = this;
     
         var name = node.get('name');
-        var nodetype = node.get('nodeType');
+        var type = node.get('type');
 
-        if (nodetype == "dc") {
+        if (type == "dc") {
             addtext = "Register Machine";
             remtext = "Remove Datacenter";
             handler = me.addMachine;
         }
-        else if (nodetype == "pm") {
+        else if (type == "pm") {
             addtext = "Add VM";
             remtext = "Remove Machine";
             handler = me.addVM;
         }
-        else if (nodetype == "vm") {
+        else if (type == "vm") {
             addtext = "Add User";
             remtext = "Remove VM";
             handler = me.addUser;
         }
-        else if (nodetype == "uu") {
+        else if (type == "uu") {
             remtext = "Remove User";
             handler = me.addUser;
         }
@@ -44,7 +44,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         }
 
         var iw = null;
-        if (nodetype == "uu") {
+        if (type == "uu") {
             iw = Ext.create('Ext.Panel', {
                 title: name,
                 width: 100,
@@ -53,9 +53,6 @@ Ext.define('Funcman.OpenNodeGraph', {
                 layout: 'fit',
                 floating: true,
                 items: [{
-                    xtype: 'label',
-                    text: node.get('info')
-                }, {
                     xtype: 'button',
                     text : remtext,
                     scale: 'medium',
@@ -65,12 +62,12 @@ Ext.define('Funcman.OpenNodeGraph', {
                 }]
             });
             
-            iw.items.getAt(1).setHandler(me.remove, me);
+            iw.items.getAt(0).setHandler(me.remove, me);
             iw.show();
         }
         else {
             var items = null;
-            if (nodetype == "pm") {
+            if (type == "pm") {
                 items = [{
                     xtype: 'button',
                     text : addtext,
@@ -107,9 +104,6 @@ Ext.define('Funcman.OpenNodeGraph', {
                     scale: 'medium',
                     iconCls: 'remove',
                     node: node
-                }, {
-                    xtype: 'label',
-                    text: node.get('info')
                 }];
             }
             iw = Ext.create('Ext.Panel', {
@@ -124,7 +118,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             
             iw.items.getAt(0).setHandler(handler, me);
             iw.items.getAt(1).setHandler(me.remove, me);
-            if (nodetype == "pm")
+            if (type == "pm")
                 iw.items.getAt(2).setHandler(me.getComputeInfo, me);
 
             iw.show();
@@ -132,22 +126,21 @@ Ext.define('Funcman.OpenNodeGraph', {
         node.infowindow = iw;
     },
 
-    addDatacenter: function() {
+    addDatacenter: function(path, res_id, name) {
     	
         var dc = Ext.create('GraphNode', {
-            id: 'dc'+this.dcid,
-            idnum: this.dcid,
-            nodeType: 'dc',
-            name : 'datacenter ' + this.dcid,
+            id: 'dc'+res_id,
+            res_id: res_id,
+            path: path,
+            type: 'dc',
+            name : name,
             image: 'images/data-center.png',
-            info: 'Data center status: running',
-            left: 64 + this.dcid * 192 * this.calc_left,
+            left: 64 + res_id * 192 * this.calc_left,
             calc_left: 1,
         });
         this.attachInfoWindow(dc);
         
         this.addNode(dc);
-        this.dcid++;
         return dc;
     },
 
@@ -158,10 +151,9 @@ Ext.define('Funcman.OpenNodeGraph', {
         var pm = Ext.create('GraphNode', {
             id: newid,
             idnum: this.pmid,
-            nodeType: 'pm',
+            type: 'pm',
             name : 'Machine ' + this.pmid,
             image: 'images/network-server.png',
-            info: 'Physical machine status: running',
             top: 64,
             left: this.pmid * 64,
         });
@@ -179,12 +171,12 @@ Ext.define('Funcman.OpenNodeGraph', {
         var newid = node.get('id')+'vm'+this.vmid;
 
         var vm = Ext.create('GraphNode', {
+            path: null,
             id: newid,
-            idnum: this.vmid,
-            nodeType: 'vm',
+            res_id: this.vmid,
+            type: 'vm',
             name : 'VM ' + this.vmid,
             image: 'images/computer.png',
-            info: 'Physical machine status: running',
             top: 128,
             left: this.vmid * 64,
         });
@@ -205,10 +197,9 @@ Ext.define('Funcman.OpenNodeGraph', {
         var uu = Ext.create('GraphNode', {
             id: newid,
             idnum: this.uid,
-            nodeType: 'uu',
+            type: 'uu',
             name : 'User ' + this.uid,
             image: 'images/user.png',
-            info: 'user',
             top: 192,
             left: this.uid * 64,
         });
@@ -229,7 +220,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         Ext.Ajax.request({
             cors: true,
             method: 'DELETE',
-            url: me.server_name + '/computes/'+node.get('idnum')+'/',
+            url: node.get('path'),
             success: function(response, opts, x) {
                 var o = Ext.JSON.decode(response.responseText, true);
                 me.removeNode(button.node);
@@ -240,16 +231,16 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
     },
 
-    addMachineFromServer: function(name, id, dc) {
-        var newid = dc.get('id')+'pm'+id;
+    addMachineFromServer: function(path, res_id, name, dc) {
+        var newid = dc.get('id')+'pm'+res_id;
 
         var pm = Ext.create('GraphNode', {
+            path: path,
             id: newid,
-            idnum: id,
-            nodeType: 'pm',
+            res_id: res_id,
+            type: 'pm',
             name : name,
             image: 'images/network-server.png',
-            info: 'Physical machine status: running',
             top: 64,
             left: this.pmid * 64,
         });
@@ -271,15 +262,15 @@ Ext.define('Funcman.OpenNodeGraph', {
             cors: true,
             url: server_name + '/computes/',
             success: function(response, opts, x) {
-                var dc = me.addDatacenter();
+                var dc = me.addDatacenter(server_name+'/networks/'+me.dcid+'/', me.dcid, 'datacenter'+me.dcid);
+                me.dcid++;
             
                 var o = Ext.JSON.decode(response.responseText, true);
                 for(var i in o) {
                     var pms = o[i];
                     for (pm in pms)
-                        me.addMachineFromServer(pms[pm], pm, dc);
+                        me.addMachineFromServer(server_name+'/computes/'+pm+'/', pm, pms[pm], dc);
                 }
-                me.server_name = server_name;
                 me.view.setLoading(false);
             },
             failure: function(response, opts) {
@@ -297,7 +288,7 @@ Ext.define('Funcman.OpenNodeGraph', {
 
         Ext.Ajax.request({
             cors: true,
-            url: me.server_name + '/computes/'+node.get('idnum')+'/',
+            url: node.get('path'),
             success: function(response, opts, x) {
                 var o = Ext.JSON.decode(response.responseText, true);
                 var text = '';
@@ -333,13 +324,12 @@ Ext.define('Funcman.OpenNodeGraph', {
             cors: true,
             method: 'PUT',
             jsonData: {status: newStatus},
-            url: me.server_name + '/computes/'+node.get('idnum')+'/',
+            url: node.get('path'),
             success: function(response, opts, x) {
                 button.setText(newStatus);
             },
             failure: function(response, opts) {
-                alert('Could not connect to management server '+opts.url);
-                me.view.setLoading(false);
+                alert('Management server error with '+opts.url);
             }
         });
     }
