@@ -90,8 +90,9 @@ Ext.define('Funcman.OpenNodeGraph', {
                     iconCls: 'refresh',
                     node: node
                 }, {
-                    xtype: 'textarea',
-                    multiline: true
+                    xtype: 'container',
+                    layout: { type: 'vbox' },
+                    height: 150
                 }];
             } else {
                 items = [{
@@ -292,7 +293,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         var me = this;
         var node = button.node;
 
-        var infolabel = node.infowindow.items.getAt(3);
+        var infocontainer = node.infowindow.items.getAt(3);
 
         Ext.Ajax.request({
             cors: true,
@@ -301,12 +302,44 @@ Ext.define('Funcman.OpenNodeGraph', {
                 var o = Ext.JSON.decode(response.responseText, true);
                 var text = '';
                 for(var i in o) {
+                    if (i == "arch") {
+                        infocontainer.add({xtype: 'label', text: 'Arch: '+o[i]});
+                    } else if (i == "state") {
+                        var statusButton = Ext.create('Ext.Button', {
+                            xtype: 'button',
+                            text: o[i],
+                            scale: 'medium',
+                            node: node
+                        });
+                        statusButton.setHandler(me.statusButtonListener, me);
+                        infocontainer.add(statusButton);
+                    }
                     text += i+': '+o[i]+'\n';
                 }
-                infolabel.setValue(text);
             },
             failure: function(response, opts) {
                 alert('Could not connect to management server '+opts.url);
+            }
+        });
+    },
+    
+    statusButtonListener: function(button, e) {
+        var me = this;
+        var node = button.node;
+
+        var newStatus = (button.getText() == 'running') ? 'stopped' : 'running';
+
+        Ext.Ajax.request({
+            cors: true,
+            method: 'PUT',
+            jsonData: {status: newStatus},
+            url: me.server_name + '/computes/'+node.get('idnum')+'/',
+            success: function(response, opts, x) {
+                button.setText(newStatus);
+            },
+            failure: function(response, opts) {
+                alert('Could not connect to management server '+opts.url);
+                me.view.setLoading(false);
             }
         });
     }
