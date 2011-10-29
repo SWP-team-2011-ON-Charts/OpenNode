@@ -20,29 +20,23 @@ This file may be used under the terms of the GNU General Public License version 
 *   zoomslider
 */
 
-Ext.define('Funcman.GraphRef', {
-    extend: "Ext.data.Model",
-    alias: 'GraphRef',
-    fields: ['id'],
-    belongsTo: 'Funcman.GraphNode',
-});
-
 Ext.define('Funcman.GraphNode', {
     extend: "Ext.data.Model",
     alias: 'GraphNode',
     fields: [
-      {name: 'id', type: 'string'},    // unique local id - "dc0pm0vm1"
-      {name: 'res_id', type: 'int'},   // resource id     - 0
-      {name: 'path', type: 'string'},  // unique path     - "http://oms/computes/0/"
-      {name: 'type', type: 'string'},  // node type       - "vm", "pm", "dc", "user"
-      {name: 'image', type: 'string'}, // image to use    - "../machine.png"
-      {name: 'name', type: 'string'},  // name to display - "Machine 1"
+        {name: 'id', type: 'string'},
+        {name: 'res_id', type: 'int'},   // resource id     - 0
+        {name: 'path', type: 'string'},  // unique path     - "http://oms/computes/0/"
+        {name: 'type', type: 'string'},  // node type       - "vm", "pm", "dc", "user"
+        {name: 'image', type: 'string'},
+        {name: 'name', type: 'string'},
+        {name: 'parent', type: 'GraphNode'},
+        {name: 'x', type: 'int'},
+        {name: 'y', type: 'int'}
     ],
     proxy: {
         type: 'memory',
     },
-    infowindow: null,
-    hasMany  : {model: 'Funcman.GraphRef', name: 'children'}
 });
 
 Ext.define('Funcman.Graph', {
@@ -64,10 +58,9 @@ Ext.define('Funcman.Graph', {
             // tpl itself is set later according to zoom
             tpl_text: new Ext.XTemplate(
                 '<tpl for=".">',
-                    //'<div class="thumb-wrap">',
-                    '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                        '<div id = "{id}" class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
-                        (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
+                    '<div class="thumb-wrap" style="left:{x}px; top:{y}px">',
+                        '<div id = "{id}" class="thumb">',
+                        (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' :
                         '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
                         '</div>',
                         '<span>{name}</span>',
@@ -76,10 +69,9 @@ Ext.define('Funcman.Graph', {
             ),
             tpl_notext: new Ext.XTemplate(
                 '<tpl for=".">',
-                    //'<div class="thumb-wrap">',
-                    '<div class="thumb-wrap" style="left:{x}px;top:{y}px;">',
-                        '<div id = "{id}" class="thumb" style="width:{icon_size}px;height:{icon_size}px;">',
-                        (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' : 
+                    '<div class="thumb-wrap" style="left:{x}px; top:{y}px">',
+                        '<div id = "{id}" class="thumb">',
+                        (!Ext.isIE6? '<img src="{image}" width={icon_size}px; height={icon_size}px;/>' :
                         '<div style="width:48px;height:48px;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'{image}\')"></div>'),
                         '</div>',
                     '</div>',
@@ -90,14 +82,25 @@ Ext.define('Funcman.Graph', {
             listeners: {
                 selectionChange: function(dv, nodes) {
                     var me = this.up().up();
-                    me.refresh(me);
+                    if (nodes.length != 0) {
+                        var layoutPlugin = me.view.plugins[0];
+                        layoutPlugin.refresh.call(layoutPlugin);
+                    }
                 }
             },
+            
+            plugins : [
+                Ext.create('Funcman.GraphLayout', {
+                    duration  : 200,
+                    idProperty: 'id'
+                })
+            ],
+            id: 'nodes',
             
             allowDeselect: true,
             overItemCls: 'x-view-over',
             itemSelector: 'div.thumb-wrap',
-            cls: 'img-chooser-view showscrollbars'
+            cls: 'img-chooser-view'// showscrollbars'
         }),
         Ext.create('Ext.draw.Component', {
             viewBox: false,
@@ -115,34 +118,23 @@ Ext.define('Funcman.Graph', {
         cls: 'graphzoomslider',
         listeners: {
             change: function(el, val) {
-                var me = this.up();
-                me.refresh(me);
+                var me = this.up(),
+                    view = me.view,
+                    layoutPlugin = me.view.plugins[0];
+
+                view.tpl = (me.getZoom() < 1.4) ? view.tpl_notext : view.tpl_text;
+                layoutPlugin.refresh.call(layoutPlugin);
             }
         }
     })
     ],
 
-    refresh: function(me) {
-        var zoom = me.getZoom();
-        var view = me.view;
-        
-        view.tpl = (zoom < 1.4) ? view.tpl_notext : view.tpl_text;
-        
-        // Move nodes further from or closer to each other depending on zoom
-        view.store.each( function(record) {
-            me.computePositionByZoom(record, zoom);
-        });
-        view.store.sync();
-
-        // Redraw lines
-        me.connecticons(me);
-    },
-
     // Create lines connecting the icons
-    connecticons: function(me) {
-        var maxx = 0, maxy = 0;
-        var halfIcon = me.iconSize / 2;
-        var draw = me.draw;
+    connecticons: function() {
+        var me = this;
+        var maxx = 0, maxy = 0,
+            halfIcon = me.iconSize / 2,
+            draw = me.draw;
 
         // Clear all lines
         draw.surface.removeAll(true);
@@ -150,32 +142,36 @@ Ext.define('Funcman.Graph', {
 
         // Connect nodes with their child nodes
         // Also find graph area
-        var store = me.view.store;
+        var store = me.view.store,
+            dataviewID = me.view.id;
+
         store.each( function(record) {
-            record.children().each( function(childref) {
-                var child = store.findRecord('id', childref.get('id'));
-                
-                if (child) {
-                    // Create a path from the center of one icon to the center of the other
-                    var path =
-                      'M ' + (record.get('x') + record.get('icon_size')/2) + ' ' + (record.get('y') + record.get('icon_size')/2) + ' ' +
-                      'L ' + (child.get('x') + child.get('icon_size')/2) + ' ' + (child.get('y') + child.get('icon_size')/2)+ ' z';
-                    var sprite = {
-                        type: 'path',
-                        path: path,
-                        stroke: "#0CC",
-                        "stroke-width": '3',
-                        opacity: 0.5,
-                        group: 'lines'
-                    };
-                    draw.surface.add(sprite);
-                }
+            var recordEl = Ext.get(dataviewID + '-' + record.internalId);
+            var x1 = recordEl.getLeft(true) + recordEl.getWidth() / 2,
+                y1 = recordEl.getTop(true) + recordEl.getHeight() / 2;
+
+            Ext.each(record.children, function(child) {
+                var childEl = Ext.get(dataviewID + '-' + child.internalId);
+                var x2 = childEl.getLeft(true) + childEl.getWidth() / 2,
+                    y2 = childEl.getTop(true) + childEl.getHeight() / 2;
+
+                // Create a path from the center of one icon to the center of the other
+                var path =
+                  'M ' + x1 + ' ' + y1 + ' ' +
+                  'L ' + x2 + ' ' + y2 + ' z';
+
+                draw.surface.add({
+                    type: 'path',
+                    path: path,
+                    stroke: "#0CC",
+                    "stroke-width": '3',
+                    opacity: 0.5,
+                    group: 'lines'
+                });
             });
             
-            var x = record.get('x');
-            var y = record.get('y');
-            if (maxx < x) maxx = x;
-            if (maxy < y) maxy = y;
+            if (maxx < x1) maxx = x1;
+            if (maxy < y1) maxy = y1;
         });
 
         draw.surface.items.items.forEach( function(d){
@@ -198,7 +194,7 @@ Ext.define('Funcman.Graph', {
             return;
 
         me.addCls('movecursor');
-        me.addListener('mousemove', me.mousemovelistener, me, {element: 'el'});
+        me.on('mousemove', me.mousemovelistener, me, {element: 'el'});
         var containerpos = me.viewcontainer.getPosition();
         var currentscroll = me.viewcontainer.getEl().getScroll();
         me._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
@@ -244,10 +240,10 @@ Ext.define('Funcman.Graph', {
         me.slider = me.items.getAt(1);
 
         // Set up mouse listeners
-        vc.addListener('mousewheel', me.mousewheellistener, me, {element: 'el'});
-        vc.addListener('mousedown', me.mousedownlistener, me, {element: 'el'});
-        vc.addListener('mouseup', me.stopdrag, me, {element: 'el'});
-        //vc.addListener('mouseout', this.stopdrag, this, {element: 'el'});
+        vc.on('mousewheel', me.mousewheellistener, me, {element: 'el'});
+        vc.on('mousedown', me.mousedownlistener, me, {element: 'el'});
+        vc.on('mouseup', me.stopdrag, me, {element: 'el'});
+        //vc.on('mouseout', this.stopdrag, this, {element: 'el'});
         
         me.view.tpl = me.view.tpl_text;
         
@@ -281,84 +277,9 @@ Ext.define('Funcman.Graph', {
         return 1.0 + (this.slider.getValue() / 10.0);
     },
 
-    // Reads a node's left/top fields, multiplies by zoom and writes back x/y fields
-    computePosition: function(record) {
-    	this.computePositionByZoom(record, this.getZoom());
-    },
-
-    computePositionByZoom: function(record, zoom) {
-        var left = record.get('left');
-        var top = record.get('top');
-        var icon_size = this.iconSize * zoom;
-        
-        left = (left == undefined) ? 0 : parseInt(left * zoom);
-        top = (top == undefined) ? 0 : parseInt(top * zoom);
-        record.set('x', left);
-        record.set('y', top);
-
-        if (record.infowindow) {
-            record.infowindow.setPosition(left, top + icon_size);
-            if (zoom > 2 || record === this.getSelectedNode()) {
-                record.infowindow.show();
-            } else {
-                record.infowindow.hide();
-            }
-        }
-        record.set('icon_size', icon_size);
-        //record.set('y_size', (top == undefined) ? 0 : parseInt(iconSize * zoom));
-    },
-    
-    reorderNodes: function() {
-    	var me = this;
-    	var store = me.view.store;
-    	var zoom = me.getZoom();
-  
-    	store.each( function(record) {
-    		var type = record.get('type');
-    		var starting_point = 0 - me.iconSize;
-    		var vm_counter = 0;
-    		var pm_counter = 0;
-    		
-    		if (type == "dc") {
-    			if (record != null){
-    				record.children().each( function(childref) {
-            			var child = store.findRecord('id', childref.get('id'));
-                        if (child != null) {
-                            starting_point = starting_point  + me.iconSize/2.0;
-                            child.set('left', (starting_point));
-                        	child.children().each(function (ccref){
-                        		var child_child = store.findRecord('id', ccref.get('id'));
-                        		if (child_child != null){
-                        			starting_point = starting_point + me.iconSize * 1.2;
-                        			child_child.set('left', (starting_point));
-                        			vm_counter++;
-                        		}
-                        	});
-                            starting_point = starting_point  + me.iconSize/2.0;
-                            if (vm_counter != 0){
-                            	child.set('left', (starting_point  - vm_counter * me.iconSize/2.0));
-                            }
-                            else{
-                            	child.set('left', (starting_point));
-                            }
-                            vm_counter = 0;
-                            pm_counter++;
-                        }
-                    });
-    				record.set('left', (starting_point/2.0));
-        		}
-    		}
-            me.computePositionByZoom(record, zoom);
-        });
-    },
-
     addNode: function(node) {
         var me = this;
-
-        me.computePosition(node);
         me.view.store.add(node);
-        me.reorderNodes();
-        me.connecticons(me);
     },
 
     removeNode: function(node) {
@@ -366,9 +287,6 @@ Ext.define('Funcman.Graph', {
         var store = me.view.store;
 
         me.removeNodeWithChildren(node);
-
-        me.reorderNodes();
-        me.connecticons(me);
     },
 
     // This doesn't immediately redraw the whole graph
@@ -379,12 +297,17 @@ Ext.define('Funcman.Graph', {
         if (node.infowindow)
             node.infowindow.destroy();
 
-        node.children().each( function(childref) {
-            var child = store.findRecord('id', childref.get('id'));
-            if (child != null) {
-            	me.removeNodeWithChildren(child);
+        var children = node.children;
+        if (children) {
+            while (children.length != 0) {
+                me.removeNodeWithChildren(children[0]);
             }
-        });
+        }
+
+        var parent = node.get('parent');
+        if (parent) {
+            Ext.Array.remove(parent.children, node);
+        }
 
         store.remove(node);
     },

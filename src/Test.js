@@ -38,12 +38,20 @@ Ext.onReady(function () {
                 fieldLabel: 'server',
                 value: 'http://anthrax11.homeip.net:8080',
                 width: 350,
+                listeners: {
+                    specialkey: function(field, e){
+                        if (e.getKey() == e.ENTER) {
+                            me.syncWithServer(field.getValue());
+                            register.destroy();
+                        }
+                    }
+                }
             }, {
                 xtype: 'button',
                 text: 'register',
                 handler: function() {
                     me.syncWithServer(register.items.getAt(0).getValue());
-                    register.hide();
+                    register.destroy();
                 }
             }]
         });

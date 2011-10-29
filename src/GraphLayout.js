@@ -1,35 +1,12 @@
-/*
+// Copied largely from ux/DataView/Animated.js
 
-This file is part of Ext JS 4
+Ext.define('Funcman.GraphLayout', {
 
-Copyright (c) 2011 Sencha Inc
-
-Contact:  http://www.sencha.com/contact
-
-GNU General Public License Usage
-This file may be used under the terms of the GNU General Public License version 3.0 as published by the Free Software Foundation and appearing in the file LICENSE included in the packaging of this file.  Please review the following information to ensure the GNU General Public License version 3.0 requirements will be met: http://www.gnu.org/copyleft/gpl.html.
-
-If you are unsure which license is appropriate for your use, please contact the sales department at http://www.sencha.com/contact.
-
-*/
-/**
- * @class Ext.ux.DataViewTransition
- * @extends Object
- * @author Ed Spencer (http://sencha.com)
- * Transition plugin for DataViews
- */
-Ext.define('Ext.ux.DataView.Animated', {
-
-    /**
-     * @property defaults
-     * @type Object
-     * Default configuration options for all DataViewTransition instances
-     */
     defaults: {
-        duration  : 750,
+        duration  : 200,
         idProperty: 'id'
     },
-    
+
     /**
      * Creates the plugin instance, applies defaults
      * @constructor
@@ -53,7 +30,7 @@ Ext.define('Ext.ux.DataView.Animated', {
         
         var idProperty = this.idProperty,
             store = dataview.store;
-        
+
         dataview.blockRefresh = true;
         dataview.updateIndexes = Ext.Function.createSequence(dataview.updateIndexes, function() {
             this.getTargetEl().select(this.itemSelector).each(function(element, composite, index) {
@@ -86,9 +63,11 @@ Ext.define('Ext.ux.DataView.Animated', {
             }
         }, this);
         
-        dataview.store.on('datachanged', reDraw, this);
+        this.reDraw = function (store) {
+            if (this.suspendEvents) {
+                return;
+            }
         
-        function reDraw(store) {
             var parentEl = dataview.getTargetEl(),
                 calcItem = store.getAt(0),
                 added    = this.getAdded(store),
@@ -99,24 +78,25 @@ Ext.define('Ext.ux.DataView.Animated', {
             //hide old items
             Ext.each(removed, function(item) {
                 var id = this.dataviewID + '-' + item.internalId;
-                Ext.fly(id).animate({
-                    remove  : false,
-                    duration: duration,
-                    opacity : 0,
-                    useDisplay: true,
-                    callback: function() {
-                        Ext.fly(id).setDisplayed(false);
-                    }
-                });
+                if (Ext.fly(id)) {
+                    Ext.fly(id).animate({
+                        remove  : false,
+                        duration: duration,
+                        opacity : 0,
+                        useDisplay: true,
+                        callback: function() {
+                            Ext.fly(id).setDisplayed(false);
+                        }
+                    });
+                }
             }, this);
+
+            this.cacheStoreData(store);
             
             //store is empty
             if (calcItem == undefined) {
-                this.cacheStoreData(store);
                 return;
             }
-            
-            this.cacheStoreData(store);
             
             var el = Ext.get(this.dataviewID + "-" + calcItem.internalId);
             
@@ -127,14 +107,9 @@ Ext.define('Ext.ux.DataView.Animated', {
                 return true;
             }
             
-            //calculate the number of rows and columns we have
-            var itemCount   = store.getCount(),
-                itemWidth   = el.getMargin('lr') + el.getWidth(),
-                itemHeight  = el.getMargin('bt') + el.getHeight(),
-                dvWidth     = parentEl.getWidth(),
-                columns     = Math.floor(dvWidth / itemWidth),
-                rows        = Math.ceil(itemCount / columns),
-                currentRows = Math.ceil(this.getExistingCount() / columns);
+            var graph = this.dataview.up().up();
+            var itemWidth   = graph.getZoom() * graph.iconSize,// el.getWidth(),// + el.getMargin('lr'),
+                itemHeight  = graph.getZoom() * graph.iconSize + 20; // el.getHeight(); // el.getMargin('tb')
             
             //stores the current top and left values for each element (discovered below)
             var oldPositions = {},
@@ -142,14 +117,10 @@ Ext.define('Ext.ux.DataView.Animated', {
                 elCache      = {};
             
             //find current positions of each element and save a reference in the elCache
-            Ext.iterate(previous, function(id, item) {
-                var id = item.internalId,
-                    el = elCache[id] = Ext.get(this.dataviewID + '-' + id);
-                
-                oldPositions[id] = {
-                    top : el.getTop()  - parentEl.getTop()  - el.getMargin('t') - parentEl.getPadding('t'),
-                    left: el.getLeft() - parentEl.getLeft() - el.getMargin('l') - parentEl.getPadding('l')
-                };
+            Ext.iterate(existing, function(itemid, item) {
+                var id = item.internalId;
+                elCache[id] = Ext.get(this.dataviewID + '-' + id);
+                oldPositions[id] = {left: item.get('x'), top: item.get('y')};
             }, this);
             
             //make sure the correct styles are applied to the parent element
@@ -157,50 +128,81 @@ Ext.define('Ext.ux.DataView.Animated', {
                 display : 'block',
                 position: 'relative'
             });
-            
-            //set absolute positioning on all DataView items. We need to set position, left and 
-            //top at the same time to avoid any flickering
-            Ext.iterate(previous, function(id, item) {
-                var oldPos = oldPositions[id],
-                    el     = elCache[id];
 
-                if (el.getStyle('position') != 'absolute') {
-                    elCache[id].applyStyles({
-                        position: 'absolute',
-                        left    : oldPos.left + "px",
-                        top     : oldPos.top + "px"
-                    });
+            // Get all datacenters (root elements)
+            var dcs = [];
+            Ext.iterate(store.data.items, function(record) {
+                if (!record.get('parent')) {
+                    dcs.push(record);
                 }
-            });
-            
-            //get new positions
-            var index = 0;
-            Ext.iterate(store.data.items, function(item) {
-                var id = item.internalId,
-                    el = elCache[id];
-                
-                var column = index % columns,
-                    row    = Math.floor(index / columns),
-                    top    = row    * itemHeight,
-                    left   = column * itemWidth;
-                
-                newPositions[id] = {
-                    top : top,
-                    left: left
-                };
-                
-                index ++;
             }, this);
-            
+
+            // Set new positions
+            var rootleft = 0;
+            Ext.each(dcs, function(dc) {
+                var width = 0;
+                Ext.each(dc.children, function(child) {
+                    var id = child.internalId;
+
+                    // Set positions for VMs (third line)
+                    var vmwidth = 0;
+                    Ext.each(child.children, function(vm) {
+                        var vmid = vm.internalId;
+                        newPositions[vmid] = {
+                            top : itemHeight * 2,
+                            left: width + vmwidth
+                        };
+                        if (oldPositions[vmid].left === 0 && oldPositions[vmid].top === 0) {
+                            oldPositions[vmid] = newPositions[vmid];
+                        }
+                        this.suspendEvents = true;
+                        vm.set('x', newPositions[vmid].left);
+                        vm.set('y', newPositions[vmid].top);
+                        this.suspendEvents = false;
+
+                        vmwidth += itemWidth;
+                    }, this);
+
+                    // Set position of PM
+                    newPositions[id] = {
+                        top : itemHeight,
+                        left: width + ((vmwidth <= itemWidth) ? 0 : ((vmwidth - itemWidth) / 2))
+                    };
+                    if (oldPositions[id].left === 0 && oldPositions[id].top === 0) {
+                        oldPositions[id] = newPositions[id];
+                    }
+                    this.suspendEvents = true;
+                    child.set('x', newPositions[id].left);
+                    child.set('y', newPositions[id].top);
+                    this.suspendEvents = false;
+
+                    width += vmwidth ? vmwidth : itemWidth;
+                }, this);
+
+                // Place the root element in the middle
+                var id = dc.internalId;
+                newPositions[id] = {left: rootleft + width / 2, top: 0};
+                rootleft += width;
+                if (oldPositions[id].left === 0 && oldPositions[id].top === 0) {
+                    oldPositions[id] = newPositions[id];
+                }
+                this.suspendEvents = true;
+                dc.set('x', newPositions[id].left);
+                dc.set('y', newPositions[id].top);
+                this.suspendEvents = false;
+            }, this);
+
             //do the movements
             var startTime  = new Date(),
                 duration   = this.duration,
                 dataviewID = this.dataviewID;
             
             var doAnimate = function() {
+                if (!this.graph)
+                    this.graph = this.dataview.up().up();
+            
                 var elapsed  = new Date() - startTime,
-                    fraction = elapsed / duration,
-                    id;
+                    fraction = elapsed / duration;
                 
                 if (fraction >= 1) {
                     for (id in newPositions) {
@@ -208,9 +210,22 @@ Ext.define('Ext.ux.DataView.Animated', {
                             top : newPositions[id].top + "px",
                             left: newPositions[id].left + "px"
                         });
+
+                        var node = this.cachedStoreData[id],
+                            iw = node.infowindow;
+                        if (iw) {
+                            iw.setPosition(node.get('x'), node.get('y') + itemHeight);
+                            if (this.graph.getZoom() > 2 || node === this.graph.getSelectedNode()) {
+                                iw.show();
+                            } else {
+                                iw.hide();
+                            }
+                        }
                     }
                     
                     Ext.TaskManager.stop(task);
+                    delete task;
+                    
                 } else {
                     //move each item
                     for (id in newPositions) {
@@ -233,7 +248,19 @@ Ext.define('Ext.ux.DataView.Animated', {
                             top : midTop + "px",
                             left: midLeft + "px"
                         }).setDisplayed(true);
+
+                        var node = this.cachedStoreData[id],
+                            iw = node.infowindow;
+                        if (iw) {
+                            iw.setPosition(node.get('x'), node.get('y') + itemHeight);
+                            if (this.graph.getZoom() > 2 || node === this.graph.getSelectedNode()) {
+                                iw.show();
+                            } else {
+                                iw.hide();
+                            }
+                        }
                     }
+                    this.graph.connecticons.call(this.graph);
                 }
             };
             
@@ -244,7 +271,7 @@ Ext.define('Ext.ux.DataView.Animated', {
             };
             
             Ext.TaskManager.start(task);
-            
+
             //show new items
             Ext.iterate(added, function(id, item) {
                 Ext.fly(this.dataviewID + '-' + item.internalId).applyStyles({
@@ -258,9 +285,28 @@ Ext.define('Ext.ux.DataView.Animated', {
                     opacity : 1
                 });
             }, this);
-            
+
             this.cacheStoreData(store);
         }
+        
+        this.suspendEvents = false;
+        dataview.store.on('datachanged', this.reDraw, this);
+        
+        this.refresh = function() {
+            var me = this;
+            me.cacheStoreData(store);
+
+            if (!me.graph)
+                me.graph = me.dataview.up().up();
+            
+            me.suspendEvents = true;
+            Ext.iterate(me.cachedStoreData, function(id, item) {
+                item.set('icon_size', me.graph.iconSize * me.graph.getZoom());
+            }, me);
+            me.suspendEvents = false;
+
+            me.reDraw.call(me, store);
+        };
     },
     
     /**
@@ -350,4 +396,3 @@ Ext.define('Ext.ux.DataView.Animated', {
         return remaining;
     }
 });
-

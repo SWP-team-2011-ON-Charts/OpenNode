@@ -136,9 +136,10 @@ Ext.define('Funcman.OpenNodeGraph', {
             name : name,
             image: 'images/data-center.png',
             left: 64 + res_id * 192 * this.calc_left,
-            calc_left: 1,
+            calc_left: 1
         });
         this.attachInfoWindow(dc);
+        dc.children = [];
         
         this.addNode(dc);
         return dc;
@@ -156,12 +157,13 @@ Ext.define('Funcman.OpenNodeGraph', {
             image: 'images/network-server.png',
             top: 64,
             left: this.pmid * 64,
+            parent: node
         });
         this.attachInfoWindow(pm);
+        pm.children = [];
 
-        var childrefs = node.children();
-        childrefs.add({id: newid});
-        childrefs.sync();
+        node.children.push(pm);
+
         this.addNode(pm);
         this.pmid++;
     },
@@ -179,14 +181,15 @@ Ext.define('Funcman.OpenNodeGraph', {
             image: 'images/computer.png',
             top: 128,
             left: this.vmid * 64,
+            parent: node
         });
         this.attachInfoWindow(vm);
+        vm.children = [];
 
-        var childrefs = node.children();
-        childrefs.add({id: newid});
-        childrefs.sync();
+        node.children.push(vm);
         
         this.addNode(vm);
+        //this.setSelectedNode(vm);
         this.vmid++;
     },
 
@@ -202,12 +205,12 @@ Ext.define('Funcman.OpenNodeGraph', {
             image: 'images/user.png',
             top: 192,
             left: this.uid * 64,
+            children: [],
+            parent: node
         });
         this.attachInfoWindow(uu);
 
-        var childrefs = node.children();
-        childrefs.add({id: newid});
-        childrefs.sync();
+        node.children.push(uu);
         
         this.addNode(uu);
         this.uid++;
@@ -243,12 +246,12 @@ Ext.define('Funcman.OpenNodeGraph', {
             image: 'images/network-server.png',
             top: 64,
             left: this.pmid * 64,
+            parent: dc
         });
         this.attachInfoWindow(pm);
+        pm.children = [];
 
-        var childrefs = dc.children();
-        childrefs.add({id: newid});
-        childrefs.sync();
+        dc.children.push(pm);
 
         this.addNode(pm);
         this.pmid++;
@@ -265,12 +268,11 @@ Ext.define('Funcman.OpenNodeGraph', {
                 var dc = me.addDatacenter(server_name+'/networks/'+me.dcid+'/', me.dcid, 'datacenter'+me.dcid);
                 me.dcid++;
             
-                var o = Ext.JSON.decode(response.responseText, true);
-                for(var i in o) {
-                    var pms = o[i];
-                    for (pm in pms)
-                        me.addMachineFromServer(server_name+'/computes/'+pm+'/', pm, pms[pm], dc);
-                }
+                Ext.each(Ext.JSON.decode(response.responseText, true), function(m) {
+                    Ext.iterate(m, function(id, name) {
+                        me.addMachineFromServer(server_name+'/computes/'+id+'/', id, name, dc);
+                    });
+                });
                 me.view.setLoading(false);
             },
             failure: function(response, opts) {
