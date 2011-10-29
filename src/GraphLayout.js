@@ -150,7 +150,7 @@ Ext.define('Funcman.GraphLayout', {
                         var vmid = vm.internalId;
                         newPositions[vmid] = {
                             top : itemHeight * 2,
-                            left: width + vmwidth
+                            left: rootleft + width + vmwidth
                         };
                         if (oldPositions[vmid].left === 0 && oldPositions[vmid].top === 0) {
                             oldPositions[vmid] = newPositions[vmid];
@@ -166,7 +166,7 @@ Ext.define('Funcman.GraphLayout', {
                     // Set position of PM
                     newPositions[id] = {
                         top : itemHeight,
-                        left: width + ((vmwidth <= itemWidth) ? 0 : ((vmwidth - itemWidth) / 2))
+                        left: rootleft + width + ((vmwidth <= itemWidth) ? 0 : ((vmwidth - itemWidth) / 2))
                     };
                     if (oldPositions[id].left === 0 && oldPositions[id].top === 0) {
                         oldPositions[id] = newPositions[id];
@@ -182,7 +182,6 @@ Ext.define('Funcman.GraphLayout', {
                 // Place the root element in the middle
                 var id = dc.internalId;
                 newPositions[id] = {left: rootleft + width / 2, top: 0};
-                rootleft += width;
                 if (oldPositions[id].left === 0 && oldPositions[id].top === 0) {
                     oldPositions[id] = newPositions[id];
                 }
@@ -190,6 +189,8 @@ Ext.define('Funcman.GraphLayout', {
                 dc.set('x', newPositions[id].left);
                 dc.set('y', newPositions[id].top);
                 this.suspendEvents = false;
+                
+                rootleft += width;
             }, this);
 
             //do the movements
