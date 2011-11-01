@@ -253,7 +253,7 @@ Ext.define('Funcman.GraphLayout', {
                         var node = this.cachedStoreData[id],
                             iw = node.infowindow;
                         if (iw) {
-                            iw.setPosition(node.get('x'), node.get('y') + itemHeight);
+                            iw.setPosition(midLeft, midTop + itemHeight);
                             if (this.graph.getZoom() > 2 || node === this.graph.getSelectedNode()) {
                                 iw.show();
                             } else {

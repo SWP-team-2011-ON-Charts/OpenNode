@@ -63,7 +63,6 @@ Ext.define('Funcman.OpenNodeGraph', {
             });
             
             iw.items.getAt(0).setHandler(me.remove, me);
-            iw.show();
         }
         else {
             var items = null;
@@ -120,8 +119,6 @@ Ext.define('Funcman.OpenNodeGraph', {
             iw.items.getAt(1).setHandler(me.remove, me);
             if (type == "pm")
                 iw.items.getAt(2).setHandler(me.getComputeInfo, me);
-
-            iw.show();
         }
         node.infowindow = iw;
     },
@@ -217,15 +214,20 @@ Ext.define('Funcman.OpenNodeGraph', {
     },
 
     remove: function(button, e) {
-        var me = this;
-        var node = button.node;
+        var me = this,
+            node = button.node,
+            path = node.get('path');
+
+        if (!path) {
+            me.removeNode(button.node);
+            return;
+        }
 
         Ext.Ajax.request({
             cors: true,
             method: 'DELETE',
-            url: node.get('path'),
-            success: function(response, opts, x) {
-                var o = Ext.JSON.decode(response.responseText, true);
+            url: path,
+            success: function(response, opts) {
                 me.removeNode(button.node);
             },
             failure: function(response, opts) {
@@ -264,7 +266,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         Ext.Ajax.request({
             cors: true,
             url: server_name + '/computes/',
-            success: function(response, opts, x) {
+            success: function(response, opts) {
                 var dc = me.addDatacenter(server_name+'/networks/'+me.dcid+'/', me.dcid, 'datacenter'+me.dcid);
                 me.dcid++;
             
@@ -291,7 +293,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         Ext.Ajax.request({
             cors: true,
             url: node.get('path'),
-            success: function(response, opts, x) {
+            success: function(response, opts) {
                 var o = Ext.JSON.decode(response.responseText, true);
                 var text = '';
                 for(var i in o) {
@@ -327,7 +329,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             method: 'PUT',
             jsonData: {status: newStatus},
             url: node.get('path'),
-            success: function(response, opts, x) {
+            success: function(response, opts) {
                 button.setText(newStatus);
             },
             failure: function(response, opts) {
