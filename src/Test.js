@@ -7,8 +7,10 @@ This file may be used under the terms of the GNU General Public License version 
 
 */
 
+
 Ext.onReady(function () {
 
+	
     var body = Ext.getBody();
 
     var button = Ext.widget('button', {
@@ -17,6 +19,14 @@ Ext.onReady(function () {
         iconCls: 'add',
         renderTo: body,
         cls: 'floater',
+    });
+    
+    var user_button = Ext.widget('button', {
+        text : 'Add User',
+        scale: 'medium',
+        iconCls: 'user',
+        renderTo: body,
+        cls: 'add_user_button',
     });
 
     var graph = Ext.create('OpenNodeGraph', {
@@ -57,4 +67,34 @@ Ext.onReady(function () {
         });
         register.show();
     }, graph);
+    
+    user_button.setHandler(function() {
+        var me = this;
+        var register = Ext.create('Ext.Window', {
+            title: 'Add User',
+            height: 150,
+            width: 300,
+            layout: 'vbox',
+            items: [{
+                xtype: 'textfield',
+                fieldLabel: 'User name',
+                width: 250,
+                
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Rights',
+                width: 250,
+            }, {
+                xtype: 'button',
+                text: 'Add',
+                handler: function() {
+                    store2.add({ 'name': register.items.getAt(0).getValue(),  "rights-status": register.items.getAt(1).getValue()});
+                    register.destroy();
+               }
+            }]
+        });
+        register.show();
+    }, graph);
+    
+    
 });

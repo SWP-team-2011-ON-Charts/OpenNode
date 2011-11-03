@@ -18,12 +18,31 @@ This file may be used under the terms of the GNU General Public License version 
 *   zoomslider
 */
 
+var store2 = 	Ext.create('Ext.data.Store', {
+    storeId:'data_store',
+    fields:['name', 'rights-status'],
+    data:{'items':[
+        { 'name': 'Super Dummy',  "rights-status":"Super User"},
+        { 'name': 'Dummy 1', "rights-status":"Custom"},
+        { 'name': 'Dummy 2', "rights-status":"Custom"},
+        { 'name': 'Dummy 3', "rights-status":"Typical"}
+    ]},
+    proxy: {
+        type: 'memory',
+        reader: {
+            type: 'json',
+            root: 'items'
+        }
+    }
+});
+
 Ext.define('Funcman.Graph', {
     alias: 'Graph',
     extend: 'Ext.container.Container',
     cls: 'graphcontainer',
     graph_tree_container_size: 0,
 
+    
     items: [
         Ext.create('Funcman.GraphView'),
         Ext.create('Ext.slider.Single', {
@@ -40,12 +59,21 @@ Ext.define('Funcman.Graph', {
                 }
             }
         }),
-        Ext.create('Ext.panel.Panel', {
+
+        
+        Ext.create('Ext.grid.Panel', {
             title: 'Users',
+            store: Ext.data.StoreManager.lookup('data_store'),
+            columns: [
+                { header: 'Name',  dataIndex: 'name' },
+                { header: 'Rigths', dataIndex: 'rights-status'}
+            ],
             width: 200,
             height: 600,
-            cls: 'userpanel'
+            cls: 'userpanel',
         })
+        
+       
     ],
 
     // Mouse wheel controls the zoom slider

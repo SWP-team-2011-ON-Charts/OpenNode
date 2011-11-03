@@ -93,9 +93,20 @@ pre.code{
 .x-btn-default-medium .refresh {
     background-image: url(images/view-refresh.png) !important;
 }
+
+.x-btn-default-medium .user {
+    background-image: url(images/user.png) !important;
+}
+
 div.x-item-selected {
   background: #ccc;
 }
 .thumb {
   width: 48px;
+}
+
+.add_user_button {
+	position: absolute;
+	top: 70px;
+    left: 920px;
 }
