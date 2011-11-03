@@ -46,3 +46,9 @@
 .movecursor {
     cursor: move;
 }
+
+.userpanel {
+    position:absolute;
+    top: 0px;
+    left: 900px;
+}

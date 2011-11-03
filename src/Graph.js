@@ -39,6 +39,12 @@ Ext.define('Funcman.Graph', {
                     this.up().view.layoutPlugin.refresh();
                 }
             }
+        }),
+        Ext.create('Ext.panel.Panel', {
+            title: 'Users',
+            width: 200,
+            height: 600,
+            cls: 'userpanel'
         })
     ],
 
