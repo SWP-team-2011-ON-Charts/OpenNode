@@ -19,10 +19,11 @@ Ext.define('Funcman.OpenNodeGraph', {
         var iw = Ext.create('Ext.Panel', {
               title: node.name,
               layout: 'vbox',
-              //width: 100,
+              width: 100,
               height: 180,
               preventHeader: true,
-              renderTo: me.getEl(),
+              renderTo: me.view.getEl(),
+              floating: true
               //items: items
           });
         
@@ -43,6 +44,22 @@ Ext.define('Funcman.OpenNodeGraph', {
         this.attachInfoWindow(dc);
 
         return dc;
+    },
+
+    createVM: function(path, res_id, name, pm) {
+        var vm = Ext.create('GraphNode', {
+            id: pm.id + 'vm'+res_id,
+            res_id: res_id,
+            path: path,
+            type: 'vm',
+            name : name,
+            image: 'images/computer.png',
+            parent: pm
+        });
+        //this.attachInfoWindow(vm);
+        pm.children.push(vm);
+
+        return vm;
     },
 
     addMachine: function(button) {
@@ -140,11 +157,9 @@ Ext.define('Funcman.OpenNodeGraph', {
     },
 
     createMachineFromServer: function(path, res_id, name, dc) {
-        var newid = dc.id+'pm'+res_id;
-
         var pm = Ext.create('GraphNode', {
             path: path,
-            id: newid,
+            id: dc.id + 'pm'+res_id,
             res_id: res_id,
             type: 'pm',
             name : name,
@@ -167,17 +182,15 @@ Ext.define('Funcman.OpenNodeGraph', {
             url: server_name + '/computes/',
             success: function(response, opts) {
                 var dc = me.createDatacenter(server_name+'/networks/'+me.dcid+'/', me.dcid, 'datacenter'+me.dcid);
-                me.addNode(dc);
                 me.dcid++;
                 
-                var pms = [];
                 Ext.each(Ext.JSON.decode(response.responseText, true), function(m) {
                     Ext.iterate(m, function(id, name) {
                         var pm = me.createMachineFromServer(server_name+'/computes/'+id+'/', id, name, dc);
-                        pms.push(pm);
+                        var vm = me.createVM(null, id, "VM", pm);
                     });
                 });
-                me.addNodes(pms);
+                me.addNode(dc);
                 me.view.setLoading(false);
             },
             failure: function(response, opts) {

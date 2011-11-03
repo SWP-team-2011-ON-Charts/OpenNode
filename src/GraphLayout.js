@@ -125,7 +125,7 @@ Ext.define('Funcman.GraphLayout', {
             rootleft += width;
         }, this);
 
-        //find current positions of each element and save a reference in the elCache
+        //find current positions of each element
         Ext.iterate(this.itemCache, function(id, item) {
             if (Ext.Array.contains(this.added, id)) {
                 oldPositions[id] = newPositions[id];
@@ -162,6 +162,7 @@ Ext.define('Funcman.GraphLayout', {
                         }
                     }
                 }
+                this.graph.view.drawLines();
                 
                 Ext.TaskManager.stop(task);
                 delete task;
