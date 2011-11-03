@@ -11,119 +11,25 @@ Ext.define('Funcman.OpenNodeGraph', {
     extend: 'Funcman.Graph',
     alias: 'OpenNodeGraph',
     
-    dcid: 0, pmid: 0, vmid: 0, uid: 0,
-
+    dcid: 0,
+    
     attachInfoWindow: function(node) {
         var me = this;
-    
-        var name = node.get('name');
-        var type = node.get('type');
-
-        if (type == "dc") {
-            addtext = "Register Machine";
-            remtext = "Remove Datacenter";
-            handler = me.addMachine;
-        }
-        else if (type == "pm") {
-            addtext = "Add VM";
-            remtext = "Remove Machine";
-            handler = me.addVM;
-        }
-        else if (type == "vm") {
-            addtext = "Add User";
-            remtext = "Remove VM";
-            handler = me.addUser;
-        }
-        else if (type == "uu") {
-            remtext = "Remove User";
-            handler = me.addUser;
-        }
-        else {
-            // Unknown node type
-            return;
-        }
-
-        var iw = null;
-        if (type == "uu") {
-            iw = Ext.create('Ext.Panel', {
-                title: name,
-                width: 100,
-                height: 110,
-                renderTo: me.viewcontainer.getEl(),
-                layout: 'fit',
-                floating: true,
-                items: [{
-                    xtype: 'button',
-                    text : remtext,
-                    scale: 'medium',
-                    iconCls: 'remove',
-                    iconAlign: 'left',
-                    node: node
-                }]
-            });
-            
-            iw.items.getAt(0).setHandler(me.remove, me);
-        }
-        else {
-            var items = null;
-            if (type == "pm") {
-                items = [{
-                    xtype: 'button',
-                    text : addtext,
-                    scale: 'medium',
-                    iconCls: 'add',
-                    node: node
-                }, {
-                    xtype: 'button',
-                    text : remtext,
-                    scale: 'medium',
-                    iconCls: 'remove',
-                    node: node
-                }, {
-                    xtype: 'button',
-                    text : 'Get Info',
-                    scale: 'medium',
-                    iconCls: 'refresh',
-                    node: node
-                }, {
-                    xtype: 'container',
-                    layout: { type: 'vbox' },
-                    height: 150
-                }];
-            } else {
-                items = [{
-                    xtype: 'button',
-                    text : addtext,
-                    scale: 'medium',
-                    iconCls: 'add',
-                    node: node
-                }, {
-                    xtype: 'button',
-                    text : remtext,
-                    scale: 'medium',
-                    iconCls: 'remove',
-                    node: node
-                }];
-            }
-            iw = Ext.create('Ext.Panel', {
-                title: name,
-                layout: 'vbox',
-                //width: 100,
-                height: 180,
-                renderTo: me.viewcontainer.getEl(),
-                floating: true,
-                items: items
-            });
-            
-            iw.items.getAt(0).setHandler(handler, me);
-            iw.items.getAt(1).setHandler(me.remove, me);
-            if (type == "pm")
-                iw.items.getAt(2).setHandler(me.getComputeInfo, me);
-        }
+        
+        var iw = Ext.create('Ext.Panel', {
+              title: node.name,
+              layout: 'vbox',
+              //width: 100,
+              height: 180,
+              preventHeader: true,
+              renderTo: me.getEl(),
+              //items: items
+          });
+        
         node.infowindow = iw;
     },
 
-    addDatacenter: function(path, res_id, name) {
+    createDatacenter: function(path, res_id, name) {
     	
         var dc = Ext.create('GraphNode', {
             id: 'dc'+res_id,
@@ -132,13 +38,10 @@ Ext.define('Funcman.OpenNodeGraph', {
             type: 'dc',
             name : name,
             image: 'images/data-center.png',
-            left: 64 + res_id * 192 * this.calc_left,
-            calc_left: 1
+            children: []
         });
         this.attachInfoWindow(dc);
-        dc.children = [];
-        
-        this.addNode(dc);
+
         return dc;
     },
 
@@ -236,8 +139,8 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
     },
 
-    addMachineFromServer: function(path, res_id, name, dc) {
-        var newid = dc.get('id')+'pm'+res_id;
+    createMachineFromServer: function(path, res_id, name, dc) {
+        var newid = dc.id+'pm'+res_id;
 
         var pm = Ext.create('GraphNode', {
             path: path,
@@ -246,17 +149,13 @@ Ext.define('Funcman.OpenNodeGraph', {
             type: 'pm',
             name : name,
             image: 'images/network-server.png',
-            top: 64,
-            left: this.pmid * 64,
-            parent: dc
+            parent: dc,
+            children: []
         });
-        this.attachInfoWindow(pm);
-        pm.children = [];
+        //this.attachInfoWindow(pm);
 
         dc.children.push(pm);
-
-        this.addNode(pm);
-        this.pmid++;
+        return pm;
     },
     
     syncWithServer: function(server_name) {
@@ -267,14 +166,18 @@ Ext.define('Funcman.OpenNodeGraph', {
             cors: true,
             url: server_name + '/computes/',
             success: function(response, opts) {
-                var dc = me.addDatacenter(server_name+'/networks/'+me.dcid+'/', me.dcid, 'datacenter'+me.dcid);
+                var dc = me.createDatacenter(server_name+'/networks/'+me.dcid+'/', me.dcid, 'datacenter'+me.dcid);
+                me.addNode(dc);
                 me.dcid++;
-            
+                
+                var pms = [];
                 Ext.each(Ext.JSON.decode(response.responseText, true), function(m) {
                     Ext.iterate(m, function(id, name) {
-                        me.addMachineFromServer(server_name+'/computes/'+id+'/', id, name, dc);
+                        var pm = me.createMachineFromServer(server_name+'/computes/'+id+'/', id, name, dc);
+                        pms.push(pm);
                     });
                 });
+                me.addNodes(pms);
                 me.view.setLoading(false);
             },
             failure: function(response, opts) {

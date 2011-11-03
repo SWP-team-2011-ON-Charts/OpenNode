@@ -1,48 +1,48 @@
-.img-chooser-view {
-    font: 11px Arial, Helvetica, sans-serif;
+.graphcontainer {
+    background-color: #F8F8F8;
+    position: relative;
 }
-.img-chooser-view .thumb {
-    padding: 3px;
-}
-.img-chooser-view .thumb-wrap {
-    float: left;
-    margin: 2px;
-    padding: 5px;
-    position:absolute;
-}
-.img-chooser-view .thumb-wrap span {
-    display: block;
-    text-align: center;
-}
-.img-chooser-view .x-view-over {
-    border:1px solid #dddddd;
-    background-color: #efefef;
-    padding: 4px;
-}
-.img-chooser-view .x-item-selected {
-    background: #DFEDFF;
-    border: 1px solid #6593cf;
-    padding: 4px;
-}
-.img-chooser-view .x-item-selected .thumb {
-    background:transparent;
-}
-.img-chooser-view .x-item-selected span {
-    color:#1A4D8F;
-}
+
 .graphzoomslider {
     position:absolute;
     top: 5px;
     left: 2px;
 }
-.movecursor {
-    cursor: move;
-}
-.graphcontainer {
-    background-color: #F8F8F8;
-    position: relative;
-}
-.graphviewcontainer {
+
+.graphview {
     position: relative;
     overflow: hidden;
+    font: 11px Arial, Helvetica, sans-serif;
+}
+.graphview .thumb {
+    padding: 3px;
+}
+.graphview .thumb-wrap {
+    float: left;
+    margin: 2px;
+    padding: 5px;
+    position:absolute;
+}
+.graphview .thumb-wrap label {
+    text-align: center;
+}
+.graphview .x-view-over {
+    border:1px solid #dddddd;
+    background-color: #efefef;
+    padding: 4px;
+}
+.graphview .x-item-selected {
+    background: #DFEDFF;
+    border: 1px solid #6593cf;
+    padding: 4px;
+}
+.graphview .x-item-selected .thumb {
+    background:transparent;
+}
+.graphview .x-item-selected label {
+    color:#1A4D8F;
+}
+
+.movecursor {
+    cursor: move;
 }
