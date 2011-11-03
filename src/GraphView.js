@@ -132,27 +132,32 @@ Ext.define('Funcman.GraphView', {
         // Also find graph area
         me.items.each( function(item) {
             if (item instanceof Funcman.GraphNode) {
-                var height = item.getHeight(),
-                    x1 = item.getX() + item.getWidth() / 2,
-                    y1 = item.getY() + height / 2;
+                var ic1 = item.getIconCenter(),
+                    height = item.getHeight();
 
-                if (maxx < x1) maxx = x1;
-                if (maxy < y1) maxy = y1;
+                if (maxx < ic1.x) maxx = ic1.x;
+                if (maxy < ic1.y) maxy = ic1.y;
                 if (maxh < height) maxh = height;
 
                 Ext.each(item.children, function(child) {
-                    var x2 = child.getX() + child.getWidth() / 2,
-                        y2 = child.getY() + child.getHeight() / 2;
+                    var ic2 = child.getIconCenter();
 
                     // Create a path from the center of one icon to the center of the other
                     var path =
-                      'M ' + x1 + ' ' + y1 + ' ' +
-                      'L ' + x2 + ' ' + y2 + ' z';
+                      'M ' + ic1.x + ' ' + ic1.y + ' ' +
+                      'L ' + ic2.x + ' ' + ic2.y + ' z',
+                        color;
+
+                    if (child.type == "pm") {
+                        color = "#0CC";
+                    } else {
+                        color = "#C00";
+                    }
 
                     surface.add({
                         type: 'path',
                         path: path,
-                        stroke: "#0CC",
+                        stroke: color,
                         "stroke-width": '3',
                         opacity: 0.5,
                         group: 'lines'

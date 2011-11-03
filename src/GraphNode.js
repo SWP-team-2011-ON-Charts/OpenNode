@@ -58,5 +58,30 @@ Ext.define('Funcman.GraphNode', {
             width: s+'px',
             height: s+'px'}
         );
+    },
+    getIconCenter: function() {
+        var el = this.getEl(),
+            iconEl = this.getIcon().getEl(),
+            s = parseInt(iconEl.getStyle('width'), 10) / 2;
+        
+        return {
+            x: parseInt(el.getStyle('left'), 10) + s,
+            y: parseInt(el.getStyle('top'), 10) + s};
+    },
+
+    setXYSize: function(x,y,s) {
+        this.getIcon().getEl().applyStyles({
+            left: x+'px',
+            top: y+'px',
+            width: s+'px',
+            height: s+'px'}
+        );
+    },
+
+    highlight: function() {
+        this.getEl().addCls('x-view-over');
+    },
+    clearHighlight: function() {
+        this.getEl().removeCls('x-view-over');
     }
 });

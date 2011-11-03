@@ -86,24 +86,33 @@ Ext.define('Funcman.Graph', {
         node.getEl().animate({to: {opacity: 0}});
     },
 
-    addNode: function(node) {
+    addNode: function(node, norefresh) {
         var me = this;
+
         me.view.items_offscreen.push(node);
         if (node.visible) {
             me.view.add(node);
         }
-        me.view.layoutPlugin.refresh();
+
+        if (node.children) {
+            me.addNodes(node.children, true);
+        }
+
+        if (!norefresh) {
+            me.view.layoutPlugin.refresh();
+        }
     },
     
-    addNodes: function(nodes) {
+    addNodes: function(nodes, norefresh) {
         var me = this;
+
         Ext.each(nodes, function(node) {
-            me.view.items_offscreen.push(node);
-            if (node.visible) {
-                me.view.add(node);
-            }
+            me.addNode(node, norefresh);
         });
-        me.view.layoutPlugin.refresh();
+
+        if (!norefresh) {
+            me.view.layoutPlugin.refresh();
+        }
     },
 
     removeNode: function(node) {
