@@ -83,5 +83,12 @@ Ext.define('Funcman.GraphNode', {
     },
     clearHighlight: function() {
         this.getEl().removeCls('x-view-over');
-    }
+    },
+    
+    select: function() {
+        this.getEl().addCls('x-item-selected');
+    },
+    deselect: function() {
+        this.getEl().removeCls('x-item-selected');
+    },
 });

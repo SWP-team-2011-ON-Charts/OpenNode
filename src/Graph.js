@@ -95,16 +95,11 @@ Ext.define('Funcman.Graph', {
     },
 
     getSelectedNode: function() {
-        return this.view.getSelectionModel().getSelection()[0];
+        return this.view.selectedItem;
     },
 
     setSelectedNode: function(node) {
-        var sm = this.view.getSelectionModel();
-        if (node) {
-            sm.select([node], false);
-        } else {
-            sm.deselectAll();
-        }
+        this.view.selectedItem = node;
     },
 
     getZoom: function() {
@@ -112,7 +107,9 @@ Ext.define('Funcman.Graph', {
     },
 
     animateRemove: function(node) {
-        node.getEl().animate({to: {opacity: 0}});
+        var el = node.getEl();
+        el.setStyle({opacity: 1});
+        el.animate({to: {opacity: 0}});
     },
 
     addNode: function(node, norefresh) {
