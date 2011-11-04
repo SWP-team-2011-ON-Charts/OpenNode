@@ -17,15 +17,19 @@ Ext.define('Funcman.OpenNodeGraph', {
         var me = this;
         
         var iw = Ext.create('Ext.Panel', {
-              title: node.name,
-              layout: 'vbox',
-              width: 100,
-              height: 100,
-              preventHeader: true,
-              renderTo: me.view.getEl(),
-              floating: true
-              //items: items
-          });
+            title: node.name,
+            layout: 'vbox',
+            width: 100,
+            height: 80,
+            preventHeader: true,
+            renderTo: me.view.getEl(),
+            floating: true
+        });
+        
+        if (node.type == "pm") {
+            iw.add({xtype: 'button', text: 'Create VM', handler: function() {alert('create');}});
+            iw.add({xtype: 'button', text: 'Remove', handler: function(b) {me.removeNode(b.node);}, scope: me, node: node});
+        }
         
         node.infowindow = iw;
     },
@@ -133,7 +137,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         this.uid++;
     },
 
-    remove: function(button, e) {
+    removeListener: function(button, e) {
         var me = this,
             node = button.node,
             path = node.get('path');

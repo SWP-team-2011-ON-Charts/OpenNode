@@ -7,7 +7,7 @@ Ext.define('Funcman.GraphView', {
     isDragging: false,
     
     iconSize: 40,
-    items_offscreen: [],
+    items_remove: [],
     items: [
         {xtype: 'container'},
         {xtype: 'draw', viewBox: false, autoSize: true}
@@ -100,23 +100,22 @@ Ext.define('Funcman.GraphView', {
     },
 
     mouseuplistener: function(e,t) {
-        var me = this;
+        var me = this,
+            zoom = me.up().zoom;
 
         if (!me.isDragging) {
             // If not dragging, then an item was selected
             var item = me.getItemFromEl(t);
             if (item && item !== this.selectedItem) {
                 if (this.selectedItem) {
-                    this.selectedItem.deselect();
+                    this.selectedItem.deselect(zoom < 2);
                 }
                 this.selectedItem = item;
                 item.select();
-                me.layoutPlugin.refresh();
             } else if (!item) {
                 if (this.selectedItem) {
-                    this.selectedItem.deselect();
+                    this.selectedItem.deselect(zoom < 2);
                     this.selectedItem = null;
-                    me.layoutPlugin.refresh();
                 }
             }
         }
@@ -151,7 +150,6 @@ Ext.define('Funcman.GraphView', {
     drawLines: function() {
         var me = this,
             maxx = 0, maxy = 0, maxh = 0,
-            ic = me.itemcontainer,
             draw = me.draw,
             surface = draw.surface;
 
@@ -161,7 +159,7 @@ Ext.define('Funcman.GraphView', {
 
         // Connect nodes with their child nodes
         // Also find graph area
-        ic.items.each( function(item) {
+        me.itemcontainer.items.each( function(item) {
             var ic1 = item.getIconCenter(),
                 height = item.getHeight();
 
@@ -198,6 +196,6 @@ Ext.define('Funcman.GraphView', {
         surface.items.show(true);
 
         // Set line drawing area
-        draw.setSize(maxx + me.iconSize, maxy + maxh);
+        draw.setSize(maxx + me.iconSize, maxy + maxh + 100);
     }
 });

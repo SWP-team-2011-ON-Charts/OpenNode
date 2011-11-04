@@ -37,51 +37,11 @@ var store2 = 	Ext.create('Ext.data.Store', {
     }
 });
 
-var grid = Ext.create('Ext.grid.Panel', {
-    title: 'Users',
-    store: Ext.data.StoreManager.lookup('data_store'),
-    columns: [
-              {text: 'Name',  dataIndex:'name'},
-              {text: 'Rights',  dataIndex:'rights-status'},
-              {text: 'mid',
-                  xtype:'actioncolumn', 
-                  width:80,
-                  items: [{
-                      icon: 'images/list-add.png',  // Use a URL in the icon config
-                      tooltip: 'Edit',
-                      handler: function(grid, rowIndex, colIndex) {
-                          var rec = grid.getStore().getAt(rowIndex);
-                          alert("Edit " + rec.get('name') + " rights.");
-                      }
-                  },{
-                      icon: 'images/list-remove.png',
-                      tooltip: 'Delete',
-                      handler: function(grid, rowIndex, colIndex) {
-                          var rec = grid.getStore().getAt(rowIndex);
-                          grid.getStore().remove(rec);
-                      }                
-                  },{
-                      icon: 'images/list-add.png',
-                      handler: function(grid, rowIndex, colIndex) {
-                    	  var rec = grid.getStore().getAt(rowIndex);
-                          alert("Showing " + rec.get('name') + " rights.");
-                      }                
-                  }]
-              }
-          ],
-
-    width: 250,
-    height: 600,
-    cls: 'userpanel',
-});
-
 Ext.define('Funcman.Graph', {
     alias: 'Graph',
     extend: 'Ext.container.Container',
     cls: 'graphcontainer',
-    graph_tree_container_size: 0,
 
-    
     items: [
         Ext.create('Funcman.GraphView'),
         Ext.create('Ext.slider.Single', {
@@ -94,12 +54,73 @@ Ext.define('Funcman.Graph', {
             cls: 'graphzoomslider',
             listeners: {
                 change: function(el, val) {
-                    this.up().view.layoutPlugin.refresh();
+                    var me = this.up(),
+                        oldZoom = me.zoom,
+                        zoom = me.getZoom(),
+                        transition = (oldZoom <= 2 && zoom > 2) || (oldZoom > 2 && zoom <= 2);
+                    if (transition) {
+                        me.updateInfoWindowShow(zoom > 2);
+                    }
+                    me.view.layoutPlugin.refresh();
                 }
             }
-        }),        
-        grid
+        }),
+        Ext.create('Ext.grid.Panel', {
+            title: 'Users',
+            store: Ext.data.StoreManager.lookup('data_store'),
+            columns: [
+                  {text: 'Name',  dataIndex:'name'},
+                  {text: 'Rights',  dataIndex:'rights-status'},
+                  {text: 'mid',
+                      xtype:'actioncolumn', 
+                      width:80,
+                      items: [{
+                          icon: 'images/list-add.png',  // Use a URL in the icon config
+                          tooltip: 'Edit',
+                          handler: function(grid, rowIndex, colIndex) {
+                              var rec = grid.getStore().getAt(rowIndex);
+                              alert("Edit " + rec.get('name') + " rights.");
+                          }
+                      },{
+                          icon: 'images/list-remove.png',
+                          tooltip: 'Delete',
+                          handler: function(grid, rowIndex, colIndex) {
+                              var rec = grid.getStore().getAt(rowIndex);
+                              grid.getStore().remove(rec);
+                          }                
+                      },{
+                          icon: 'images/list-add.png',
+                          handler: function(grid, rowIndex, colIndex) {
+                              var rec = grid.getStore().getAt(rowIndex);
+                              alert("Showing " + rec.get('name') + " rights.");
+                          }                
+                      }]
+                  }
+              ],
+            width: 250,
+            height: 600,
+            cls: 'userpanel',
+        })
     ],
+
+    updateInfoWindowShow: function(show) {
+        var me = this,
+            ic = me.view.itemcontainer;
+
+        // Show/hide infowindow on zoom transition
+        if (show) {
+            ic.items.each(function(item) {
+                item.showInfoWindow();
+            });
+        } else {
+            var selected = me.getSelectedNode();
+            ic.items.each(function(item) {
+                if (item !== selected) {
+                    item.hideInfoWindow();
+                }
+            });
+        }
+    },
 
     // Mouse wheel controls the zoom slider
     mousewheellistener: function(e, t, opts) {
@@ -127,19 +148,13 @@ Ext.define('Funcman.Graph', {
     },
 
     getZoom: function() {
-        return 1.0 + (this.slider.getValue() / 10.0);
-    },
-
-    animateRemove: function(node) {
-        var el = node.getEl();
-        el.setStyle({opacity: 1});
-        el.animate({to: {opacity: 0}});
+        this.zoom = 1.0 + (this.slider.getValue() / 10.0);
+        return this.zoom;
     },
 
     addNode: function(node, norefresh) {
         var me = this;
 
-        me.view.items_offscreen.push(node);
         if (node.visible) {
             me.view.itemcontainer.add(node);
         }
@@ -149,6 +164,7 @@ Ext.define('Funcman.Graph', {
         }
 
         if (!norefresh) {
+            me.updateInfoWindowShow(me.getZoom() > 2);
             me.view.layoutPlugin.refresh();
         }
     },
@@ -157,25 +173,42 @@ Ext.define('Funcman.Graph', {
         var me = this;
 
         Ext.each(nodes, function(node) {
-            me.addNode(node, norefresh);
+            me.addNode(node, true);
         });
 
         if (!norefresh) {
+            me.updateInfoWindowShow(me.getZoom() > 2);
             me.view.layoutPlugin.refresh();
         }
     },
 
-    removeNode: function(node) {
-        var me = this;
-        var store = me.view.store;
+    removeNode: function(node, norefresh) {
+        var me = this,
+            el = node.getEl();
 
-        me.removeNodeWithChildren(node);
+        me.view.items_remove.push(node);
+        
+        if (node.parent) {
+            Ext.Array.remove(node.parent.children, node);
+        }
+
+        if (!norefresh) {
+            me.view.layoutPlugin.refresh();
+        }
+
+        node.hideInfoWindow();
+
+        el.setStyle({opacity: 1});
+        el.animate({to: {opacity: 0}, callback: function() {
+            me.remove(node);
+            Ext.Array.remove(me.view.items_remove, node);
+            node.destroy();
+        }});
     },
 
     // This doesn't immediately redraw the whole graph
     removeNodeWithChildren: function(node) {
         var me = this;
-        var store = me.view.store;
 
         if (node.infowindow)
             node.infowindow.destroy();

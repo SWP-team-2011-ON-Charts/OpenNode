@@ -26,6 +26,14 @@ Ext.define('Funcman.GraphNode', {
         me.setName(this.name);
     },
     
+    onDestroy : function() {
+        var me = this;
+        if (me.iw) {
+            me.iw.destroy();
+            delete me.iw;
+        }
+    },
+    
     getIcon: function() {
         return this.getComponent(0).getComponent(0);
     },
@@ -87,8 +95,23 @@ Ext.define('Funcman.GraphNode', {
     
     select: function() {
         this.getEl().addCls('x-item-selected');
+        this.showInfoWindow();
     },
-    deselect: function() {
+    deselect: function(hideiw) {
         this.getEl().removeCls('x-item-selected');
+        if (hideiw) {
+            this.hideInfoWindow();
+        }
     },
+
+    showInfoWindow: function() {
+        if (this.infowindow) {
+            this.infowindow.show();
+        }
+    },
+    hideInfoWindow: function() {
+        if (this.infowindow) {
+            this.infowindow.hide();
+        }
+    }
 });

@@ -18,14 +18,9 @@ Ext.define('Funcman.GraphLayout', {
     // Initializes the plugin
     init: function(view) {
         this.view = view;
-        this.suspendEvents = false;
     },
 
     refresh: function () {
-        if (this.suspendEvents) {
-            return;
-        }
-
         this.updateCache();
         if (this.itemCacheSize == 0) {
             return;
@@ -110,7 +105,7 @@ Ext.define('Funcman.GraphLayout', {
             // Place the root element in the middle
             var id = root.id;
             newPositions[id] = {left: rootleft + width / 2, top: 0, iconSize: iconSize};
-            
+
             rootleft += width;
         }, this);
 
@@ -146,25 +141,16 @@ Ext.define('Funcman.GraphLayout', {
                     node.setIconSize(newPos.iconSize);
                     if (iw) {
                         iw.setPosition(newPos.left, newPos.top + itemHeight);
-                        if (zoom > 2 || node === selectedNode) {
-                            iw.show();
-                        } else {
-                            iw.hide();
-                        }
                     }
                 }
                 this.view.drawLines();
-                
+
                 Ext.TaskManager.stop(task);
                 delete task;
-                
+
             } else {
                 //move each item
                 for (id in newPositions) {
-                    //if (!previous[id]) {
-                    //    continue;
-                    //}
-                    
                     var oldPos  = oldPositions[id],
                         newPos  = newPositions[id],
                         oldTop  = oldPos.top,
@@ -181,28 +167,23 @@ Ext.define('Funcman.GraphLayout', {
                     //node.setIconSize(midSize);
                     if (iw) {
                         iw.setPosition(midLeft, midTop + itemHeight);
-                        if (zoom > 2 || node === selectedNode) {
-                            iw.show();
-                        } else {
-                            iw.hide();
-                        }
                     }
                 }
                 this.view.drawLines();
             }
         };
-        
+
         if (task) {
             Ext.TaskManager.stop(task);
             delete task;
         }
-        
+
         var task = {
             run     : doAnimate,
             interval: 20,
             scope   : this
         };
-        
+
         Ext.TaskManager.start(task);
     },
 
@@ -215,11 +196,11 @@ Ext.define('Funcman.GraphLayout', {
         }
 
         me.added = [];
-        me.removed = [];
-        var items = me.view.itemcontainer.items;
+        var items = me.view.itemcontainer.items,
+            items_remove = me.view.items_remove;
         items.each(function(item) {
             var id = item.getId();
-            if (me.itemCache[id] == undefined) {
+            if (me.itemCache[id] == undefined && !Ext.Array.contains(items_remove, item)) {
 
                 // add item to the cache
                 me.itemCache[id] = item;
@@ -234,9 +215,8 @@ Ext.define('Funcman.GraphLayout', {
         }, me)
         
         Ext.iterate(me.itemCache, function(id, item) {
-            if (!items.contains(item)) {
-                this.removed.push(item);
-                Ext.Array.remove(me.itemCache, item);
+            if (Ext.Array.contains(items_remove, item)) {
+                delete me.itemCache[id];
                 me.itemCacheSize--;
             }
         });
