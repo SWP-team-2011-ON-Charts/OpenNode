@@ -37,11 +37,6 @@ var store2 = 	Ext.create('Ext.data.Store', {
     }
 });
 
-
-var showIndividualGraph = function(grid,rowIndex,e){
-	Ext.MessageBox.alert('Clicked!','You Clicked row!');
-	};
-
 var grid = Ext.create('Ext.grid.Panel', {
     title: 'Users',
     store: Ext.data.StoreManager.lookup('data_store'),
@@ -78,12 +73,8 @@ var grid = Ext.create('Ext.grid.Panel', {
     width: 250,
     height: 600,
     cls: 'userpanel',
-
-
 });
 
-
-	
 Ext.define('Funcman.Graph', {
     alias: 'Graph',
     extend: 'Ext.container.Container',
@@ -106,11 +97,8 @@ Ext.define('Funcman.Graph', {
                     this.up().view.layoutPlugin.refresh();
                 }
             }
-        }),
-        
+        }),        
         grid
-        
-       
     ],
 
     // Mouse wheel controls the zoom slider
