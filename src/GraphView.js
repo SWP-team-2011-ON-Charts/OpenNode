@@ -11,32 +11,14 @@ Ext.define('Funcman.GraphView', {
     trackOver: false,
     
     isDragging: false,
-    overItemCls: 'x-view-over',
     itemSelector: 'div.thumb-wrap',
     
     iconSize: 40,
     items_offscreen: [],
     items: [
-        Ext.create('Ext.draw.Component', {
-            viewBox: false,
-            autoSize: true,
-        })
+        {xtype: 'container'},
+        {xtype: 'draw', viewBox: false, autoSize: true}
     ],
-    
-    listeners: {
-        selectionChange: function(dv, nodes) {
-            var me = this.up().up();
-            if (nodes.length != 0) {
-                var layoutPlugin = me.view.plugins[0];
-                layoutPlugin.refresh.call(layoutPlugin);
-            }
-        },
-        mousedown: {fn: function(e,t,opts) {
-        }, element: 'el'},
-        mouseup: {fn: function() {
-        }, element: 'el'},
-        //mouseout: {fn: me.stopdrag, element: 'el'}
-    },
 
     plugins : [Ext.create('Funcman.GraphLayout')],
     id: 'nodes',
@@ -46,9 +28,11 @@ Ext.define('Funcman.GraphView', {
         me.callParent();
         
         me.layoutPlugin = me.plugins[0];
-        me.draw = me.getComponent(0);
+        me.itemcontainer = me.getComponent(0);
+        me.draw = me.getComponent(1);
 
         me.on('mousedown', me.mousedownlistener, me, {element: 'el'});
+        me.on('mousemove', me.highlightlistener, me, {element: 'el'});
         me.on('mouseup', me.stopdrag, me, {element: 'el'});
         
         if (me.overItemCls) {
@@ -74,6 +58,13 @@ Ext.define('Funcman.GraphView', {
         }
 
         return me.selModel;
+    },
+
+    highlightlistener: function(e, t, opts) {
+        var comp = Ext.ComponentManager.get(t);
+        if (comp instanceof Funcman.GraphNode) {
+            comp.highlight();
+        }
     },
 
     mousedownlistener: function(e, t, opts) {
@@ -120,55 +111,51 @@ Ext.define('Funcman.GraphView', {
     drawLines: function() {
         var me = this,
             maxx = 0, maxy = 0, maxh = 0,
-            halfIcon = me.iconSize / 2,
+            ic = me.itemcontainer,
             draw = me.draw,
             surface = draw.surface;
 
         // Clear all lines
-        draw.surface.removeAll(true);
+        surface.removeAll(true);
         draw.setSize(0, 0);
 
         // Connect nodes with their child nodes
         // Also find graph area
-        me.items.each( function(item) {
-            if (item instanceof Funcman.GraphNode) {
-                var ic1 = item.getIconCenter(),
-                    height = item.getHeight();
+        ic.items.each( function(item) {
+            var ic1 = item.getIconCenter(),
+                height = item.getHeight();
 
-                if (maxx < ic1.x) maxx = ic1.x;
-                if (maxy < ic1.y) maxy = ic1.y;
-                if (maxh < height) maxh = height;
+            if (maxx < ic1.x) maxx = ic1.x;
+            if (maxy < ic1.y) maxy = ic1.y;
+            if (maxh < height) maxh = height;
 
-                Ext.each(item.children, function(child) {
-                    var ic2 = child.getIconCenter();
+            Ext.each(item.children, function(child) {
+                var ic2 = child.getIconCenter();
 
-                    // Create a path from the center of one icon to the center of the other
-                    var path =
-                      'M ' + ic1.x + ' ' + ic1.y + ' ' +
-                      'L ' + ic2.x + ' ' + ic2.y + ' z',
-                        color;
+                // Create a path from the center of one icon to the center of the other
+                var path =
+                  'M ' + ic1.x + ' ' + ic1.y + ' ' +
+                  'L ' + ic2.x + ' ' + ic2.y + ' z',
+                    color;
 
-                    if (child.type == "pm") {
-                        color = "#0CC";
-                    } else {
-                        color = "#C00";
-                    }
+                if (child.type == "pm") {
+                    color = "#0CC";
+                } else {
+                    color = "#C00";
+                }
 
-                    surface.add({
-                        type: 'path',
-                        path: path,
-                        stroke: color,
-                        "stroke-width": '3',
-                        opacity: 0.5,
-                        group: 'lines'
-                    });
+                surface.add({
+                    type: 'path',
+                    path: path,
+                    stroke: color,
+                    "stroke-width": '3',
+                    opacity: 0.5,
+                    group: 'lines'
                 });
-            }
+            });
         });
 
-        surface.items.items.forEach( function(s){
-            s.redraw();
-        });
+        surface.items.show(true);
 
         // Set line drawing area
         draw.setSize(maxx + me.iconSize, maxy + maxh);

@@ -17,22 +17,11 @@ Ext.define('Funcman.GraphLayout', {
 
     // Initializes the plugin
     init: function(view) {
-
         this.view = view;
-        
-        view.on('resize', function() {
-            
-        }, this);
-        
         this.suspendEvents = false;
-        view.on('datachanged', this.reDraw, this);
-        
-        this.refresh = function() {
-            this.reDraw.call(this);
-        };
     },
 
-    reDraw: function () {
+    refresh: function () {
         if (this.suspendEvents) {
             return;
         }
@@ -46,9 +35,9 @@ Ext.define('Funcman.GraphLayout', {
             this.graph = this.view.up();
 
         var zoom = this.graph.getZoom(),
-            iconSize   = zoom * this.graph.view.iconSize,
-            itemWidth   = zoom * this.graph.view.iconSize,// el.getWidth(),// + el.getMargin('lr'),
-            itemHeight  = iconSize + 20; // el.getHeight(); // el.getMargin('tb')
+            iconSize   = zoom * this.view.iconSize,
+            itemWidth   = zoom * this.view.iconSize,
+            itemHeight  = iconSize + 20;
 
         //stores the current top and left values for each element (discovered below)
         var oldPositions = {},
@@ -162,7 +151,7 @@ Ext.define('Funcman.GraphLayout', {
                         }
                     }
                 }
-                this.graph.view.drawLines();
+                this.view.drawLines();
                 
                 Ext.TaskManager.stop(task);
                 delete task;
@@ -202,7 +191,7 @@ Ext.define('Funcman.GraphLayout', {
                         }
                     }
                 }
-                this.graph.view.drawLines();
+                this.view.drawLines();
             }
         };
         
@@ -229,36 +218,30 @@ Ext.define('Funcman.GraphLayout', {
         }
 
         me.added = [];
-        me.view.items.each(function(item) {
-            if (item instanceof Funcman.GraphNode) {
-                var id = item.getId();
-                if (me.itemCache[id] == undefined) {
-                    me.itemCache[id] = item;
-                    me.itemCacheSize++;
-                    me.added.push(id);
-                    
-                    var el = item.getEl();
-                    el.setStyle('opacity', 0);
-                    el.animate({to: {opacity: 1}});
-                }
+        me.removed = [];
+        var items = me.view.itemcontainer.items;
+        items.each(function(item) {
+            var id = item.getId();
+            if (me.itemCache[id] == undefined) {
+
+                // add item to the cache
+                me.itemCache[id] = item;
+                me.itemCacheSize++;
+                me.added.push(id);
+
+                // animate add
+                var el = item.getEl();
+                el.setStyle('opacity', 0);
+                el.animate({to: {opacity: 1}});
             }
         }, me)
         
-        this.removed = me.getRemoved();
-    },
-    
-    getRemoved: function() {
-        var me = this,
-            removed = [];
-
         Ext.iterate(me.itemCache, function(id, item) {
-            if (!me.view.items.contains(item)) {
-                removed.push(item);
+            if (!items.contains(item)) {
+                this.removed.push(item);
                 Ext.Array.remove(me.itemCache, item);
                 me.itemCacheSize--;
             }
         });
-        
-        return removed;
     }
 });

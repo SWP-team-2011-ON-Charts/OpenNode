@@ -12,7 +12,8 @@ This file may be used under the terms of the GNU General Public License version 
 * Layout of the component:
 * graph
 *   view
-*     nodes
+*     nodecontainer
+*       nodes
 *     drawcomponent
 *       lines
 *   zoomslider
@@ -119,7 +120,7 @@ Ext.define('Funcman.Graph', {
 
         me.view.items_offscreen.push(node);
         if (node.visible) {
-            me.view.add(node);
+            me.view.itemcontainer.add(node);
         }
 
         if (node.children) {
