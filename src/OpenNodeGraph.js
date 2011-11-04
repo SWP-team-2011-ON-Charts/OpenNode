@@ -20,7 +20,7 @@ Ext.define('Funcman.OpenNodeGraph', {
               title: node.name,
               layout: 'vbox',
               width: 100,
-              height: 180,
+              height: 100,
               preventHeader: true,
               renderTo: me.view.getEl(),
               floating: true
@@ -167,7 +167,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             parent: dc,
             children: []
         });
-        //this.attachInfoWindow(pm);
+        this.attachInfoWindow(pm);
 
         dc.children.push(pm);
         return pm;
@@ -187,7 +187,6 @@ Ext.define('Funcman.OpenNodeGraph', {
                 Ext.each(Ext.JSON.decode(response.responseText, true), function(m) {
                     Ext.iterate(m, function(id, name) {
                         var pm = me.createMachineFromServer(server_name+'/computes/'+id+'/', id, name, dc);
-                        var vm = me.createVM(null, id, "VM", pm);
                     });
                 });
                 me.addNode(dc);

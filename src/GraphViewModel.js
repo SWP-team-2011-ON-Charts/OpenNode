@@ -12,53 +12,12 @@ Ext.define('Ext.selection.GraphViewModel', {
      */
     enableKeyNav: true,
 
-    constructor: function(cfg){
-        var me = this;
-    
-        cfg = cfg || {};
-        Ext.apply(me, cfg);
-    
-        me.addEvents(
-            /**
-             * @event
-             * Fired after a selection change has occurred
-             * @param {Ext.selection.Model} this
-             * @param {Ext.data.Model[]} selected The selected records
-             */
-            'selectionchange'
-        );
-        me.callParent(arguments);
-        
-        // maintains the currently selected records.
-        me.selected = Ext.create('Ext.util.MixedCollection');
-    },
-
     bindComponent: function(view) {
-        var me = this,
-            eventListeners = {
-                refresh: me.refresh,
-                scope: me
-            };
-
+        var me = this;
         me.view = view;
-
-        view.on(view.triggerEvent, me.onItemClick, me);
-        view.on(view.triggerCtEvent, me.onContainerClick, me);
-
-        //view.on(eventListeners);
 
         if (me.enableKeyNav) {
             me.initKeyNav(view);
-        }
-    },
-
-    onItemClick: function(view, record, item, index, e) {
-        this.selectWithEvent(record, e);
-    },
-
-    onContainerClick: function() {
-        if (this.deselectOnContainerClick) {
-            this.deselectAll();
         }
     },
 
@@ -70,39 +29,25 @@ Ext.define('Ext.selection.GraphViewModel', {
             return;
         }
 
-        view.el.set({
+        view.up().el.set({
             tabIndex: -1
         });
-        me.keyNav = Ext.create('Ext.util.KeyNav', view.el, {
-            down: Ext.pass(me.onNavKey, [1], me),
-            right: Ext.pass(me.onNavKey, [1], me),
-            left: Ext.pass(me.onNavKey, [-1], me),
-            up: Ext.pass(me.onNavKey, [-1], me),
+        me.keyNav = Ext.create('Ext.util.KeyNav', view.itemcontainer.el, {
+            down: me.onNavKey,
+            up: me.onNavKey,
+            left: me.onNavKey,
+            right: me.onNavKey,
+            del: me.deleteHandler,
             scope: me
         });
     },
 
+    deleteHandler: function() {
+        alert('del');
+    },
+
     onNavKey: function(step) {
-        step = step || 1;
-        var me = this,
-            view = me.view,
-            selected = me.getSelection()[0],
-            numRecords = me.view.store.getCount(),
-            idx;
-
-        if (selected) {
-            idx = view.indexOf(view.getNode(selected)) + step;
-        } else {
-            idx = 0;
-        }
-
-        if (idx < 0) {
-            idx = numRecords - 1;
-        } else if (idx >= numRecords) {
-            idx = 0;
-        }
-
-        me.select(idx);
+        alert('nav');
     },
 
     // Allow the DataView to update the ui
@@ -124,10 +69,6 @@ Ext.define('Ext.selection.GraphViewModel', {
                 me.fireEvent(eventName, me, record);
             }
         }
-    },
-    
-    getSelection: function() {
-        return this.selected.getRange();
     },
     
     destroy: function(){

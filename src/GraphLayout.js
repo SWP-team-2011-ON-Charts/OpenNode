@@ -133,7 +133,9 @@ Ext.define('Funcman.GraphLayout', {
         var doAnimate = function() {
             var elapsed  = new Date() - startTime,
                 fraction = elapsed / duration,
-                graph = this.graph;
+                graph = this.graph,
+                zoom = graph.getZoom(),
+                selectedNode = graph.getSelectedNode();
             
             if (fraction >= 1) {
                 for (id in newPositions) {
@@ -144,7 +146,7 @@ Ext.define('Funcman.GraphLayout', {
                     node.setIconSize(newPos.iconSize);
                     if (iw) {
                         iw.setPosition(newPos.left, newPos.top + itemHeight);
-                        if (graph.getZoom() > 2 || node === graph.getSelectedNode()) {
+                        if (zoom > 2 || node === selectedNode) {
                             iw.show();
                         } else {
                             iw.hide();
@@ -166,25 +168,20 @@ Ext.define('Funcman.GraphLayout', {
                     var oldPos  = oldPositions[id],
                         newPos  = newPositions[id],
                         oldTop  = oldPos.top,
-                        newTop  = newPos.top,
                         oldLeft = oldPos.left,
-                        newLeft = newPos.left,
                         oldSize = oldPos.iconSize,
-                        newSize = newPos.iconSize,
-                        diffTop = fraction * Math.abs(oldTop  - newTop),
-                        diffLeft= fraction * Math.abs(oldLeft - newLeft),
-                        diffSize= fraction * Math.abs(oldSize - newSize),
-                        midTop  = oldTop  > newTop  ? oldTop  - diffTop  : oldTop  + diffTop,
-                        midLeft = oldLeft > newLeft ? oldLeft - diffLeft : oldLeft + diffLeft,
-                        midSize = oldSize > newSize ? oldSize - diffSize : oldSize + diffSize;
+
+                        midTop  = oldTop + fraction * (newPos.top - oldTop),
+                        midLeft  = oldLeft + fraction * (newPos.left - oldLeft),
+                        midSize = oldSize +  fraction * (newPos.iconSize - oldSize);
                     
                     var node = this.itemCache[id],
                         iw = node.infowindow;
                     node.setXY(midLeft, midTop);
-                    node.setIconSize(midSize);
+                    //node.setIconSize(midSize);
                     if (iw) {
                         iw.setPosition(midLeft, midTop + itemHeight);
-                        if (graph.getZoom() > 2 || node === graph.getSelectedNode()) {
+                        if (zoom > 2 || node === selectedNode) {
                             iw.show();
                         } else {
                             iw.hide();
