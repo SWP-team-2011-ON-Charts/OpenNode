@@ -2,16 +2,9 @@ Ext.define('Funcman.GraphView', {
     alias: 'GraphView',
     extend: 'Ext.Container',
     cls: 'graphview',
-    overItemCls: 'x-view-over',
-    
-    /**
-     * @cfg {Boolean} trackOver
-     * True to enable mouseenter and mouseleave events
-     */
-    trackOver: false,
-    
+
+    isMouseDown: false,
     isDragging: false,
-    itemSelector: 'div.thumb-wrap',
     
     iconSize: 40,
     items_offscreen: [],
@@ -33,11 +26,7 @@ Ext.define('Funcman.GraphView', {
 
         me.on('mousedown', me.mousedownlistener, me, {element: 'el'});
         me.on('mousemove', me.highlightlistener, me, {element: 'el'});
-        me.on('mouseup', me.stopdrag, me, {element: 'el'});
-        
-        if (me.overItemCls) {
-            me.trackOver = true;
-        }
+        me.on('mouseup', me.mouseuplistener, me, {element: 'el'});
     },
 
     afterRender: function() {
@@ -60,10 +49,38 @@ Ext.define('Funcman.GraphView', {
         return me.selModel;
     },
 
+    getItemFromEl: function(el) {
+        while (el) {
+            var item = Ext.ComponentManager.get(el.id);
+            if (item instanceof Funcman.GraphNode) {
+                return item;
+            } else if (!item) {
+                return null;
+            }
+            el = el.parentElement;
+        }
+        return null;
+    },
+
     highlightlistener: function(e, t, opts) {
-        var comp = Ext.ComponentManager.get(t);
-        if (comp instanceof Funcman.GraphNode) {
-            comp.highlight();
+        if (t === this.highlightEl) {
+            return;
+        }
+    
+        item = this.getItemFromEl(t);
+        if (item && item !== this.highlightItem) {
+            if (this.highlightItem) {
+                this.highlightItem.clearHighlight();
+            }
+            this.highlightItem = item;
+            this.highlightEl = t;
+            item.highlight();
+        } else if (!item) {
+            if (this.highlightItem) {
+                this.highlightItem.clearHighlight();
+                this.highlightItem = null;
+                this.highlightEl = null;
+            }
         }
     },
 
@@ -77,27 +94,50 @@ Ext.define('Funcman.GraphView', {
         var containerpos = me.getPosition();
         var currentscroll = me.getEl().getScroll();
         me._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
-        me.isDragging = true;
+        me.isMouseDown = true;
 
         e.stopEvent();
     },
 
-    stopdrag: function(e) {
+    mouseuplistener: function(e,t) {
         var me = this;
 
-        if (!me.isDragging)
-            return;
+        if (!me.isDragging) {
+            // If not dragging, then an item was selected
+            var item = me.getItemFromEl(t);
+            if (item && item !== this.selectedItem) {
+                if (this.selectedItem) {
+                    this.selectedItem.deselect();
+                }
+                this.selectedItem = item;
+                item.select();
+                me.layoutPlugin.refresh();
+            } else if (!item) {
+                if (this.selectedItem) {
+                    this.selectedItem.deselect();
+                    this.selectedItem = null;
+                    me.layoutPlugin.refresh();
+                }
+            }
+        }
+
+        me.isMouseDown = false;
+        me.isDragging = false;
 
         me.removeCls('movecursor');
         me.removeListener('mousemove', me.mousemovelistener);
-        me.isDragging = false;
-
-        if (e.getTarget().id == me.getEl().id)
-            me.setSelectedNode(null);
+        
+        e.stopEvent();
     },
 
     mousemovelistener: function(e, t, opts) {
-        if (!this.isDragging)
+        var me = this;
+
+        if (me.isMouseDown) {
+            me.isDragging = true;
+        }
+    
+        if (!me.isDragging)
             return;
 
         var el = this.getEl(),
