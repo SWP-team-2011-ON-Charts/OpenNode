@@ -21,7 +21,7 @@ This file may be used under the terms of the GNU General Public License version 
 
 var store2 = 	Ext.create('Ext.data.Store', {
     storeId:'data_store',
-    fields:['name', 'rights-status'],
+    fields:['name', 'rights-status', 'senority', 'dep', 'hired'],
     data:{'items':[
         { 'name': 'Super Dummy',  "rights-status":"Super User"},
         { 'name': 'Dummy 1', "rights-status":"Custom"},
@@ -37,6 +37,53 @@ var store2 = 	Ext.create('Ext.data.Store', {
     }
 });
 
+
+var showIndividualGraph = function(grid,rowIndex,e){
+	Ext.MessageBox.alert('Clicked!','You Clicked row!');
+	};
+
+var grid = Ext.create('Ext.grid.Panel', {
+    title: 'Users',
+    store: Ext.data.StoreManager.lookup('data_store'),
+    columns: [
+              {text: 'Name',  dataIndex:'name'},
+              {text: 'Rights',  dataIndex:'rights-status'},
+              {text: 'mid',
+                  xtype:'actioncolumn', 
+                  width:80,
+                  items: [{
+                      icon: 'images/list-add.png',  // Use a URL in the icon config
+                      tooltip: 'Edit',
+                      handler: function(grid, rowIndex, colIndex) {
+                          var rec = grid.getStore().getAt(rowIndex);
+                          alert("Edit " + rec.get('name') + " rights.");
+                      }
+                  },{
+                      icon: 'images/list-remove.png',
+                      tooltip: 'Delete',
+                      handler: function(grid, rowIndex, colIndex) {
+                          var rec = grid.getStore().getAt(rowIndex);
+                          grid.getStore().remove(rec);
+                      }                
+                  },{
+                      icon: 'images/list-add.png',
+                      handler: function(grid, rowIndex, colIndex) {
+                    	  var rec = grid.getStore().getAt(rowIndex);
+                          alert("Showing " + rec.get('name') + " rights.");
+                      }                
+                  }]
+              }
+          ],
+
+    width: 250,
+    height: 600,
+    cls: 'userpanel',
+
+
+});
+
+
+	
 Ext.define('Funcman.Graph', {
     alias: 'Graph',
     extend: 'Ext.container.Container',
@@ -60,19 +107,8 @@ Ext.define('Funcman.Graph', {
                 }
             }
         }),
-
         
-        Ext.create('Ext.grid.Panel', {
-            title: 'Users',
-            store: Ext.data.StoreManager.lookup('data_store'),
-            columns: [
-                { header: 'Name',  dataIndex: 'name' },
-                { header: 'Rigths', dataIndex: 'rights-status'}
-            ],
-            width: 200,
-            height: 600,
-            cls: 'userpanel',
-        })
+        grid
         
        
     ],
