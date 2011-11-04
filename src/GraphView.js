@@ -61,9 +61,30 @@ Ext.define('Funcman.GraphView', {
     },
 
     highlightlistener: function(e, t, opts) {
-        var comp = Ext.ComponentManager.get(t);
-        if (comp instanceof Funcman.GraphNode) {
-            comp.highlight();
+        if (t === this.highlightItem) {
+            return;
+        }
+    
+        var el = t;
+        while (1) {
+            var comp = Ext.ComponentManager.get(el.id);
+            if (comp instanceof Funcman.GraphNode) {
+                if (this.highlightItem) {
+                    this.highlightItem.clearHighlight();
+                }
+                this.highlightItem = comp;
+                this.highlightEl = t;
+                comp.highlight();
+                break;
+            } else if (!comp){
+                if (this.highlightItem) {
+                    this.highlightItem.clearHighlight();
+                    this.highlightItem = null;
+                    this.highlightEl = null;
+                }
+                break;
+            }
+            el = el.parentElement;
         }
     },
 
