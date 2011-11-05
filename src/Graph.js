@@ -17,6 +17,7 @@ This file may be used under the terms of the GNU General Public License version 
 *     drawcomponent
 *       lines
 *   zoomslider
+*   user panel
 */
 
 var store2 = 	Ext.create('Ext.data.Store', {
@@ -140,11 +141,11 @@ Ext.define('Funcman.Graph', {
     },
 
     getSelectedNode: function() {
-        return this.view.selectedItem;
+        return this.view.getSelectedItem();
     },
 
     setSelectedNode: function(node) {
-        this.view.selectedItem = node;
+        this.view.setSelectedItem(node);
     },
 
     getZoom: function() {
@@ -186,10 +187,26 @@ Ext.define('Funcman.Graph', {
         var me = this,
             el = node.getEl();
 
+
+        if (node === me.getSelectedNode()) {
+            me.setSelectedNode(null);
+        }
+
+        if (node === me.view.highlightItem) {
+            me.view.highlightItem.clearHighlight();
+            me.view.highlightItem = null;
+        }
+
         me.view.items_remove.push(node);
         
+        // Disconnect from parent
         if (node.parent) {
             Ext.Array.remove(node.parent.children, node);
+            node.parent = null;
+        }
+
+        if (node.children) {
+            me.removeNodes(node.children, true);
         }
 
         if (!norefresh) {
@@ -206,25 +223,17 @@ Ext.define('Funcman.Graph', {
         }});
     },
 
-    // This doesn't immediately redraw the whole graph
-    removeNodeWithChildren: function(node) {
+    removeNodes: function(nodes, norefresh) {
         var me = this;
 
-        if (node.infowindow)
-            node.infowindow.destroy();
-
-        var children = node.children;
-        if (children) {
-            while (children.length != 0) {
-                me.removeNodeWithChildren(children[0]);
-            }
+        // Can't remove while doing for-each, just remove until empty.
+        while (nodes.length != 0) {
+            me.removeNode(nodes.pop(), true);
         }
 
-        var parent = node.get('parent');
-        if (parent) {
-            Ext.Array.remove(parent.children, node);
+        if (!norefresh) {
+            me.updateInfoWindowShow(me.getZoom() > 2);
+            me.view.layoutPlugin.refresh();
         }
-
-        store.remove(node);
     },
 });

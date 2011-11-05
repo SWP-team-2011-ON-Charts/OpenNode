@@ -49,6 +49,54 @@ Ext.define('Funcman.GraphView', {
         return me.selModel;
     },
 
+    getSelectedItem: function() {
+        return this.selectedItem;
+    },
+
+    setSelectedItem: function(item) {
+        var me = this,
+            zoom = me.up().zoom;
+
+        if (item === me.selectedItem) {
+            return;
+        }
+
+        if (me.selectedItem) {
+            me.selectedItem.deselect(zoom < 2);
+        }
+
+        me.selectedItem = item;
+        if (item) {
+            item.select();
+        }
+    },
+
+    getHighlightedItem: function() {
+        return this.highlightItem;
+    },
+
+    setHighlightedItem: function(item) {
+        var me = this;
+
+        if (item === me.highlightItem) {
+            return;
+        }
+    
+        if (me.highlightItem) {
+            me.highlightItem.clearHighlight();
+        }
+
+        if (Ext.Array.contains(me.items_remove, item)) {
+            me.highlightItem = null;
+            return;
+        }
+
+        me.highlightItem = item;
+        if (item) {
+            item.highlight();
+        }
+    },
+
     getItemFromEl: function(el) {
         while (el) {
             var item = Ext.ComponentManager.get(el.id);
@@ -69,21 +117,8 @@ Ext.define('Funcman.GraphView', {
             return;
         }
     
-        var item = this.getItemFromEl(t);
-        if (item && item !== this.highlightItem) {
-            if (this.highlightItem) {
-                this.highlightItem.clearHighlight();
-            }
-            this.highlightItem = item;
-            this.highlightEl = t;
-            item.highlight();
-        } else if (!item) {
-            if (this.highlightItem) {
-                this.highlightItem.clearHighlight();
-                this.highlightItem = null;
-                this.highlightEl = null;
-            }
-        }
+        this.setHighlightedItem(this.getItemFromEl(t));
+        this.highlightEl = t;
     },
 
     mousedownlistener: function(e, t, opts) {
@@ -105,21 +140,9 @@ Ext.define('Funcman.GraphView', {
         var me = this,
             zoom = me.up().zoom;
 
+        // If not dragging, then an item was selected
         if (!me.isDragging) {
-            // If not dragging, then an item was selected
-            var item = me.getItemFromEl(t);
-            if (item && item !== this.selectedItem) {
-                if (this.selectedItem) {
-                    this.selectedItem.deselect(zoom < 2);
-                }
-                this.selectedItem = item;
-                item.select();
-            } else if (!item) {
-                if (this.selectedItem) {
-                    this.selectedItem.deselect(zoom < 2);
-                    this.selectedItem = null;
-                }
-            }
+            me.setSelectedItem(me.getItemFromEl(t));
         }
 
         me.isMouseDown = false;
@@ -134,12 +157,13 @@ Ext.define('Funcman.GraphView', {
     mousemovelistener: function(e, t, opts) {
         var me = this;
 
-        if (me.isMouseDown) {
-            me.isDragging = true;
+        if (!me.isDragging) {
+            if (me.isMouseDown) {
+                me.isDragging = true;
+            } else {
+                return;
+            }
         }
-    
-        if (!me.isDragging)
-            return;
 
         var el = this.getEl(),
             currentpos = e.getXY(),

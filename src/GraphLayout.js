@@ -166,7 +166,7 @@ Ext.define('Funcman.GraphLayout', {
                     node.setXY(midLeft, midTop);
                     //node.setIconSize(midSize);
                     if (iw) {
-                        iw.setPosition(midLeft, midTop + itemHeight);
+                        //iw.setPosition(midLeft, midTop + itemHeight);
                     }
                 }
                 this.view.drawLines();
