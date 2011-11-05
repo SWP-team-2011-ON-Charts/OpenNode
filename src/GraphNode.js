@@ -2,7 +2,7 @@ Ext.define('Funcman.GraphNode', {
     alias: 'GraphNode',
     extend: 'Ext.Container',
     cls: 'thumb-wrap',
-    
+
     isCollapsed: false,
     visible: true,
 
@@ -24,8 +24,21 @@ Ext.define('Funcman.GraphNode', {
         me.callParent(arguments);
         
         me.setName(this.name);
+        
+        me.initMigrate();
     },
-    
+
+    initMigrate: function() {
+        var me = this;
+
+        if (!me.rendered) {
+            me.on('render', me.initMigrate, me, {single: true});
+            return;
+        }
+
+        this.setMigrateTarget();
+    },
+
     onDestroy : function() {
         var me = this;
         if (me.iw) {
@@ -33,7 +46,67 @@ Ext.define('Funcman.GraphNode', {
             delete me.iw;
         }
     },
-    
+
+    setMigrateSource: function() {
+        var me = this;
+
+        if (me.dragZone) {
+            return;
+        }
+
+        me.dragZone = new Ext.dd.DragZone(me.getEl(), {
+
+            getDragData: function(e) {
+
+                var sourceEl = e.getTarget();
+
+                // Clone the node to produce a ddel element for use by the drag proxy.
+                if (sourceEl) {
+                    d = sourceEl.cloneNode(true);
+                    d.id = Ext.id();
+                    return {
+                        ddel: d,
+                        sourceEl: sourceEl,
+                        repairXY: Ext.fly(sourceEl).getXY(),
+                        dragSource: me
+                    }
+                }
+            },
+            
+            getRepairXY: function() {
+                // If no target found, the ghost should fly back to its original location
+                return this.dragData.repairXY;
+            }
+        });
+        
+        me.dragZone.constrainTo(me.up().up().getEl());
+    },
+
+    setMigrateTarget: function() {
+        var me = this;
+
+        if (me.dropTarget) {
+            return;
+        }
+
+        me.dropTarget = new Ext.dd.DropTarget(me.getEl(), {
+            onNodeOver: function(target, dd, e, data) { 
+                return Ext.dd.DropZone.prototype.dropAllowed;
+            },
+            notifyDrop: function(source, e, data) {
+                var source = data.dragSource;
+                if (source.parent) {
+                    Ext.Array.remove(source.parent.children, source);
+                }
+                source.parent = me;
+                me.children.push(source);
+                me.up().up().layoutPlugin.refresh();
+                source.setMigrateTarget();
+                return true;
+            }
+        });
+    },
+
     getIcon: function() {
         return this.getComponent(0).getComponent(0);
     },
@@ -94,13 +167,23 @@ Ext.define('Funcman.GraphNode', {
     },
     
     select: function() {
-        this.getEl().addCls('x-item-selected');
-        this.showInfoWindow();
+        var me = this;
+        me.getEl().addCls('x-item-selected');
+        me.showInfoWindow();
+        me.setMigrateSource();
     },
     deselect: function(hideiw) {
-        this.getEl().removeCls('x-item-selected');
+        var me = this;
+        me.getEl().removeCls('x-item-selected');
         if (hideiw) {
-            this.hideInfoWindow();
+            me.hideInfoWindow();
+        }
+        if (me.dragZone) {
+            me.dragZone.destroy();
+            me.dropTarget.destroy();
+            delete me.dragZone;
+            delete me.dropTarget;
+            me.setMigrateTarget();
         }
     },
 

@@ -27,15 +27,19 @@ Ext.define('Funcman.GraphView', {
 
         me.on('mousedown', me.mousedownlistener, me, {element: 'el'});
         me.on('mousemove', me.highlightlistener, me, {element: 'el'});
+        
+        me.initSelModel();
     },
 
-    afterRender: function() {
-        this.callParent(arguments);
+    initSelModel: function() {
+        var me = this;
 
-        // Init the SelectionModel after any on('render') listeners have been added.
-        // Drag plugins create a DragDrop instance in a render listener, and that needs
-        // to see an itemmousedown event first.
-        this.getSelectionModel().bindComponent(this);
+        if (!me.rendered) {
+            me.on('render', me.initSelModel, me, {single: true});
+            return;
+        }
+
+        //me.getSelectionModel().bindComponent(me);
     },
 
     getSelectionModel: function() {
@@ -128,7 +132,7 @@ Ext.define('Funcman.GraphView', {
         me.addCls('movecursor');
         body.on('mousemove', me.mousemovelistener, me, {element: 'el'});
         body.on('mouseup', me.mouseuplistener, me, {element: 'el'});
-        me.on('mouseup', me.mouseuplistener, me, {element: 'el'});
+
         var containerpos = me.getPosition();
         var currentscroll = me.getEl().getScroll();
         me._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
@@ -139,24 +143,23 @@ Ext.define('Funcman.GraphView', {
 
     mouseuplistener: function(e,t) {
         var me = this,
-            zoom = me.up().zoom,
             body = Ext.getBody();
+
+        // If not dragging or migrating, then an item was selected
+        if (!me.isDragging && !me.isMigrating) {
+            me.setSelectedItem(me.getItemFromEl(t));
+        }
 
         if (me.isMigrating) {
             me.isMigrating = false;
-        }
-
-        // If not dragging, then an item was selected
-        if (!me.isDragging) {
-            me.setSelectedItem(me.getItemFromEl(t));
         }
 
         me.isMouseDown = false;
         me.isDragging = false;
 
         me.removeCls('movecursor');
-        body.removeListener('mousemove', me.mousemovelistener);
-        body.removeListener('mouseup', me.mouseuplistener);
+        body.un('mousemove', me.mousemovelistener, me);
+        body.un('mouseup', me.mouseuplistener, me);
         
         e.stopEvent();
     },
@@ -164,29 +167,28 @@ Ext.define('Funcman.GraphView', {
     mousemovelistener: function(e, t, opts) {
         var me = this;
 
-        if (me.isMigrating) {
-            return;
-        }
-
-        if (!me.isDragging) {
-            if (me.isMouseDown) {
-                // If we're on a selected item, start migrating it, otherwise drag the graph
-                if (me.selectedItem && me.selectedItem === me.getItemFromEl(t)) {
+        if (!me.isDragging && !me.isMigrating && me.isMouseDown) {
+            // If we're on a selected item, start migrating it, otherwise drag the graph
+            if (me.selectedItem) {
+                var item = me.getItemFromEl(t);
+                if (item === me.selectedItem) {
                     me.isMigrating = true;
-                    return;
-                } else {
-                    me.isDragging = true;
                 }
             } else {
-                return;
+                me.isDragging = true;
             }
         }
 
-        var el = this.getEl(),
-            currentpos = e.getXY(),
-            containerpos = this.getPosition();
-        el.scrollTo("right", (containerpos[0] + this._pananchor[0] - currentpos[0]));
-        el.scrollTo("top", (containerpos[1] + this._pananchor[1] - currentpos[1]));
+        if (me.isDragging) {
+            var el = this.getEl(),
+                currentpos = e.getXY(),
+                containerpos = this.getPosition();
+            el.scrollTo("right", (containerpos[0] + this._pananchor[0] - currentpos[0]));
+            el.scrollTo("top", (containerpos[1] + this._pananchor[1] - currentpos[1]));
+        } else if (me.isMigrating) {
+            return;
+        }
+
         e.stopEvent();
     },
 

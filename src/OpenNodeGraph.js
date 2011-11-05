@@ -15,17 +15,15 @@ Ext.define('Funcman.OpenNodeGraph', {
     
     attachInfoWindow: function(node) {
         var me = this;
-        
+
         var iw = Ext.create('Ext.Panel', {
             title: node.name,
             layout: 'vbox',
-            width: 100,
-            height: 80,
+            width: 65,
+            height: 45,
             preventHeader: true,
-            renderTo: me.view.getEl(),
-            floating: true
         });
-        
+
         if (node.type == "pm") {
             iw.add({xtype: 'button', text: 'Create VM', handler: function() {
 				var newVmParams = Ext.create('Ext.Window', {
@@ -146,6 +144,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         }
         
         node.infowindow = iw;
+        node.add(iw);
     },
 
     createDatacenter: function(path, res_id, name) {

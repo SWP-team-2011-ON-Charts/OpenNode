@@ -31,8 +31,8 @@ Ext.define('Funcman.GraphLayout', {
 
         var zoom = this.graph.getZoom(),
             iconSize   = zoom * this.view.iconSize,
-            itemWidth   = zoom * this.view.iconSize,
-            itemHeight  = iconSize + 20;
+            itemWidth   = zoom * this.view.iconSize + 10,
+            itemHeight  = iconSize + 40;
 
         //stores the current top and left values for each element (discovered below)
         var oldPositions = {},
@@ -135,13 +135,9 @@ Ext.define('Funcman.GraphLayout', {
             if (fraction >= 1) {
                 for (id in newPositions) {
                     var node = this.itemCache[id],
-                        iw = node.infowindow,
                         newPos = newPositions[id];
                     node.setXY(newPos.left, newPos.top);
                     node.setIconSize(newPos.iconSize);
-                    if (iw) {
-                        iw.setPosition(newPos.left, newPos.top + itemHeight);
-                    }
                 }
                 this.view.drawLines();
 
@@ -161,13 +157,9 @@ Ext.define('Funcman.GraphLayout', {
                         midLeft  = oldLeft + fraction * (newPos.left - oldLeft),
                         midSize = oldSize +  fraction * (newPos.iconSize - oldSize);
                     
-                    var node = this.itemCache[id],
-                        iw = node.infowindow;
+                    var node = this.itemCache[id];
                     node.setXY(midLeft, midTop);
                     //node.setIconSize(midSize);
-                    if (iw) {
-                        //iw.setPosition(midLeft, midTop + itemHeight);
-                    }
                 }
                 this.view.drawLines();
             }
