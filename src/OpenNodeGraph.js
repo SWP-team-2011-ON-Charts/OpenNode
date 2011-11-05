@@ -27,7 +27,111 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
         
         if (node.type == "pm") {
-            iw.add({xtype: 'button', text: 'Create VM', handler: function() {alert('create');}});
+            iw.add({xtype: 'button', text: 'Create VM', handler: function() {
+				var newVmParams = Ext.create('Ext.Window', {
+					title: 'New VM parameters',
+					height: 500,
+					width: 350,
+					layout: {
+						type: 'table',
+						columns:3
+						},
+					defaults: {
+						bodyStyle: 'padding:20px'
+					},
+					items: [{
+						xtype: 'textfield',
+						fieldLabel: 'VM hostname',
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:3
+						}, {
+						xtype: 'textfield',
+						fieldLabel: 'VM ID',
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:3
+						}, {
+						xtype: 'textfield',
+						fieldLabel: 'Memory MB',
+						width: 150,
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:2
+						}, {
+						xtype: 'slider',
+						width: 150,
+						value: 50,
+						increment: 1,
+						minValue: 0,
+						maxValue: 100,
+						colspan:1
+						}, {
+						xtype: 'textfield',
+						fieldLabel: 'No of CPUs',
+						width: 150,
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:2
+						}, {
+						xtype: 'slider',
+						width: 150,
+						value: 50,
+						increment: 1,
+						minValue: 0,
+						maxValue: 100,
+						colspan:1
+						}, {
+						xtype: 'textfield',
+						fieldLabel: 'CPU limit(%)',
+						width: 150,
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:2
+						}, {
+						xtype: 'slider',
+						width: 150,
+						value: 50,
+						increment: 1,
+						minValue: 0,
+						maxValue: 100,
+						colspan:1
+						}, {
+						xtype: 'textfield',
+						fieldLabel: 'Disk size (GB)',
+						width: 150,
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:2
+						}, {
+						xtype: 'slider',
+						width: 150,
+						value: 50,
+						increment: 1,
+						minValue: 0,
+						maxValue: 100,
+						colspan:1
+						}, {
+						
+						//ei toimi mingil X põhjusel
+						xtype: 'radiogroup',
+						fieldLabel: 'Net type',
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:3,
+						columns: 2,
+						items: [
+							{ boxLabel: 'VENET', name: 'rb', inputValue: '1' },
+							{ boxLabel: 'VETH', name: 'rb', inputValue: '2' }
+						],
+						colspan:3
+						}
+						
+					]
+				});
+				newVmParams.show();
+			
+			}});
             iw.add({xtype: 'button', text: 'Remove', handler: function(b) {me.removeNode(b.node);}, scope: me, node: node});
         }
         
