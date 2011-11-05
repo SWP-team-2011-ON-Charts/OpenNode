@@ -11,7 +11,7 @@ Ext.define('Funcman.OpenNodeGraph', {
     extend: 'Funcman.Graph',
     alias: 'OpenNodeGraph',
     
-    dcid: 0,
+    dcid: 0, vmid: 0,
     
     attachInfoWindow: function(node) {
         var me = this;
@@ -30,7 +30,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             iw.add({xtype: 'button', text: 'Create VM', handler: function() {
 				var newVmParams = Ext.create('Ext.Window', {
 					title: 'New VM parameters',
-					height: 500,
+					height: 300,
 					width: 350,
 					layout: {
 						type: 'table',
@@ -125,8 +125,18 @@ Ext.define('Funcman.OpenNodeGraph', {
 							{ boxLabel: 'VETH', name: 'rb', inputValue: '2' }
 						],
 						colspan:3
-						}
-						
+						}, {
+                            xtype: 'button',
+                            text: 'Create', handler: function(b) {
+                                var me = this;
+                                vm = me.createVM(null, me.vmid, 'VM '+me.vmid, b.node);
+                                me.addNode(vm);
+                                me.vmid++;
+                                b.up().destroy();
+                            },
+                            scope: me,
+                            node: node
+                        }
 					]
 				});
 				newVmParams.show();

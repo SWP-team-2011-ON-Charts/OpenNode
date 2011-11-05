@@ -5,6 +5,7 @@ Ext.define('Funcman.GraphView', {
 
     isMouseDown: false,
     isDragging: false,
+    isMigrating: false,
     
     iconSize: 40,
     items_remove: [],
@@ -26,7 +27,6 @@ Ext.define('Funcman.GraphView', {
 
         me.on('mousedown', me.mousedownlistener, me, {element: 'el'});
         me.on('mousemove', me.highlightlistener, me, {element: 'el'});
-        me.on('mouseup', me.mouseuplistener, me, {element: 'el'});
     },
 
     afterRender: function() {
@@ -122,12 +122,13 @@ Ext.define('Funcman.GraphView', {
     },
 
     mousedownlistener: function(e, t, opts) {
-        var me = this;
-        if (me.isDragging)
-            return;
+        var me = this,
+            body = Ext.getBody();
 
         me.addCls('movecursor');
-        me.on('mousemove', me.mousemovelistener, me, {element: 'el'});
+        body.on('mousemove', me.mousemovelistener, me, {element: 'el'});
+        body.on('mouseup', me.mouseuplistener, me, {element: 'el'});
+        me.on('mouseup', me.mouseuplistener, me, {element: 'el'});
         var containerpos = me.getPosition();
         var currentscroll = me.getEl().getScroll();
         me._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
@@ -138,7 +139,12 @@ Ext.define('Funcman.GraphView', {
 
     mouseuplistener: function(e,t) {
         var me = this,
-            zoom = me.up().zoom;
+            zoom = me.up().zoom,
+            body = Ext.getBody();
+
+        if (me.isMigrating) {
+            me.isMigrating = false;
+        }
 
         // If not dragging, then an item was selected
         if (!me.isDragging) {
@@ -149,7 +155,8 @@ Ext.define('Funcman.GraphView', {
         me.isDragging = false;
 
         me.removeCls('movecursor');
-        me.removeListener('mousemove', me.mousemovelistener);
+        body.removeListener('mousemove', me.mousemovelistener);
+        body.removeListener('mouseup', me.mouseuplistener);
         
         e.stopEvent();
     },
@@ -157,9 +164,19 @@ Ext.define('Funcman.GraphView', {
     mousemovelistener: function(e, t, opts) {
         var me = this;
 
+        if (me.isMigrating) {
+            return;
+        }
+
         if (!me.isDragging) {
             if (me.isMouseDown) {
-                me.isDragging = true;
+                // If we're on a selected item, start migrating it, otherwise drag the graph
+                if (me.selectedItem && me.selectedItem === me.getItemFromEl(t)) {
+                    me.isMigrating = true;
+                    return;
+                } else {
+                    me.isDragging = true;
+                }
             } else {
                 return;
             }
