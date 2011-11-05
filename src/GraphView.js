@@ -241,6 +241,6 @@ Ext.define('Funcman.GraphView', {
         surface.items.show(true);
 
         // Set line drawing area
-        draw.setSize(maxx + me.iconSize, maxy + maxh + 100);
+        draw.setSize(maxx + me.iconSize, maxy + maxh);
     }
 });

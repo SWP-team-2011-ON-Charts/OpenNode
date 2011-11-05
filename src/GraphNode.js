@@ -5,14 +5,14 @@ Ext.define('Funcman.GraphNode', {
 
     isCollapsed: false,
     visible: true,
+    image: 'images/computer.png', // default
 
     items: [{
         xtype: 'container',
         items: [{
             xtype: 'component',
             autoEl: {
-                tag: 'img',
-                src: 'images/computer.png'
+                tag: 'img'
             }
         }]
     }, {
@@ -26,6 +26,7 @@ Ext.define('Funcman.GraphNode', {
         me.setName(this.name);
         
         me.initMigrate();
+        me.setImage(me.image);
     },
 
     initMigrate: function() {
@@ -113,6 +114,11 @@ Ext.define('Funcman.GraphNode', {
     setName: function(name) {
         this.name = name;
         this.getComponent(1).setText(name);
+    },
+    setImage: function(imageFile) {
+        var icon = this.getIcon();
+        icon.autoEl.src = imageFile;
+        icon.doAutoRender();
     },
 
     getX: function() {
