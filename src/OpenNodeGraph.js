@@ -291,21 +291,43 @@ Ext.define('Funcman.OpenNodeGraph', {
         return pm;
     },
     
-    syncWithServer: function(server_name) {
+    base64encode: function(decStr){
+        if (typeof btoa === 'function') {
+             return btoa(decStr);            
+        }
+        var base64s = this.base64s;
+        var bits;
+        var dual;
+        var i = 0;
+        var encOut = "";
+        while(decStr.length >= i + 3){
+            bits = (decStr.charCodeAt(i++) & 0xff) <<16 | (decStr.charCodeAt(i++) & 0xff) <<8 | decStr.charCodeAt(i++) & 0xff;
+            encOut += base64s.charAt((bits & 0x00fc0000) >>18) + base64s.charAt((bits & 0x0003f000) >>12) + base64s.charAt((bits & 0x00000fc0) >> 6) + base64s.charAt((bits & 0x0000003f));
+        }
+        if(decStr.length -i > 0 && decStr.length -i < 3){
+            dual = Boolean(decStr.length -i -1);
+            bits = ((decStr.charCodeAt(i++) & 0xff) <<16) |    (dual ? (decStr.charCodeAt(i) & 0xff) <<8 : 0);
+            encOut += base64s.charAt((bits & 0x00fc0000) >>18) + base64s.charAt((bits & 0x0003f000) >>12) + (dual ? base64s.charAt((bits & 0x00000fc0) >>6) : '=') + '=';
+        }
+        return(encOut);
+    },
+    
+    syncWithServer: function(server_name, username, password) {
         var me = this;
         me.view.setLoading(true);
 
         Ext.Ajax.request({
             cors: true,
             url: server_name + '/computes/',
+            headers: {
+                'Authorization': 'Basic ' + me.base64encode(username + ':' + password)
+            },
             success: function(response, opts) {
                 var dc = me.createDatacenter(server_name+'/networks/'+me.dcid+'/', me.dcid, 'datacenter'+me.dcid);
                 me.dcid++;
                 
                 Ext.each(Ext.JSON.decode(response.responseText, true), function(m) {
-                    Ext.iterate(m, function(id, name) {
-                        var pm = me.createMachineFromServer(server_name+'/computes/'+id+'/', id, name, dc);
-                    });
+                    me.createMachineFromServer(server_name+'/computes/'+m.id+'/', m.id, m.name, dc);
                 });
                 me.addNode(dc);
                 me.view.setLoading(false);

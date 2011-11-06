@@ -40,18 +40,30 @@ Ext.onReady(function () {
         var me = this;
         var register = Ext.create('Ext.Window', {
             title: 'Register datacenter',
-            height: 100,
+            height: 200,
             width: 400,
             layout: 'vbox',
             items: [{
                 xtype: 'textfield',
                 fieldLabel: 'server',
                 value: 'http://anthrax11.homeip.net:8080',
-                width: 350,
+                width: 350
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'username',
+                value: 'opennode',
+                width: 200
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'server',
+                value: 'demo',
+                width: 200,
                 listeners: {
                     specialkey: function(field, e){
                         if (e.getKey() == e.ENTER) {
-                            me.syncWithServer(field.getValue());
+                            me.syncWithServer(field.getValue(),
+                                register.items.getAt(1).getValue(),
+                                register.items.getAt(2).getValue());
                             register.destroy();
                         }
                     }
@@ -60,7 +72,9 @@ Ext.onReady(function () {
                 xtype: 'button',
                 text: 'register',
                 handler: function() {
-                    me.syncWithServer(register.items.getAt(0).getValue());
+                    me.syncWithServer(register.items.getAt(0).getValue(),
+                        register.items.getAt(1).getValue(),
+                        register.items.getAt(2).getValue());
                     register.destroy();
                 }
             }]
