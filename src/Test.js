@@ -8,9 +8,8 @@ This file may be used under the terms of the GNU General Public License version 
 */
 
 
-Ext.onReady(function () {
+var login = function (server, serverResponse) {
 
-	
     var body = Ext.getBody();
 
     var button = Ext.widget('button', {
@@ -62,7 +61,7 @@ Ext.onReady(function () {
                 listeners: {
                     specialkey: function(field, e){
                         if (e.getKey() == e.ENTER) {
-                            me.syncWithServer(field.getValue(),
+                            me.syncWithNewServer(field.getValue(),
                                 register.items.getAt(1).getValue(),
                                 register.items.getAt(2).getValue());
                             register.destroy();
@@ -73,7 +72,7 @@ Ext.onReady(function () {
                 xtype: 'button',
                 text: 'register',
                 handler: function() {
-                    me.syncWithServer(register.items.getAt(0).getValue(),
+                    me.syncWithNewServer(register.items.getAt(0).getValue(),
                         register.items.getAt(1).getValue(),
                         register.items.getAt(2).getValue());
                     register.destroy();
@@ -111,5 +110,5 @@ Ext.onReady(function () {
         register.show();
     }, graph);
     
-    
-});
+    graph.syncWithServer(server, serverResponse);
+}

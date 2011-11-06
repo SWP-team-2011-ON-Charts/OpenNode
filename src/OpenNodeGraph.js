@@ -416,7 +416,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         dc.children.push(pm);
         return pm;
     },
-    
+
     base64encode: function(decStr){
         if (typeof btoa === 'function') {
              return btoa(decStr);            
@@ -437,26 +437,33 @@ Ext.define('Funcman.OpenNodeGraph', {
         }
         return(encOut);
     },
-    
-    syncWithServer: function(server_name, username, password) {
+
+    syncWithServer: function(server, serverResponse) {
+        var me = this;
+
+        me.view.setLoading(true);
+        var dc = me.createDatacenter(server+'/networks/'+me.dcid+'/', me.dcid, 'datacenter'+me.dcid);
+        me.dcid++;
+        
+        Ext.each(Ext.JSON.decode(serverResponse, true), function(m) {
+            me.createMachineFromServer(server+'/computes/'+m.id+'/', m.id, m.name, dc);
+        });
+        me.addNode(dc);
+        me.view.setLoading(false);
+    },
+
+    syncWithNewServer: function(server, username, password) {
         var me = this;
         me.view.setLoading(true);
 
         Ext.Ajax.request({
             cors: true,
-            url: server_name + '/computes/',
+            url: server + '/computes/',
             headers: {
                 'Authorization': 'Basic ' + me.base64encode(username + ':' + password)
             },
             success: function(response, opts) {
-                var dc = me.createDatacenter(server_name+'/networks/'+me.dcid+'/', me.dcid, 'datacenter'+me.dcid);
-                me.dcid++;
-                
-                Ext.each(Ext.JSON.decode(response.responseText, true), function(m) {
-                    me.createMachineFromServer(server_name+'/computes/'+m.id+'/', m.id, m.name, dc);
-                });
-                me.addNode(dc);
-                me.view.setLoading(false);
+                me.syncWithServer(server, response.responseText);
             },
             failure: function(response, opts) {
                 alert('Could not connect to management server '+opts.url);
@@ -464,7 +471,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             }
         });
     },
-    
+
     getComputeInfo: function(button, e) {
         var me = this;
         var node = button.node;

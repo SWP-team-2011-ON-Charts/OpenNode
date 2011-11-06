@@ -24,7 +24,7 @@ var store2 = 	Ext.create('Ext.data.Store', {
     storeId:'data_store',
     fields:['name', 'rights-status', 'senority', 'dep', 'hired'],
     data:{'items':[
-        { 'name': 'Super Dummy',  "rights-status":"Super User"},
+        { 'name': 'opennode',  "rights-status":"Super User"},
         { 'name': 'Dummy 1', "rights-status":"Custom"},
         { 'name': 'Dummy 2', "rights-status":"Custom"},
         { 'name': 'Dummy 3', "rights-status":"Typical"}

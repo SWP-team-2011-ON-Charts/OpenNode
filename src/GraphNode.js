@@ -63,7 +63,7 @@ Ext.define('Funcman.GraphNode', {
             return;
         }
 
-        me.dragZone = new Ext.dd.DragZone(me.getEl(), {
+        me.dragZone = new Ext.dd.DragZone(me.el, {
 
             getDragData: function(e) {
 
@@ -98,7 +98,7 @@ Ext.define('Funcman.GraphNode', {
             return;
         }
 
-        me.dropTarget = new Ext.dd.DropTarget(me.getEl(), {
+        me.dropTarget = new Ext.dd.DropTarget(me.el, {
             onNodeOver: function(target, dd, e, data) { 
                 return Ext.dd.DropZone.prototype.dropAllowed;
             },
@@ -130,19 +130,19 @@ Ext.define('Funcman.GraphNode', {
     },
 
     getX: function() {
-        return parseInt(this.getEl().getStyle('left'), 10);
+        return parseInt(this.el.getStyle('left'), 10);
     },
     getY: function() {
-        return parseInt(this.getEl().getStyle('top'), 10);
+        return parseInt(this.el.getStyle('top'), 10);
     },
     setX: function(x) {
-        return this.getEl().setLeft(x+'px');
+        return this.el.setLeft(x+'px');
     },
     setY: function(y) {
-        return this.getEl().setTop(y+'px');
+        return this.el.setTop(y+'px');
     },
     setXY: function(x,y) {
-        return this.getEl().applyStyles({left: x+'px', top: y+'px'});
+        return this.el.applyStyles({left: x+'px', top: y+'px'});
     },
 
     getIconSize: function() {
@@ -155,7 +155,7 @@ Ext.define('Funcman.GraphNode', {
         );
     },
     getIconCenter: function() {
-        var el = this.getEl(),
+        var el = this.el,
             iconEl = this.getIcon().getEl(),
             s = parseInt(iconEl.getStyle('width'), 10) / 2;
         
@@ -174,21 +174,21 @@ Ext.define('Funcman.GraphNode', {
     },
 
     highlight: function() {
-        this.getEl().addCls('x-view-over');
+        this.el.addCls('x-view-over');
     },
     clearHighlight: function() {
-        this.getEl().removeCls('x-view-over');
+        this.el.removeCls('x-view-over');
     },
     
     select: function() {
         var me = this;
-        me.getEl().addCls('x-item-selected');
+        me.el.addCls('x-item-selected');
         me.showInfoWindow();
         me.setMigrateSource();
     },
     deselect: function(hideiw) {
         var me = this;
-        me.getEl().removeCls('x-item-selected');
+        me.el.removeCls('x-item-selected');
         if (hideiw) {
             me.hideInfoWindow();
         }
