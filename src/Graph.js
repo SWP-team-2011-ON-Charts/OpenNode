@@ -197,6 +197,7 @@ Ext.define('Funcman.Graph', {
             me.view.highlightItem = null;
         }
 
+        node.clearPathSprite();
         me.view.items_remove.push(node);
         
         // Disconnect from parent

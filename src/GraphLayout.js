@@ -46,15 +46,16 @@ Ext.define('Funcman.GraphLayout', {
             }
         }, this);
 
-        var setPos = function(child, left, itemh) {
+        // Recursive function to set new positions
+        var setPos = function(child, left, top) {
             var chWidth = 0;
 
             Ext.each(child.children, function(vm) {
-                chWidth += setPos(vm, left + chWidth, itemh + itemHeight);
+                chWidth += setPos(vm, left + chWidth, top + itemHeight);
             }, this);
 
             newPositions[child.id] = {
-                top : itemh,
+                top : top,
                 left: left + ((chWidth <= itemWidth) ? 0 : ((chWidth - itemWidth) / 2)),
                 iconSize: iconSize
             };
@@ -68,14 +69,20 @@ Ext.define('Funcman.GraphLayout', {
             rootleft = setPos(root, rootleft, 0);
         }, this);
 
-        //find current positions of each element
+        // find current positions of each element,
+        // don't animate if oldPos == newPos
         Ext.iterate(this.itemCache, function(id, item) {
-            if (Ext.Array.contains(this.added, id)) {
-                oldPositions[id] = newPositions[id];
+            var left = item.getX();
+            var newPos = newPositions[id];
+            if (Ext.Array.contains(this.added, id) || isNaN(left)) {
+                item.setXY(newPos.left, newPos.top);
+                item.setIconSize(newPos.iconSize);
+                delete newPositions[id];
             } else {
-                oldPositions[id] = {left: item.getX(), top: item.getY(), iconSize: item.getIconSize()};
-                if (isNaN(oldPositions[id].left)) {
-                    oldPositions[id] = newPositions[id];
+                oldPositions[id] = {left: left, top: item.getY(), iconSize: item.getIconSize()};
+                var oldPos = oldPositions[id];
+                if (left == newPos.left && oldPos.top == newPos.top && oldPos.iconSize == newPos.iconSize) {
+                    delete newPositions[id];
                 }
             }
         }, this);

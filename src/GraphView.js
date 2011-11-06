@@ -194,10 +194,6 @@ Ext.define('Funcman.GraphView', {
             draw = me.draw,
             surface = draw.surface;
 
-        // Clear all lines
-        surface.removeAll(true);
-        draw.setSize(0, 0);
-
         // Connect nodes with their child nodes
         // Also find graph area
         me.itemcontainer.items.each( function(item) {
@@ -209,6 +205,7 @@ Ext.define('Funcman.GraphView', {
             if (maxh < height) maxh = height;
 
             Ext.each(item.children, function(child) {
+
                 var ic2 = child.getIconCenter();
 
                 // Create a path from the center of one icon to the center of the other
@@ -223,18 +220,17 @@ Ext.define('Funcman.GraphView', {
                     color = "#C00";
                 }
 
-                surface.add({
-                    type: 'path',
-                    path: path,
-                    stroke: color,
-                    "stroke-width": '3',
-                    opacity: 0.5,
-                    group: 'lines'
-                });
+                if (!child.pathSprite) {
+                    child.pathSprite = Ext.create('Ext.draw.Sprite', {
+                        type: 'path',
+                        "stroke-width": '3',
+                        opacity: 0.5,
+                        surface: surface
+                    });
+                }
+                child.pathSprite.setAttributes({path: path, stroke: color}, true);
             });
         });
-
-        surface.items.show(true);
 
         // Set line drawing area
         draw.setSize(maxx + me.iconSize, maxy + maxh);

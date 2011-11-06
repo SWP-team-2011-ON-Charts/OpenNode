@@ -42,9 +42,17 @@ Ext.define('Funcman.GraphNode', {
 
     onDestroy : function() {
         var me = this;
+        me.clearPathSprite();
         if (me.iw) {
             me.iw.destroy();
             delete me.iw;
+        }
+    },
+    
+    clearPathSprite: function() {
+        if (this.pathSprite) {
+            this.pathSprite.destroy();
+            delete this.pathSprite;
         }
     },
 
