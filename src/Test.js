@@ -55,7 +55,8 @@ Ext.onReady(function () {
                 width: 200
             }, {
                 xtype: 'textfield',
-                fieldLabel: 'server',
+                fieldLabel: 'password',
+                inputType:'password',
                 value: 'demo',
                 width: 200,
                 listeners: {
