@@ -171,7 +171,8 @@ Ext.define('Funcman.OpenNodeGraph', {
             type: 'vm',
             name : name,
             image: 'images/computer.png',
-            parent: pm
+            parent: pm,
+            children: []
         });
         //this.attachInfoWindow(vm);
         pm.children.push(vm);

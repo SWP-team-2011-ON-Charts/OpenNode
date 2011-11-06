@@ -13,6 +13,8 @@
     position: relative;
     overflow: hidden;
     font: 11px Arial, Helvetica, sans-serif;
+    width: inherit;
+    height: inherit;
 }
 .graphview .thumb {
     padding: 3px;

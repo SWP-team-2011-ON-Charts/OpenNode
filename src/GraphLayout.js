@@ -45,68 +45,27 @@ Ext.define('Funcman.GraphLayout', {
                 roots.push(item);
             }
         }, this);
-/*
-        var setPos = function(items, left, top) {
-            var width = 0;
-            
-            setPos(item.children);
-            
-            if (item.visible) {
-                var id = root.id;
-                
-                newPositions[id] = {
-                    top : itemHeight * 2,
-                    left: left + width,
-                    iconSize: iconSize
-                };
-                if (Ext.Array.contains(this.added, id)) {
-                    oldPositions[id] = newPositions[id];
-                }
 
-                width += itemWidth;
-            }
-            
-            return width;
+        var setPos = function(child, left, itemh) {
+            var chWidth = 0;
+
+            Ext.each(child.children, function(vm) {
+                chWidth += setPos(vm, left + chWidth, itemh + itemHeight);
+            }, this);
+
+            newPositions[child.id] = {
+                top : itemh,
+                left: left + ((chWidth <= itemWidth) ? 0 : ((chWidth - itemWidth) / 2)),
+                iconSize: iconSize
+            };
+
+            return chWidth ? chWidth : itemWidth;
         };
-        
-        setPos(roots);
-*/
+
         // Set new positions
         var rootleft = 0;
         Ext.each(roots, function(root) {
-            var width = 0;
-            Ext.each(root.children, function(child) {
-
-                // Set positions for VMs (third line)
-                var vmwidth = 0;
-                Ext.each(child.children, function(vm) {
-                    if (vm.visible) {
-                        var id = vm.id;
-                        newPositions[id] = {
-                            top : itemHeight * 2,
-                            left: rootleft + width + vmwidth,
-                            iconSize: iconSize
-                        };
-                        vmwidth += itemWidth;
-                    }
-                }, this);
-
-                var id = child.id;
-
-                // Set position of PM
-                newPositions[id] = {
-                    top : itemHeight,
-                    left: rootleft + width + ((vmwidth <= itemWidth) ? 0 : ((vmwidth - itemWidth) / 2)),
-                    iconSize: iconSize
-                };
-                width += vmwidth ? vmwidth : itemWidth;
-            }, this);
-
-            // Place the root element in the middle
-            var id = root.id;
-            newPositions[id] = {left: rootleft + width / 2, top: 0, iconSize: iconSize};
-
-            rootleft += width;
+            rootleft = setPos(root, rootleft, 0);
         }, this);
 
         //find current positions of each element

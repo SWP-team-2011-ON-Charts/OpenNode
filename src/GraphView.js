@@ -169,11 +169,8 @@ Ext.define('Funcman.GraphView', {
 
         if (!me.isDragging && !me.isMigrating && me.isMouseDown) {
             // If we're on a selected item, start migrating it, otherwise drag the graph
-            if (me.selectedItem) {
-                var item = me.getItemFromEl(t);
-                if (item === me.selectedItem) {
-                    me.isMigrating = true;
-                }
+            if (me.selectedItem && me.getItemFromEl(t) === me.selectedItem) {
+                me.isMigrating = true;
             } else {
                 me.isDragging = true;
             }
@@ -185,11 +182,10 @@ Ext.define('Funcman.GraphView', {
                 containerpos = this.getPosition();
             el.scrollTo("right", (containerpos[0] + this._pananchor[0] - currentpos[0]));
             el.scrollTo("top", (containerpos[1] + this._pananchor[1] - currentpos[1]));
+            e.stopEvent();
         } else if (me.isMigrating) {
-            return;
+            e.stopEvent();
         }
-
-        e.stopEvent();
     },
 
     drawLines: function() {
