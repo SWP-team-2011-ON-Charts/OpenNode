@@ -28,7 +28,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             iw.add({xtype: 'button', text: 'Create VM', handler: function() {
 				var newVmParams = Ext.create('Ext.Window', {
 					title: 'New VM parameters',
-					height: 300,
+					height: 450,
 					width: 350,
 					layout: {
 						type: 'table',
@@ -39,76 +39,139 @@ Ext.define('Funcman.OpenNodeGraph', {
 					},
 					items: [{
 						xtype: 'textfield',
+						itemId: 'newVM_Name',
 						fieldLabel: 'VM hostname',
 						labelAlign: 'left',
 						labelWidth: 100,
+						value: 'VM '+me.vmid,
 						colspan:3
 						}, {
 						xtype: 'textfield',
 						fieldLabel: 'VM ID',
 						labelAlign: 'left',
 						labelWidth: 100,
+						value: me.vmid,
 						colspan:3
 						}, {
-						xtype: 'textfield',
+						xtype: 'numberfield',
+						itemId: 'newVM_MB',
 						fieldLabel: 'Memory MB',
-						width: 150,
+						width: 170,
 						labelAlign: 'left',
 						labelWidth: 100,
-						colspan:2
+						value: 50,
+						minValue: 1,
+						maxValue: 100,
+						colspan:2,
+						listeners: {
+							change: function(el, val) {
+									newVmParams.getComponent('newVM_MB_slider').setValue(this.getValue());
+								}
+							}
 						}, {
 						xtype: 'slider',
+						itemId: 'newVM_MB_slider',
 						width: 150,
 						value: 50,
 						increment: 1,
-						minValue: 0,
+						minValue: 1,
 						maxValue: 100,
-						colspan:1
+						colspan:1,
+						listeners: {
+							change: function(el, val) {
+									newVmParams.getComponent('newVM_MB').setValue(this.getValue());
+								}
+							}
 						}, {
-						xtype: 'textfield',
+						xtype: 'numberfield',
+						itemId: 'newVM_CPUs',
 						fieldLabel: 'No of CPUs',
-						width: 150,
+						width: 170,
 						labelAlign: 'left',
 						labelWidth: 100,
-						colspan:2
+						value: 1,
+						minValue: 1,
+						maxValue: 8,
+						colspan:2,
+						listeners: {
+							change: function(el, val) {
+									newVmParams.getComponent('newVM_CPUs_slider').setValue(this.getValue());
+								}
+							}
 						}, {
 						xtype: 'slider',
+						itemId: 'newVM_CPUs_slider',
 						width: 150,
-						value: 50,
+						value: 1,
 						increment: 1,
-						minValue: 0,
-						maxValue: 100,
-						colspan:1
+						minValue: 1,
+						maxValue: 8,
+						colspan:1,
+						listeners: {
+							change: function(el, val) {
+									newVmParams.getComponent('newVM_CPUs').setValue(this.getValue());
+								}
+							}
 						}, {
-						xtype: 'textfield',
+						xtype: 'numberfield',
+						itemId: 'newVM_CPU_Limit',
 						fieldLabel: 'CPU limit(%)',
-						width: 150,
+						width: 170,
 						labelAlign: 'left',
 						labelWidth: 100,
-						colspan:2
+						value: 50,
+						minValue: 1,
+						maxValue: 100,
+						colspan:2,
+						listeners: {
+							change: function(el, val) {
+									newVmParams.getComponent('newVM_CPU_Limit_slider').setValue(this.getValue());
+								}
+							}
 						}, {
 						xtype: 'slider',
+						itemId: 'newVM_CPU_Limit_slider',
 						width: 150,
 						value: 50,
 						increment: 1,
-						minValue: 0,
+						minValue: 1,
 						maxValue: 100,
-						colspan:1
+						colspan:1,
+						listeners: {
+							change: function(el, val) {
+									newVmParams.getComponent('newVM_CPU_Limit').setValue(this.getValue());
+								}
+							}
 						}, {
-						xtype: 'textfield',
+						xtype: 'numberfield',
+						itemId: 'newVM_HDD',
 						fieldLabel: 'Disk size (GB)',
-						width: 150,
+						width: 170,
 						labelAlign: 'left',
 						labelWidth: 100,
-						colspan:2
+						value: 50,
+						minValue: 1,
+						maxValue: 100,
+						colspan:2,
+						listeners: {
+							change: function(el, val) {
+									newVmParams.getComponent('newVM_HDD_slider').setValue(this.getValue());
+								}
+							}
 						}, {
 						xtype: 'slider',
+						itemId: 'newVM_HDD_slider',
 						width: 150,
 						value: 50,
 						increment: 1,
-						minValue: 0,
+						minValue: 1,
 						maxValue: 100,
-						colspan:1
+						colspan:1,
+						listeners: {
+							change: function(el, val) {
+									newVmParams.getComponent('newVM_HDD').setValue(this.getValue());
+								}
+							}
 						}, {
 						
 						//ei toimi mingil X põhjusel
@@ -124,12 +187,75 @@ Ext.define('Funcman.OpenNodeGraph', {
 						],
 						colspan:3
 						}, {
+						xtype: 'textfield',
+						fieldLabel: 'IP address',
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:3
+						}, {
+						xtype: 'textfield',
+						fieldLabel: 'DNS 1',
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:3
+						}, {
+						xtype: 'textfield',
+						fieldLabel: 'DNS 2',
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:3
+						}, {
+						xtype: 'textfield',
+						fieldLabel: 'DNS domain',
+						labelAlign: 'left',
+						labelWidth: 100,
+						colspan:3
+						}, {
+						xtype: 'textfield',
+						itemId: 'newVM_psw1',
+						fieldLabel: 'Root password',
+						labelAlign: 'left',
+						labelWidth: 100,
+						inputType:'password',
+						colspan:3
+						}, {
+						xtype: 'textfield',
+						itemId: 'newVM_psw2',
+						fieldLabel: 'Confirm password',
+						labelAlign: 'left',
+						labelWidth: 100,
+						inputType:'password',
+						colspan:3
+						}, {
+						
+						//ei toimi mingil X põhjusel
+						xtype: 'fieldcontainer',
+						fieldLabel: 'Start at boot',
+						defaultType: 'checkboxfield',
+						items: [
+							{
+								boxLabel  : '',
+								name      : 'Start at boot',
+								inputValue: '1',
+								id        : 'startBoot'
+							}],
+						colspan:3
+						}, {
                             xtype: 'button',
                             text: 'Create', handler: function(b) {
-                                var me = this;
-                                vm = me.createVM(null, me.vmid, 'VM '+me.vmid, b.node);
-                                me.addNode(vm);
-                                me.vmid++;
+								if(newVmParams.getComponent('newVM_psw1').value==newVmParams.getComponent('newVM_psw2').value) {
+									var me = this;
+									vm = me.createVM(null, me.vmid, newVmParams.getComponent('newVM_Name').value, b.node);
+									me.addNode(vm);
+									me.vmid++;
+									b.up().destroy();}
+								else {alert('Passwords do not match. Please re-type both passwords.')}
+                            },
+                            scope: me,
+                            node: node
+                        }, {
+                            xtype: 'button',
+                            text: 'Cancel', handler: function(b) {
                                 b.up().destroy();
                             },
                             scope: me,
