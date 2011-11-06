@@ -1,0 +1,56 @@
+{
+    "projectName": "OpenNode Graph",
+    "packages": [
+        {
+            "name": "Classes",
+            "target": "pkgs/classes.js",
+            "id": "classes",
+            "files": [
+                {
+                    "path": "../src/",
+                    "name": "Graph.js"
+                },
+                {
+                    "path": "../src/",
+                    "name": "GraphLayout.js"
+                },
+                {
+                    "path": "../src/",
+                    "name": "GraphNode.js"
+                },
+                {
+                    "path": "../src/",
+                    "name": "GraphView.js"
+                },
+                {
+                    "path": "../src/",
+                    "name": "GraphViewModel.js"
+                },
+                {
+                    "path": "../src/",
+                    "name": "OpenNodeGraph.js"
+                }
+            ]
+        }
+    ],
+    "builds": [
+        {
+            "name": "All",
+            "target": "opennode-graph.js",
+            "compress": true,
+            "packages": [
+                "classes",
+            ]
+        }
+    ],
+    "resources": [
+        {
+            "src": "../resources/",
+            "dest": "resources"
+        },
+        {
+            "src": "../src/images/",
+            "dest": "images"
+        }
+    ]
+}
