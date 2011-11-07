@@ -202,7 +202,7 @@ Ext.define('Funcman.Graph', {
         
         // Disconnect from parent
         if (node.parent) {
-            Ext.Array.remove(node.parent.children, node);
+            node.parent.removeChild(node);
             node.parent = null;
         }
 

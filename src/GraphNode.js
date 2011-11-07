@@ -21,23 +21,26 @@ Ext.define('Funcman.GraphNode', {
 
     initComponent: function() {
         var me = this;
+
         me.callParent(arguments);
-        
-        me.setName(this.name);
-        
-        me.initMigrate();
-        me.setImage(me.image);
+
+        me.initElement();
     },
 
-    initMigrate: function() {
+    initElement: function() {
         var me = this;
 
         if (!me.rendered) {
-            me.on('render', me.initMigrate, me, {single: true});
+            me.on('render', me.initElement, me, {single: true});
             return;
         }
 
-        this.setMigrateTarget();
+        me.view = me.up().up();
+
+        me.setName(me.name);
+        me.setImage(me.image);
+
+        me.setMigrateTarget();
     },
 
     onDestroy : function() {
@@ -53,6 +56,64 @@ Ext.define('Funcman.GraphNode', {
         if (this.pathSprite) {
             this.pathSprite.destroy();
             delete this.pathSprite;
+        }
+    },
+
+    addChild: function(node) {
+        var me = this;
+
+        // Add collapse button
+        if (me.children.length == 0) {
+            me.collapsebtn = me.add({
+                xtype: 'tool',
+                type: 'collapse-top',
+                handler: me.toggleCollapse,
+                scope: me
+            });
+        }
+
+        me.children.push(node);
+    },
+
+    removeChild: function(node) {
+        var me = this;
+
+        Ext.Array.remove(me.children, node);
+
+        // Remove collapse button
+        if (me.children.length == 0) {
+            me.remove(me.collapsebtn);
+            delete me.collapsebtn;
+        }
+    },
+
+    toggleCollapse: function() {
+        var me = this;
+
+        me.collapsebtn.setType(me.isCollapsed ? 'collapse-top' : 'collapse-bottom');
+        me.isCollapsed = !me.isCollapsed;
+
+        Ext.each(me.children, function(child) {
+            me.collapseRecursive(child, !me.isCollapsed);
+        });
+
+        me.view.layoutPlugin.refresh();
+    },
+
+    collapseRecursive: function(item, expand) {
+        var me = this;
+
+        if (expand) {
+            item.show();
+        } else {
+            item.hide();
+            item.clearPathSprite();
+        }
+
+        if (!item.isCollapsed) {
+            Ext.each(item.children, function(child) {
+                me.collapseRecursive(child, expand);
+            });
         }
     },
 
@@ -88,7 +149,7 @@ Ext.define('Funcman.GraphNode', {
             }
         });
         
-        me.dragZone.constrainTo(me.up().up().getEl());
+        me.dragZone.constrainTo(me.view.getEl());
     },
 
     setMigrateTarget: function() {
@@ -105,11 +166,11 @@ Ext.define('Funcman.GraphNode', {
             notifyDrop: function(source, e, data) {
                 var source = data.dragSource;
                 if (source.parent) {
-                    Ext.Array.remove(source.parent.children, source);
+                    source.parent.removeChild(source);
                 }
                 source.parent = me;
-                me.children.push(source);
-                me.up().up().layoutPlugin.refresh();
+                me.addChild(source);
+                me.view.layoutPlugin.refresh();
                 source.setMigrateTarget();
                 return true;
             }

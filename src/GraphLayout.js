@@ -50,9 +50,12 @@ Ext.define('Funcman.GraphLayout', {
         var setPos = function(child, left, top) {
             var chWidth = 0;
 
-            Ext.each(child.children, function(vm) {
-                chWidth += setPos(vm, left + chWidth, top + itemHeight);
-            }, this);
+            if (!child.isCollapsed) {
+                var nextTop = top + itemHeight;
+                Ext.each(child.children, function(chChild) {
+                    chWidth += setPos(chChild, left + chWidth, nextTop);
+                }, this);
+            }
 
             newPositions[child.id] = {
                 top : top,
@@ -71,9 +74,9 @@ Ext.define('Funcman.GraphLayout', {
 
         // find current positions of each element,
         // don't animate if oldPos == newPos
-        Ext.iterate(this.itemCache, function(id, item) {
-            var left = item.getX();
-            var newPos = newPositions[id];
+        Ext.iterate(newPositions, function(id, newPos) {
+            var item = this.itemCache[id],
+                left = item.getX();
             if (Ext.Array.contains(this.added, id) || isNaN(left)) {
                 item.setXY(newPos.left, newPos.top);
                 item.setIconSize(newPos.iconSize);
@@ -156,6 +159,7 @@ Ext.define('Funcman.GraphLayout', {
         me.added = [];
         var items = me.view.itemcontainer.items,
             items_remove = me.view.items_remove;
+
         items.each(function(item) {
             var id = item.getId();
             if (me.itemCache[id] == undefined && !Ext.Array.contains(items_remove, item)) {

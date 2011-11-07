@@ -134,7 +134,7 @@ Ext.define('Funcman.GraphView', {
         body.on('mouseup', me.mouseuplistener, me, {element: 'el'});
 
         var containerpos = me.getPosition();
-        var currentscroll = me.getEl().getScroll();
+        var currentscroll = me.el.getScroll();
         me._pananchor = [e.getX() - containerpos[0] + currentscroll.left, e.getY() - containerpos[1] + currentscroll.top];
         me.isMouseDown = true;
 
@@ -177,7 +177,7 @@ Ext.define('Funcman.GraphView', {
         }
 
         if (me.isDragging) {
-            var el = this.getEl(),
+            var el = this.el,
                 currentpos = e.getXY(),
                 containerpos = this.getPosition();
             el.scrollTo("right", (containerpos[0] + this._pananchor[0] - currentpos[0]));
@@ -190,20 +190,29 @@ Ext.define('Funcman.GraphView', {
 
     drawLines: function() {
         var me = this,
-            maxx = 0, maxy = 0, maxh = 0,
-            draw = me.draw,
-            surface = draw.surface;
+            max = {x: 0, y: 0, h: 0}
 
-        // Connect nodes with their child nodes
+        // Connect nodes with their child nodes starting from the root elements
         // Also find graph area
         me.itemcontainer.items.each( function(item) {
-            var ic1 = item.getIconCenter(),
-                height = item.getHeight();
+            if (!item.parent) {
+                me.drawLine(item, max, me.draw.surface);
+            }
+        });
 
-            if (maxx < ic1.x) maxx = ic1.x;
-            if (maxy < ic1.y) maxy = ic1.y;
-            if (maxh < height) maxh = height;
+        // Set line drawing area
+        me.draw.setSize(max.x + me.iconSize, max.y + max.h);
+    },
 
+    drawLine: function(item, max, surface) {
+        var ic1 = item.getIconCenter(),
+            height = item.getHeight();
+
+        if (max.x < ic1.x) max.x = ic1.x;
+        if (max.y < ic1.y) max.y = ic1.y;
+        if (max.h < height) max.h = height;
+
+        if (!item.isCollapsed) {
             Ext.each(item.children, function(child) {
 
                 var ic2 = child.getIconCenter();
@@ -229,10 +238,9 @@ Ext.define('Funcman.GraphView', {
                     });
                 }
                 child.pathSprite.setAttributes({path: path, stroke: color}, true);
-            });
-        });
-
-        // Set line drawing area
-        draw.setSize(maxx + me.iconSize, maxy + maxh);
+                
+                this.drawLine(child, max, surface);
+            }, this);
+        }
     }
 });

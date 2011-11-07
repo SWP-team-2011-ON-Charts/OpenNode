@@ -18,14 +18,14 @@ Ext.define('Funcman.OpenNodeGraph', {
 
         var iw = Ext.create('Ext.Panel', {
             title: node.name,
-            layout: 'vbox',
+            layout: 'hbox',
             width: 65,
-            height: 45,
+            height: 25,
             preventHeader: true,
         });
 
         if (node.type == "pm") {
-            iw.add({xtype: 'button', text: 'Create VM', handler: function() {
+            iw.add({xtype: 'button', text: 'VM', handler: function() {
 				var newVmParams = Ext.create('Ext.Window', {
 					title: 'New VM parameters',
 					height: 450,
@@ -266,7 +266,7 @@ Ext.define('Funcman.OpenNodeGraph', {
 				newVmParams.show();
 			
 			}});
-            iw.add({xtype: 'button', text: 'Remove', handler: function(b) {me.removeNode(b.node);}, scope: me, node: node});
+            iw.add({xtype: 'button', text: 'X', handler: function(b) {me.removeNode(b.node);}, scope: me, node: node});
         }
         
         node.infowindow = iw;
@@ -301,7 +301,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             children: []
         });
         //this.attachInfoWindow(vm);
-        pm.children.push(vm);
+        pm.addChild(vm);
 
         return vm;
     },
@@ -323,7 +323,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         this.attachInfoWindow(pm);
         pm.children = [];
 
-        node.children.push(pm);
+        node.addChild(pm);
 
         this.addNode(pm);
         this.pmid++;
@@ -347,34 +347,11 @@ Ext.define('Funcman.OpenNodeGraph', {
         this.attachInfoWindow(vm);
         vm.children = [];
 
-        node.children.push(vm);
+        node.addChild(vm);
         
         this.addNode(vm);
         //this.setSelectedNode(vm);
         this.vmid++;
-    },
-
-    addUser: function(button) {
-        var node = button.node;
-        var newid = node.get('id')+'uu'+this.uid;
-
-        var uu = Ext.create('GraphNode', {
-            id: newid,
-            idnum: this.uid,
-            type: 'uu',
-            name : 'User ' + this.uid,
-            image: 'images/user.png',
-            top: 192,
-            left: this.uid * 64,
-            children: [],
-            parent: node
-        });
-        this.attachInfoWindow(uu);
-
-        node.children.push(uu);
-        
-        this.addNode(uu);
-        this.uid++;
     },
 
     removeListener: function(button, e) {
@@ -413,7 +390,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
         this.attachInfoWindow(pm);
 
-        dc.children.push(pm);
+        dc.addChild(pm);
         return pm;
     },
 
