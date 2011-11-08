@@ -17,7 +17,6 @@ var login = function (server, serverResponse) {
         scale: 'medium',
         iconCls: 'add',
         renderTo: body,
-        cls: 'floater',
     });
     
     var user_button = Ext.widget('button', {
@@ -26,6 +25,13 @@ var login = function (server, serverResponse) {
         iconCls: 'user',
         renderTo: body,
         cls: 'add_user_button',
+    });
+
+    var switchLayout = Ext.widget('button', {
+        text : 'Switch layout',
+        scale: 'medium',
+        iconCls: 'refresh',
+        renderTo: body,
     });
 
     var graph = Ext.create('OpenNodeGraph', {
@@ -108,6 +114,21 @@ var login = function (server, serverResponse) {
             }]
         });
         register.show();
+    }, graph);
+
+    switchLayout.setHandler(function() {
+        var me = this,
+            view = me.view;
+
+        view.layoutPlugin.destroy();
+        if (view.layoutPlugin instanceof Funcman.GraphLayout) {
+            view.layoutPlugin = Ext.create('Funcman.GraphRoundLayout');
+        } else {
+            view.layoutPlugin = Ext.create('Funcman.GraphLayout');
+        }
+        view.plugins[0] = view.layoutPlugin;
+        view.layoutPlugin.init(view);
+        view.layoutPlugin.refresh();
     }, graph);
     
     graph.syncWithServer(server, serverResponse);
