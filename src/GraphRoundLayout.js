@@ -34,7 +34,7 @@ Ext.define('Funcman.GraphRoundLayout', {
             itemWidth   = zoom * this.view.iconSize + 10,
             itemHeight  = iconSize + 40;
 
-        //stores the current top and left values for each element (discovered below)
+        //stores the current left, top and iconSize values for each element (discovered below)
         var oldPositions = {},
             newPositions = {};
 
@@ -47,29 +47,37 @@ Ext.define('Funcman.GraphRoundLayout', {
         }, this);
 
         // Recursive function to set new positions
-        var setPos = function(child, left, top) {
-            var chWidth = 0;
+        var setPos = function(item, angle, radius, rootPos) {
+            var chAngle = angle,
+                childCount = item.isCollapsed ? 0 : item.children.length,
+                childRadius = (60 + childCount*2);
 
-            if (!child.isCollapsed) {
-                var nextTop = top + itemHeight * 1.4;
-                Ext.each(child.children, function(chChild) {
-                    chWidth += setPos(chChild, left + chWidth, nextTop);
-                }, this);
+            if (childCount) {
+                radius += 100 + childCount;
             }
 
-            newPositions[child.id] = {
-                top : top,
-                left: left + ((chWidth <= itemWidth) ? 0 : ((chWidth - itemWidth) / 2)),
+            newPositions[item.id] = {
+                left: zoom * radius * Math.sin(angle) + rootPos.left,
+                top: zoom * radius * Math.cos(angle) + rootPos.top,
                 iconSize: iconSize
             };
 
-            return chWidth ? chWidth : itemWidth;
+            if (!item.isCollapsed) {
+                var childAngle = 2 * Math.PI / childCount;
+
+                var nextRadius = childRadius + 60 + childCount * 2;
+                Ext.each(item.children, function(child) {
+                    chAngle = setPos(child, chAngle + childAngle, childRadius, newPositions[item.id]);
+                }, this);
+            }
+
+            return chAngle;
         };
 
         // Set new positions
         var rootleft = 0;
         Ext.each(roots, function(root) {
-            rootleft = setPos(root, rootleft, 0);
+            rootleft = setPos(root, rootleft, 0, {left: 300, top: 100});
         }, this);
 
         // find current positions of each element,
@@ -78,12 +86,7 @@ Ext.define('Funcman.GraphRoundLayout', {
             var item = this.itemCache[id],
                 left = item.getX();
             if (Ext.Array.contains(this.added, id) || isNaN(left)) {
-                // Convert to polar
-                var scale = newPos.left/210.0;
-                var x = newPos.top * Math.cos(scale) + 300,
-                    y = newPos.top * Math.sin(scale) + 300;
-
-                item.setXY(x, y);
+                item.setXY(newPos.left, newPos.top);
                 item.setIconSize(newPos.iconSize);
                 delete newPositions[id];
             } else {
@@ -111,12 +114,7 @@ Ext.define('Funcman.GraphRoundLayout', {
                     var node = this.itemCache[id],
                         newPos = newPositions[id];
 
-                    // Convert to polar
-                    var scale = newPos.left/210.0;
-                    var x = newPos.top * Math.cos(scale) + 300,
-                        y = newPos.top * Math.sin(scale) + 300;
-                        
-                    node.setXY(x, y);
+                    node.setXY(newPos.left, newPos.top);
                     node.setIconSize(newPos.iconSize);
                 }
                 this.view.drawLines();
@@ -131,20 +129,14 @@ Ext.define('Funcman.GraphRoundLayout', {
                         newPos  = newPositions[id],
                         oldTop  = oldPos.top,
                         oldLeft = oldPos.left,
-                        oldSize = oldPos.iconSize;
-
-                    // Convert to polar
-                    var scale = oldLeft/210.0,
-                        scale2 = newPos.left/210.0,
-                        midScale  = scale + fraction * (scale2 - scale),
+                        oldSize = oldPos.iconSize,
+                        midLeft = oldLeft +  fraction * (newPos.left - oldLeft),
                         midTop = oldTop +  fraction * (newPos.top - oldTop);
-                        x = midTop * Math.cos(midScale) + 300,
-                        y = midTop * Math.sin(midScale) + 300;
-
-                    var midSize = oldSize +  fraction * (newPos.iconSize - oldSize);
 
                     var node = this.itemCache[id];
                     node.setXY(midLeft, midTop);
+
+                    //var midSize = oldSize +  fraction * (newPos.iconSize - oldSize);
                     //node.setIconSize(midSize);
                 }
                 this.view.drawLines();
