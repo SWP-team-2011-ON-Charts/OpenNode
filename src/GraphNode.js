@@ -66,7 +66,7 @@ Ext.define('Funcman.GraphNode', {
         if (me.children.length == 0) {
             me.collapsebtn = me.add({
                 xtype: 'tool',
-                type: 'collapse-top',
+                type: 'minus',
                 handler: me.toggleCollapse,
                 scope: me
             });
@@ -90,7 +90,7 @@ Ext.define('Funcman.GraphNode', {
     toggleCollapse: function() {
         var me = this;
 
-        me.collapsebtn.setType(me.isCollapsed ? 'collapse-top' : 'collapse-bottom');
+        me.collapsebtn.setType(me.isCollapsed ? 'minus' : 'plus');
         me.isCollapsed = !me.isCollapsed;
 
         Ext.each(me.children, function(child) {
@@ -184,6 +184,13 @@ Ext.define('Funcman.GraphNode', {
         this.name = name;
         this.getComponent(1).setText(name);
     },
+    showName: function() {
+        this.getComponent(1).show();
+    },
+    hideName: function() {
+        this.getComponent(1).hide();
+    },
+
     setImage: function(imageFile) {
         var icon = this.getIcon();
         icon.autoEl.src = imageFile;

@@ -42,6 +42,8 @@ Ext.define('Funcman.Graph', {
     alias: 'Graph',
     extend: 'Ext.container.Container',
     cls: 'graphcontainer',
+    zoomOutLevel: 1.2,
+    zoomInLevel: 2.0,
 
     items: [
         Ext.create('Funcman.GraphView'),
@@ -57,11 +59,18 @@ Ext.define('Funcman.Graph', {
                 change: function(el, val) {
                     var me = this.up(),
                         oldZoom = me.zoom,
-                        zoom = me.getZoom(),
-                        transition = (oldZoom <= 2 && zoom > 2) || (oldZoom > 2 && zoom <= 2);
-                    if (transition) {
-                        me.updateInfoWindowShow(zoom > 2);
+                        zoom = me.getZoom();
+
+                    // If a transition occurs
+                    if ((oldZoom <= me.zoomInLevel && zoom > me.zoomInLevel) ||
+                        (oldZoom > me.zoomInLevel && zoom <= me.zoomInLevel) ||
+                        (oldZoom <= me.zoomOutLevel && zoom > me.zoomOutLevel) ||
+                        (oldZoom > me.zoomOutLevel && zoom <= me.zoomOutLevel)) {
+
+                        me.updateInfoWindowShow(zoom > me.zoomInLevel);
+                        me.updateNameShow(zoom > me.zoomOutLevel);
                     }
+
                     me.view.layoutPlugin.refresh();
                 }
             }
@@ -106,18 +115,37 @@ Ext.define('Funcman.Graph', {
 
     updateInfoWindowShow: function(show) {
         var me = this,
-            ic = me.view.itemcontainer;
+            items = me.view.itemcontainer.items;
 
         // Show/hide infowindow on zoom transition
         if (show) {
-            ic.items.each(function(item) {
+            items.each(function(item) {
                 item.showInfoWindow();
             });
         } else {
             var selected = me.getSelectedNode();
-            ic.items.each(function(item) {
+            items.each(function(item) {
                 if (item !== selected) {
                     item.hideInfoWindow();
+                }
+            });
+        }
+    },
+
+    updateNameShow: function(show) {
+        var me = this,
+            items = me.view.itemcontainer.items;
+
+        // Show/hide infowindow on zoom transition
+        if (show) {
+            items.each(function(item) {
+                item.showName();
+            });
+        } else {
+            var selected = me.getSelectedNode();
+            items.each(function(item) {
+                if (item !== selected) {
+                    item.hideName();
                 }
             });
         }
@@ -165,7 +193,7 @@ Ext.define('Funcman.Graph', {
         }
 
         if (!norefresh) {
-            me.updateInfoWindowShow(me.getZoom() > 2);
+            me.updateInfoWindowShow(me.getZoom() > me.zoomInLevel);
             me.view.layoutPlugin.refresh();
         }
     },
@@ -178,7 +206,7 @@ Ext.define('Funcman.Graph', {
         });
 
         if (!norefresh) {
-            me.updateInfoWindowShow(me.getZoom() > 2);
+            me.updateInfoWindowShow(me.getZoom() > me.zoomInLevel);
             me.view.layoutPlugin.refresh();
         }
     },
@@ -233,7 +261,7 @@ Ext.define('Funcman.Graph', {
         }
 
         if (!norefresh) {
-            me.updateInfoWindowShow(me.getZoom() > 2);
+            me.updateInfoWindowShow(me.getZoom() > me.zoomInLevel);
             me.view.layoutPlugin.refresh();
         }
     },
