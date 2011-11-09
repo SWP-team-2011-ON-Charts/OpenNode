@@ -66,9 +66,7 @@ Ext.define('Funcman.Graph', {
                         (oldZoom > me.zoomInLevel && zoom <= me.zoomInLevel) ||
                         (oldZoom <= me.zoomOutLevel && zoom > me.zoomOutLevel) ||
                         (oldZoom > me.zoomOutLevel && zoom <= me.zoomOutLevel)) {
-
-                        me.updateInfoWindowShow(zoom > me.zoomInLevel);
-                        me.updateNameShow(zoom > me.zoomOutLevel);
+                        me.updateZoomLevel();
                     }
 
                     me.view.layoutPlugin.refresh();
@@ -112,6 +110,11 @@ Ext.define('Funcman.Graph', {
             cls: 'userpanel',
         })
     ],
+
+    updateZoomLevel: function() {
+        this.updateInfoWindowShow(this.getZoom() > this.zoomInLevel);
+        this.updateNameShow(this.zoom > this.zoomOutLevel);
+    },
 
     updateInfoWindowShow: function(show) {
         var me = this,
@@ -193,7 +196,7 @@ Ext.define('Funcman.Graph', {
         }
 
         if (!norefresh) {
-            me.updateInfoWindowShow(me.getZoom() > me.zoomInLevel);
+            me.updateZoomLevel();
             me.view.layoutPlugin.refresh();
         }
     },
@@ -206,7 +209,7 @@ Ext.define('Funcman.Graph', {
         });
 
         if (!norefresh) {
-            me.updateInfoWindowShow(me.getZoom() > me.zoomInLevel);
+            me.updateZoomLevel();
             me.view.layoutPlugin.refresh();
         }
     },
@@ -239,6 +242,7 @@ Ext.define('Funcman.Graph', {
         }
 
         if (!norefresh) {
+            me.updateZoomLevel();
             me.view.layoutPlugin.refresh();
         }
 
@@ -261,7 +265,7 @@ Ext.define('Funcman.Graph', {
         }
 
         if (!norefresh) {
-            me.updateInfoWindowShow(me.getZoom() > me.zoomInLevel);
+            me.updateZoomLevel();
             me.view.layoutPlugin.refresh();
         }
     },

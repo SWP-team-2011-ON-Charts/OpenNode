@@ -59,14 +59,21 @@ Ext.define('Funcman.GraphView', {
 
     setSelectedItem: function(item) {
         var me = this,
-            zoom = me.up().zoom;
+            graph = me.up(),
+            zoom = graph.getZoom();
 
         if (item === me.selectedItem) {
             return;
         }
 
         if (me.selectedItem) {
-            me.selectedItem.deselect(zoom < 2);
+            me.selectedItem.deselect();
+            if (zoom <= graph.zoomInLevel) {
+                me.selectedItem.hideInfoWindow();
+            }
+            if (zoom <= graph.zoomOutLevel) {
+                me.selectedItem.hideName();
+            }
         }
 
         me.selectedItem = item;

@@ -252,14 +252,12 @@ Ext.define('Funcman.GraphNode', {
         var me = this;
         me.el.addCls('x-item-selected');
         me.showInfoWindow();
+        me.showName();
         me.setMigrateSource();
     },
-    deselect: function(hideiw) {
+    deselect: function() {
         var me = this;
         me.el.removeCls('x-item-selected');
-        if (hideiw) {
-            me.hideInfoWindow();
-        }
         if (me.dragZone) {
             me.dragZone.destroy();
             me.dropTarget.destroy();

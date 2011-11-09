@@ -22,7 +22,7 @@
 .graphview .thumb-wrap {
     float: left;
     margin: 2px;
-    padding: 5px;
+    padding: 3px;
     position:absolute;
 }
 .graphview .thumb-wrap label {
@@ -31,12 +31,12 @@
 .graphview .x-view-over {
     border:1px solid #dddddd;
     background-color: #efefef;
-    padding: 4px;
+    padding: 2px;
 }
 .graphview .x-item-selected {
     background: #DFEDFF;
     border: 1px solid #6593cf;
-    padding: 4px;
+    padding: 2px;
 }
 .graphview .x-item-selected .thumb {
     background:transparent;

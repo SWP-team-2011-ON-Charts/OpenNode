@@ -10,9 +10,37 @@ This file may be used under the terms of the GNU General Public License version 
 Ext.define('Funcman.OpenNodeGraph', {
     extend: 'Funcman.Graph',
     alias: 'OpenNodeGraph',
-    
+
     dcid: 0, vmid: 0,
-    
+
+    initComponent: function() {
+        var me = this;
+        me.callParent();
+        
+        Ext.define('UsageData', {
+            extend: 'Ext.data.Model',
+            fields: ['usage', 'utype']
+        });
+
+        Ext.define('Ext.chart.theme.Usage', {
+            extend: 'Ext.chart.theme.Base',
+
+            constructor: function(config) {
+                this.callParent([Ext.apply({
+                    axis: {
+                        'stroke-width': 0
+                    },
+                    axisLabelBottom: {
+                        renderer: function(v) { return ''; }
+                    },
+                    axisLabelLeft: {
+                        renderer: function(v) { return ''; }
+                    },
+                }, config)]);
+            }
+        });
+    },
+
     attachInfoWindow: function(node) {
         var me = this;
 
@@ -20,13 +48,57 @@ Ext.define('Funcman.OpenNodeGraph', {
             title: node.name,
             layout: 'hbox',
             width: 65,
-            height: 25,
+            height: 18,
             preventHeader: true,
         });
 
         if (node.type == "pm") {
-            iw.add({xtype: 'button', text: 'VM', handler: function() {
-				var newVmParams = Ext.create('Ext.Window', {
+            var store = Ext.create('Ext.data.Store', {
+                model: 'UsageData',
+                data: [
+                    { usage: parseInt(node.cpu * 25.0), utype: 'CPU' },
+                    { usage: parseInt(node.memory * 2.0), utype: 'Memory' },
+                    { usage: 20, utype: 'Network' }
+                ]
+            });
+
+            var chart = Ext.create('Ext.chart.Chart', {
+                width: 48,
+                height: 18,
+                //animate: true,
+                store: store,
+                insetPadding: 0,
+                theme: 'Usage',
+                axes: [{
+                    type: 'Numeric',
+                    position: 'left',
+                    fields: ['usage'],
+                    minimum: 0,
+                    maximum: 100,
+                    dashSize: 0,
+                    label: {display: 'none', renderer: function(v) { return ''; }}
+                }],
+                series: [{
+                    type: 'column',
+                    axis: 'left',
+                    yField: 'usage',
+                    xPadding: -5,
+                    tips: {
+                        width: 130,
+                        height: 25,
+                        renderer: function(storeItem, item) {
+                            this.setTitle(storeItem.get('utype') + ' usage: ' + storeItem.get('usage') + '%');
+                        }
+                    },
+                }]
+            });
+            iw.add(chart);
+
+            iw.add({
+                xtype: 'tool',
+                type: 'gear',
+                handler: function() {
+                	var newVmParams = Ext.create('Ext.Window', {
 					title: 'New VM parameters',
 					height: 450,
 					width: 350,
@@ -264,9 +336,10 @@ Ext.define('Funcman.OpenNodeGraph', {
 					]
 				});
 				newVmParams.show();
-			
-			}});
-            iw.add({xtype: 'button', text: 'X', handler: function(b) {me.removeNode(b.node);}, scope: me, node: node});
+                },
+                scope: me,
+                width: 20
+            });
         }
         
         node.infowindow = iw;
@@ -377,16 +450,18 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
     },
 
-    createMachineFromServer: function(path, res_id, name, dc) {
+    createMachineFromServer: function(path, params, dc) {
         var pm = Ext.create('GraphNode', {
             path: path,
-            id: dc.id + 'pm'+res_id,
-            res_id: res_id,
+            id: dc.id + 'pm'+params.id,
+            res_id: params.id,
             type: 'pm',
-            name : name,
+            name: params.name,
             image: 'images/network-server.png',
             parent: dc,
-            children: []
+            children: [],
+            cpu: params.cpu,
+            memory: params.memory,
         });
         this.attachInfoWindow(pm);
 
@@ -423,7 +498,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         me.dcid++;
         
         Ext.each(Ext.JSON.decode(serverResponse, true), function(m) {
-            me.createMachineFromServer(server+'/computes/'+m.id+'/', m.id, m.name, dc);
+            me.createMachineFromServer(server+'/computes/'+m.id+'/', m, dc);
         });
         me.addNode(dc);
         me.view.setLoading(false);
