@@ -22,7 +22,7 @@ This file may be used under the terms of the GNU General Public License version 
 
 var store3 = 	Ext.create('Ext.data.Store', {
     storeId:'data_store3',
-    fields:['name', 'rights-status'],
+    fields:['id', 'name', 'rights-status'],
     
 });
 
@@ -35,6 +35,7 @@ Ext.define('Users_computers', {
 
 
 Ext.define('User', {
+	
     extend: 'Ext.data.Model',
     fields: [
         {name: 'id', type: 'int'},    
@@ -84,13 +85,12 @@ var grid_panel = Ext.create('Ext.grid.Panel', {
                   handler: function(grid, rowIndex, colIndex) { 
                 	  
                       var rec = grid.getStore().getAt(rowIndex);
-                      //alert(rec.getName);
                       var appending_comp = '';
-                      store3.each(function(el){
-                    	  el.User_computer().each(function(child_el){
+                      var selected_user = store3.findRecord('id', rec.get('id'));                      
+                      
+                    	  selected_user.User_computer().each(function(child_el){
                     		  appending_comp += child_el.get('name') + '\n' 
-                    	  }) 
-                      });
+                    	  });                      
                       
                       var rights_window = Ext.create('Ext.window.Window', {
                     		title: 'User Rights',
@@ -125,7 +125,8 @@ var grid_panel = Ext.create('Ext.grid.Panel', {
                                     text: 'Add', handler: function(b) {
                                     	//set_icon('images/different_users/user_'+rights_window.items.getAt(1).getValue()+'.png');
                                     	//grid_panel.columns[2].items[0].icon = get_icon();
-                                    	user_computers.add({
+                                    	
+                                    	selected_user.User_computer().add({
                                             name: rights_window.items.getAt(2).getValue()
                                         });
                                     	rights_window.destroy();

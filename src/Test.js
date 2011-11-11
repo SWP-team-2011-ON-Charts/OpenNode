@@ -38,6 +38,8 @@ var login = function (server, serverResponse, authString) {
         renderTo: body,
     });
 
+    var user_id = 0;
+    
     graph.setHeight(600);
     graph.setWidth(900);
 
@@ -114,7 +116,9 @@ var login = function (server, serverResponse, authString) {
                 handler: function() {
                     //store2.add({ 'name': register.items.getAt(0).getValue(),  "rights-status": register.items.getAt(1).getValue()});
                     
-                    var user = Ext.ModelManager.create({name: register.items.getAt(0).getValue(), rights: register.items.getAt(1).getValue()}, 'User');
+                    user_id++;
+                    
+                    var user = Ext.ModelManager.create({id : user_id, name: register.items.getAt(0).getValue(), rights: register.items.getAt(1).getValue()}, 'User');
                     var user_computers = user.User_computer();
                     user_computers.add({
                         name: register.items.getAt(2).getValue()
