@@ -22,7 +22,7 @@ var login = function (server, serverResponse, authString) {
     var user_button = Ext.widget('button', {
         text : 'Add User',
         scale: 'medium',
-        iconCls: 'user',
+        iconCls: 'add',
         renderTo: body,
         cls: 'add_user_button',
     });
@@ -105,10 +105,22 @@ var login = function (server, serverResponse, authString) {
                 fieldLabel: 'Rights',
                 width: 250,
             }, {
+            	xtype: 'textfield',
+            	fieldLabel: 'Computers',
+            	width: 250,
+        	},{
                 xtype: 'button',
                 text: 'Add',
                 handler: function() {
-                    store2.add({ 'name': register.items.getAt(0).getValue(),  "rights-status": register.items.getAt(1).getValue()});
+                    //store2.add({ 'name': register.items.getAt(0).getValue(),  "rights-status": register.items.getAt(1).getValue()});
+                    
+                    var user = Ext.ModelManager.create({name: register.items.getAt(0).getValue(), rights: register.items.getAt(1).getValue()}, 'User');
+                    var user_computers = user.User_computer();
+                    user_computers.add({
+                        name: register.items.getAt(2).getValue()
+                    });
+                    store3.add(user);
+                    
                     register.destroy();
                }
             }]
