@@ -37,6 +37,7 @@ Ext.define('Users_computers', {
 Ext.define('User', {
     extend: 'Ext.data.Model',
     fields: [
+        {name: 'id', type: 'int'},    
         {name: 'name', type: 'string'},
         {name: 'rights', type: 'string'}
     ],
@@ -55,22 +56,6 @@ user_computers.add({
 });
 
 store3.add(user);
-
-store3.each(function(el, el2, el3){
-	//alert(el.get('name'));
-	alert(el.User_computer().getAt(0).get('name'));
-});
-
-
-
-
-
-//user_computers.sync();
-
-
-
-
-
 
 var user_icon = 'images/different_users/user_cyan.png';
 
