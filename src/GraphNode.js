@@ -37,7 +37,7 @@ Ext.define('Funcman.GraphNode', {
 
         me.view = me.up().up();
 
-        me.setName(me.name);
+        me.setName(me.params.name);
         me.setImage(me.image);
 
         me.setMigrateTarget();
@@ -180,8 +180,11 @@ Ext.define('Funcman.GraphNode', {
     getIcon: function() {
         return this.getComponent(0).getComponent(0);
     },
+    getName: function() {
+        return this.params.name;
+    },
     setName: function(name) {
-        this.name = name;
+        this.params.name = name;
         this.getComponent(1).setText(name);
     },
     showName: function() {
@@ -275,6 +278,11 @@ Ext.define('Funcman.GraphNode', {
     hideInfoWindow: function() {
         if (this.infowindow) {
             this.infowindow.hide();
+        }
+    },
+    setInfo: function() {
+        if (this.infowindow) {
+            this.infowindow.setInfo();
         }
     }
 });

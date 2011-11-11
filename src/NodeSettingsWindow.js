@@ -16,12 +16,31 @@ Ext.define('Funcman.NodeSettingsWindow', {
         me.callParent();
 
         if (me.type == 'pm_settings') {
-            me.setTitle(node.name + ': Physical Machine Settings');
+            me.setTitle(node.getName() + ': Physical Machine Settings');
             me.setSize(350, 450);
             
+            me.runButton = Ext.create('Ext.Button', {
+                xtype: 'button',
+                scale: 'medium',
+            });
+            me.runButton.setHandler(me.runButtonListener, me);
+
+            me.suspendButton = Ext.create('Ext.Button', {
+                xtype: 'button',
+                scale: 'medium',
+            });
+            me.suspendButton.setHandler(me.suspendButtonListener, me);
+
+            me.statusLabel = Ext.create('Ext.form.Label', {
+                xtype: 'label',
+                colspan: 3
+            });
+
             me.add({
                 xtype: 'button',
                 text: 'Create VM',
+                icon: 'images/computer-22.png',
+                scale: 'medium',
                 handler: function() {
                     node.settingsWindow = Ext.create('NodeSettingsWindow', {
                         type: 'vm_new',
@@ -30,10 +49,19 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     }).show();
                     me.destroy();
                 }
+            },
+            me.runButton,
+            me.suspendButton,
+            me.statusLabel,
+            {
+                xtype: 'label',
+                text: 'Arch: '+node.params.arch,
+                colspan: 3
             });
+            me.setStatus();
 
         } else if (me.type == 'vm_settings') {
-            setTitle(node.name + ": Virtual Machine Settings");
+            setTitle(node.getName() + ": Virtual Machine Settings");
             me.setSize(370, 470);
             me.add({
                 xtype: 'button',
@@ -41,7 +69,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 handler: function() {
                     Ext.Msg.show({
                         title:'Removing VM',
-                        msg: 'Are you sure you want to remove virtual machine "' + node.name + '"?',
+                        msg: 'Are you sure you want to remove virtual machine "' + node.getName() + '"?',
                         buttons: Ext.Msg.YESNO,
                         icon: Ext.Msg.QUESTION,
                         fn: {
@@ -260,7 +288,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     text: 'Create', handler: function(b) {
                         var me = this;
                         if(me.getComponent('newVM_psw1').value==me.getComponent('newVM_psw2').value) {
-                            vm = me.graph.createVM(null, me.graph.vmid, me.getComponent('newVM_Name').value, b.node);
+                            vm = me.graph.createVM(null, {id: me.graph.vmid, name: me.getComponent('newVM_Name').value}, b.node);
                             me.graph.addNode(vm);
                             me.graph.vmid++;
                             me.destroy();}
@@ -278,9 +306,99 @@ Ext.define('Funcman.NodeSettingsWindow', {
             }]);
         }
     },
-    
+
     destroy: function() {
         delete this.node.settingsWindow;
         this.callParent(arguments);
+    },
+
+    startServerCommand: function() {
+        this.runButton.disable();
+        this.suspendButton.disable();
+    },
+
+    endServerCommand: function() {
+        this.runButton.enable();
+        if (this.node.params.state != 'stopped')
+            this.suspendButton.enable();
+    },
+
+    runButtonListener: function(button, e) {
+        var me = this,
+            newStatus = (me.node.params.state == 'running' || me.node.params.state == 'suspended') ? 'stopped' : 'running';
+
+        me.startServerCommand();
+
+        Ext.Ajax.request({
+            cors: true,
+            method: 'PUT',
+            jsonData: {status: newStatus},
+            url: me.node.path,
+            headers: {
+                'Authorization': me.node.parent.authString
+            },
+            success: function(response, opts) {
+                me.node.params.state = newStatus;
+                me.setStatus();
+                me.node.setInfo();
+                me.endServerCommand();
+            },
+            failure: function(response, opts) {
+                alert('Management server error with '+opts.url);
+                me.endServerCommand();
+            }
+        });
+    },
+
+    suspendButtonListener: function(button, e) {
+        var me = this,
+            newStatus = (me.node.params.state == 'running') ? 'suspended' : 'running';
+
+        me.startServerCommand();
+
+        Ext.Ajax.request({
+            cors: true,
+            method: 'PUT',
+            jsonData: {status: newStatus},
+            url: me.node.path,
+            headers: {
+                'Authorization': me.node.parent.authString
+            },
+            success: function(response, opts) {
+                me.node.params.state = newStatus;
+                me.setStatus();
+                me.node.setInfo();
+                me.endServerCommand();
+            },
+            failure: function(response, opts) {
+                alert('Management server error with '+opts.url);
+                me.endServerCommand();
+            }
+        });
+    },
+
+    setStatus: function() {
+        var me = this,
+            state = me.node.params.state;
+
+        me.statusLabel.setText('Status: '+state);
+
+        if (state == 'running') {
+            me.runButton.setText('Stop');
+            me.runButton.setIcon('images/stop.png');
+            me.suspendButton.setText('Suspend');
+            me.suspendButton.setIcon('images/suspend.png');
+        } else if (state == 'suspended') {
+            me.runButton.setText('Stop');
+            me.runButton.setIcon('images/stop.png');
+            me.suspendButton.setText('Resume');
+            me.suspendButton.setIcon('images/resume.png');
+        } else if (state == 'stopped') {
+            me.runButton.setText('Run');
+            me.runButton.setIcon('images/stop.png');
+            me.suspendButton.disable();
+            me.suspendButton.setText('Suspend');
+            me.suspendButton.setIcon('images/suspend.png');
+        }
     }
 });

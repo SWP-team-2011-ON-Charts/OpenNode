@@ -8,7 +8,7 @@ This file may be used under the terms of the GNU General Public License version 
 */
 
 
-var login = function (server, serverResponse) {
+var login = function (server, serverResponse, authString) {
 
     var body = Ext.getBody();
 
@@ -131,5 +131,5 @@ var login = function (server, serverResponse) {
         view.layoutPlugin.refresh();
     }, graph);
     
-    graph.syncWithServer(server, serverResponse);
+    graph.syncWithServer(server, serverResponse, authString);
 }

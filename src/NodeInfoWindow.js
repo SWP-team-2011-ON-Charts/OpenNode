@@ -20,51 +20,63 @@ Ext.define('Funcman.NodeInfoWindow', {
         me.callParent();
 
         me.on('render', function(view) {
-            var height = me.getHeight();
-        
+            var height = me.getHeight(),
+                params = node.params;
+
             me.tip = Ext.create('Ext.tip.ToolTip', {
                 target: me.el,
-                html: 'CPU usage: ' + parseInt(node.cpu * 25.0) +
-                    "%</br>Memory usage: " + parseInt(node.memory * 2.0) +
-                    "%</br>Network usage: " + parseInt(20) + "%"
+                html: 'CPU usage: ' + parseInt(params.cpu * 25.0) +
+                    "%</br>Memory usage: " + parseInt(params.memory * 2.0) +
+                    "%</br>Network usage: " + parseInt(params.network) + "%"
             });
 
             me.cpuBar = Ext.create('Ext.draw.Sprite', {
                 type: 'rect',
                 fill: me.cpuColor,
-                x: 2,
+                x: 16,
                 y: me.chartPadding,
-                width: 13,
+                width: 8,
                 height: height - me.chartPadding * 2,
                 //stroke:"#4B4",
                 surface: me.surface
             });
             me.cpuBar.redraw();
-            
+
             me.memoryBar = Ext.create('Ext.draw.Sprite', {
                 type: 'rect',
                 fill: me.memColor,
-                x: 18,
+                x: 26,
                 y: me.chartPadding,
-                width: 13,
+                width: 8,
                 height: height - me.chartPadding * 2,
                 //stroke:"#4B4",
                 surface: me.surface
             });
             me.memoryBar.redraw();
-            
+
             me.networkBar = Ext.create('Ext.draw.Sprite', {
                 type: 'rect',
                 fill: me.netColor,
-                x: 34,
+                x: 36,
                 y: me.chartPadding,
-                width: 13,
+                width: 8,
                 height: height - me.chartPadding * 2,
                 //stroke:"#4B4",
                 surface: me.surface
             });
             me.networkBar.redraw();
-            
+
+            me.runningImage = Ext.create('Ext.draw.Sprite', {
+                type: 'image',
+                src: 'images/running.png',
+                width: 16,
+                height: 16,
+                x: 0,
+                y: 2,
+                surface: me.surface
+            });
+            me.runningImage.redraw();
+
             Ext.create('Ext.draw.Sprite', {
                 type: 'image',
                 src: 'images/settings.png',
@@ -74,7 +86,7 @@ Ext.define('Funcman.NodeInfoWindow', {
                 y: 2,
                 surface: me.surface
             }).redraw();
-            
+
             Ext.create('Ext.draw.Sprite', {
                 type: 'rect',
                 fill: '#FFF',
@@ -83,10 +95,10 @@ Ext.define('Funcman.NodeInfoWindow', {
                 stroke:"#CCC",
                 surface: me.surface
             }).redraw();
-            
-            me.setUsage();
+
+            me.setInfo();
         }, me, {single: true});
-        
+
         me.on('mouseup', function(e) {
             if (e.button == 2) {
                 return;
@@ -95,7 +107,7 @@ Ext.define('Funcman.NodeInfoWindow', {
                 node.settingsWindow.destroy();
                 return;
             }
-            
+
             node.settingsWindow = Ext.create('NodeSettingsWindow', {
                 type: 'pm_settings',
                 node: node,
@@ -104,16 +116,19 @@ Ext.define('Funcman.NodeInfoWindow', {
             //e.stopEvent();
         }, me, {element: 'el'});
     },
-    
-    setUsage: function() {
+
+    setInfo: function() {
         var me = this,
+            params = me.node.params,
             height = me.getHeight() - me.chartPadding * 2,
-            cpu = (me.node.cpu * 25.0 / 100) * height,
-            mem = (me.node.memory * 2.0 / 100) * height,
-            net = (20 / 100) * height;
+            cpu = (params.cpu * 25.0 / 100) * height,
+            mem = (params.memory * 2.0 / 100) * height,
+            net = (params.network / 100) * height;
 
         me.cpuBar.setAttributes({y: height - cpu + me.chartPadding, height: cpu}, true);
         me.memoryBar.setAttributes({y: height - mem + me.chartPadding, height: mem}, true);
         me.networkBar.setAttributes({y: height - net + me.chartPadding, height: net}, true);
-    }
+
+        me.runningImage.setAttributes({src: params.state == 'running' ? 'images/running.png' : 'images/stopped.png'}, true);
+    },
 });

@@ -44,6 +44,7 @@ Ext.define('Funcman.Graph', {
     cls: 'graphcontainer',
 
     zoomMinLevel: 0.5,
+    zoomMaxLevel: 2.0,
     zoomOutLevel: 1.0,
     zoomInLevel: 1.5,
 
@@ -51,10 +52,7 @@ Ext.define('Funcman.Graph', {
         Ext.create('Funcman.GraphView'),
         Ext.create('Ext.slider.Single', {
             height: 60,
-            value: 5,
             increment: 1,
-            minValue: 0,
-            maxValue: 15,
             vertical: true,
             cls: 'graphzoomslider',
             listeners: {
@@ -165,11 +163,15 @@ Ext.define('Funcman.Graph', {
     initComponent: function() {
         var me = this;
         me.callParent();
-        
+
         // Create shortcuts to subelements
         me.view = me.items.getAt(0);
         me.slider = me.items.getAt(1);
-        
+
+        me.slider.setMinValue(me.zoomMinLevel * 10);
+        me.slider.setMaxValue(me.zoomMaxLevel * 10);
+        me.slider.setValue((me.zoomMaxLevel - me.zoomMinLevel) * 9);
+
         me.on('mousewheel', me.mousewheellistener, me, {element: 'el'});
     },
 
@@ -182,7 +184,7 @@ Ext.define('Funcman.Graph', {
     },
 
     getZoom: function() {
-        this.zoom = this.zoomMinLevel + (this.slider.getValue() / 10.0);
+        this.zoom = this.slider.getValue() / 10.0;
         return this.zoom;
     },
 
