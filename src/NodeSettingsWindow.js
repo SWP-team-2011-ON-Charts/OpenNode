@@ -17,23 +17,24 @@ Ext.define('Funcman.NodeSettingsWindow', {
 
         if (me.type == 'pm_settings') {
             me.setTitle(node.getName() + ': Physical Machine Settings');
-            me.setSize(350, 450);
+            me.setSize(320, 250);
+            me.animateTarget = node;
             
             me.runButton = Ext.create('Ext.Button', {
                 xtype: 'button',
-                scale: 'medium',
+                scale: 'medium'
             });
             me.runButton.setHandler(me.runButtonListener, me);
 
             me.suspendButton = Ext.create('Ext.Button', {
                 xtype: 'button',
-                scale: 'medium',
+                scale: 'medium'
             });
             me.suspendButton.setHandler(me.suspendButtonListener, me);
 
-            me.statusLabel = Ext.create('Ext.form.Label', {
+            me.stateLabel = Ext.create('Ext.form.Label', {
                 xtype: 'label',
-                colspan: 3
+                colspan: 2
             });
 
             me.add({
@@ -41,6 +42,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 text: 'Create VM',
                 icon: 'images/computer-22.png',
                 scale: 'medium',
+                margin: '0 10 0 0',
                 handler: function() {
                     node.settingsWindow = Ext.create('NodeSettingsWindow', {
                         type: 'vm_new',
@@ -52,17 +54,64 @@ Ext.define('Funcman.NodeSettingsWindow', {
             },
             me.runButton,
             me.suspendButton,
-            me.statusLabel,
             {
                 xtype: 'label',
-                text: 'Arch: '+node.params.arch,
-                colspan: 3
+                text: 'Status: ',
+            },
+            me.stateLabel,
+            {
+                xtype: 'label',
+                text: 'Name:',
+            }, {
+                xtype: 'label',
+                text: node.params.name,
+                colspan: 2
+            }, {
+                xtype: 'label',
+                text: 'ID:',
+            }, {
+                xtype: 'label',
+                text: node.params.id,
+                colspan: 2
+            }, {
+                xtype: 'label',
+                text: 'Arch:',
+            }, {
+                xtype: 'label',
+                text: node.params.arch,
+                colspan: 2
+            }, {
+                xtype: 'label',
+                text: 'Cores:',
+            }, {
+                xtype: 'label',
+                text: node.params.cores,
+                colspan: 2
+            }, {
+                xtype: 'label',
+                text: 'Template:',
+            }, {
+                xtype: 'label',
+                text: node.params.template,
+                colspan: 2
+            }, {
+                xtype: 'button',
+                text: 'OK',
+                scale: 'medium',
+                width: 60,
+                margin: '10 0 0 0',
+                colspan: 3,
+                handler: function() {
+                    me.close();
+                }
             });
-            me.setStatus();
+            me.setState();
 
         } else if (me.type == 'vm_settings') {
             setTitle(node.getName() + ": Virtual Machine Settings");
             me.setSize(370, 470);
+            me.animateTarget = node;
+
             me.add({
                 xtype: 'button',
                 text: 'Remove',
@@ -82,7 +131,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
 
         } else if (me.type == 'vm_new') {
             me.setTitle('New VM');
-            me.setSize(370, 470);
+            me.setSize(370, 460);
             
             me.add([{
                     xtype: 'textfield',
@@ -285,14 +334,17 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     colspan:3
                 }, {
                     xtype: 'button',
-                    text: 'Create', handler: function(b) {
+                    text: 'Create',
+                    handler: function(b) {
                         var me = this;
                         if(me.getComponent('newVM_psw1').value==me.getComponent('newVM_psw2').value) {
-                            vm = me.graph.createVM(null, {id: me.graph.vmid, name: me.getComponent('newVM_Name').value}, b.node);
+                            vm = me.graph.createVM(null, {id: me.graph.vmid, name: me.getComponent('newVM_Name').value}, me.node);
                             me.graph.addNode(vm);
                             me.graph.vmid++;
-                            me.destroy();}
-                        else {alert('Passwords do not match. Please re-type both passwords.')}
+                            me.destroy();
+                        } else {
+                            alert('Passwords do not match. Please re-type both passwords.')
+                        }
                     },
                     scope: me,
                     node: node
@@ -325,21 +377,21 @@ Ext.define('Funcman.NodeSettingsWindow', {
 
     runButtonListener: function(button, e) {
         var me = this,
-            newStatus = (me.node.params.state == 'running' || me.node.params.state == 'suspended') ? 'stopped' : 'running';
+            newState = (me.node.params.state == 'running' || me.node.params.state == 'suspended') ? 'stopped' : 'running';
 
         me.startServerCommand();
 
         Ext.Ajax.request({
             cors: true,
             method: 'PUT',
-            jsonData: {status: newStatus},
+            jsonData: {state: newState},
             url: me.node.path,
             headers: {
                 'Authorization': me.node.parent.authString
             },
             success: function(response, opts) {
-                me.node.params.state = newStatus;
-                me.setStatus();
+                me.node.params.state = newState;
+                me.setState();
                 me.node.setInfo();
                 me.endServerCommand();
             },
@@ -352,21 +404,21 @@ Ext.define('Funcman.NodeSettingsWindow', {
 
     suspendButtonListener: function(button, e) {
         var me = this,
-            newStatus = (me.node.params.state == 'running') ? 'suspended' : 'running';
+            newState = (me.node.params.state == 'running') ? 'suspended' : 'running';
 
         me.startServerCommand();
 
         Ext.Ajax.request({
             cors: true,
             method: 'PUT',
-            jsonData: {status: newStatus},
+            jsonData: {state: newState},
             url: me.node.path,
             headers: {
                 'Authorization': me.node.parent.authString
             },
             success: function(response, opts) {
-                me.node.params.state = newStatus;
-                me.setStatus();
+                me.node.params.state = newState;
+                me.setState();
                 me.node.setInfo();
                 me.endServerCommand();
             },
@@ -377,11 +429,11 @@ Ext.define('Funcman.NodeSettingsWindow', {
         });
     },
 
-    setStatus: function() {
+    setState: function() {
         var me = this,
             state = me.node.params.state;
 
-        me.statusLabel.setText('Status: '+state);
+        me.stateLabel.setText(state);
 
         if (state == 'running') {
             me.runButton.setText('Stop');
