@@ -42,8 +42,10 @@ Ext.define('Funcman.Graph', {
     alias: 'Graph',
     extend: 'Ext.container.Container',
     cls: 'graphcontainer',
-    zoomOutLevel: 1.2,
-    zoomInLevel: 2.0,
+
+    zoomMinLevel: 0.5,
+    zoomOutLevel: 1.0,
+    zoomInLevel: 1.5,
 
     items: [
         Ext.create('Funcman.GraphView'),
@@ -180,7 +182,7 @@ Ext.define('Funcman.Graph', {
     },
 
     getZoom: function() {
-        this.zoom = 1.0 + (this.slider.getValue() / 10.0);
+        this.zoom = this.zoomMinLevel + (this.slider.getValue() / 10.0);
         return this.zoom;
     },
 

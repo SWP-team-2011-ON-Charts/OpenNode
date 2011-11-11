@@ -11,7 +11,7 @@ Ext.define('Funcman.GraphView', {
     items_remove: [],
     items: [
         {xtype: 'container'},
-        {xtype: 'draw', viewBox: false, autoSize: true}
+        {xtype: 'draw', viewBox: false, height: 0, width: 0 }
     ],
 
     plugins : [Ext.create('Funcman.GraphLayout')],
@@ -38,19 +38,6 @@ Ext.define('Funcman.GraphView', {
             me.on('render', me.initSelModel, me, {single: true});
             return;
         }
-
-        //me.getSelectionModel().bindComponent(me);
-    },
-
-    getSelectionModel: function() {
-        var me = this;
-
-        if (!me.selModel) {
-            me.selModel = Ext.create('Ext.selection.GraphViewModel');
-            me.relayEvents(me.selModel, ['selectionchange']);
-        }
-
-        return me.selModel;
     },
 
     getSelectedItem: function() {
@@ -154,7 +141,9 @@ Ext.define('Funcman.GraphView', {
 
         // If not dragging or migrating, then an item was selected
         if (!me.isDragging && !me.isMigrating) {
-            me.setSelectedItem(me.getItemFromEl(t));
+            if (e.button != 2) {
+                me.setSelectedItem(me.getItemFromEl(t));
+            }
         }
 
         if (me.isMigrating) {
@@ -212,7 +201,8 @@ Ext.define('Funcman.GraphView', {
     },
 
     drawLine: function(item, max, surface) {
-        var ic1 = item.getIconCenter(),
+        var me = this,
+            ic1 = item.getIconCenter(),
             height = item.getHeight();
 
         if (max.x < ic1.x) max.x = ic1.x;
@@ -246,8 +236,8 @@ Ext.define('Funcman.GraphView', {
                 }
                 child.pathSprite.setAttributes({path: path, stroke: color}, true);
                 
-                this.drawLine(child, max, surface);
-            }, this);
+                me.drawLine(child, max, surface);
+            });
         }
     }
 });
