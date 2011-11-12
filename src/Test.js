@@ -15,23 +15,36 @@ var login = function (server, serverResponse, authString) {
     var button = Ext.widget('button', {
         text : 'Register datacenter',
         scale: 'medium',
-        iconCls: 'add',
-        renderTo: body,
-    });
-    
-    var user_button = Ext.widget('button', {
-        text : 'Add User',
-        scale: 'medium',
-        iconCls: 'add',
-        renderTo: body,
-        cls: 'add_user_button',
+        icon: 'images/list-add.png'
     });
 
     var switchLayout = Ext.widget('button', {
         text : 'Switch layout',
         scale: 'medium',
-        iconCls: 'refresh',
+        icon: 'images/view-refresh.png'
+    });
+
+    var logoutButton = Ext.widget('button', {
+        text : 'Log out',
+        scale: 'medium',
+        icon: 'images/logout.png'
+    });
+
+    var buttonContainer = Ext.create('Ext.container.Container', {
+        items: [button, switchLayout, logoutButton],
+        layout: 'hbox',
+        defaults: {
+            style: { margin: '0px 10px 0px 0px' }
+        },
+        renderTo: body
+    });
+
+    var user_button = Ext.widget('button', {
+        text : 'Add User',
+        scale: 'medium',
+        icon: 'images/list-add.png',
         renderTo: body,
+        cls: 'add_user_button',
     });
 
     var graph = Ext.create('OpenNodeGraph', {
@@ -146,6 +159,13 @@ var login = function (server, serverResponse, authString) {
         view.layoutPlugin.init(view);
         view.layoutPlugin.refresh();
     }, graph);
-    
+
+    logoutButton.setHandler(function() {
+        graph.destroy();
+        buttonContainer.destroy();
+        user_button.destroy();
+        loginScreen();
+    });
+
     graph.syncWithServer(server, serverResponse, authString);
 }

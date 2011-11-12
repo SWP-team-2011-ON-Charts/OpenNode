@@ -1,4 +1,4 @@
-Ext.onReady(function() {
+Ext.onReady(loginScreen = function() {
     var body = Ext.getBody();
 
     var regHandler = function() {
