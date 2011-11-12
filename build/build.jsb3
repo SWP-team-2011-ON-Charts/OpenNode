@@ -8,11 +8,11 @@
             "files": [
                 {
                     "path": "../src/",
-                    "name": "Graph.js"
+                    "name": "GraphLayout.js"
                 },
                 {
                     "path": "../src/",
-                    "name": "GraphLayout.js"
+                    "name": "GraphRoundLayout.js"
                 },
                 {
                     "path": "../src/",
@@ -24,11 +24,23 @@
                 },
                 {
                     "path": "../src/",
-                    "name": "GraphViewModel.js"
+                    "name": "Graph.js"
+                },
+                {
+                    "path": "../src/",
+                    "name": "NodeInfoWindow.js"
+                },
+                {
+                    "path": "../src/",
+                    "name": "NodeSettingsWindow.js"
                 },
                 {
                     "path": "../src/",
                     "name": "OpenNodeGraph.js"
+                },
+                {
+                    "path": "../src/",
+                    "name": "Test.js"
                 }
             ]
         }
