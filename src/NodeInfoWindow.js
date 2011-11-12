@@ -83,7 +83,7 @@ Ext.define('Funcman.NodeInfoWindow', {
 
             me.runningImage = Ext.create('Ext.draw.Sprite', {
                 type: 'image',
-                src: 'images/running.png',
+                src: '../resources/images/running.png',
                 width: 16,
                 height: 16,
                 x: 0,
@@ -94,7 +94,7 @@ Ext.define('Funcman.NodeInfoWindow', {
 
             Ext.create('Ext.draw.Sprite', {
                 type: 'image',
-                src: 'images/settings.png',
+                src: '../resources/images/settings.png',
                 width: 16,
                 height: 16,
                 x: 48,
@@ -144,6 +144,6 @@ Ext.define('Funcman.NodeInfoWindow', {
         me.memoryBar.setAttributes({y: height - mem + me.chartPadding, height: mem}, true);
         me.networkBar.setAttributes({y: height - net + me.chartPadding, height: net}, true);
 
-        me.runningImage.setAttributes({src: params.state == 'running' ? 'images/running.png' : 'images/stopped.png'}, true);
+        me.runningImage.setAttributes({src: params.state == 'running' ? '../resources/images/running.png' : '../resources/images/stopped.png'}, true);
     },
 });

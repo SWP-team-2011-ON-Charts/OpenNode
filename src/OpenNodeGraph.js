@@ -28,7 +28,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             params: params,
             path: path,
             type: 'dc',
-            image: 'images/data-center.png',
+            image: '../resources/images/data-center.png',
             children: [],
             authString: authString
         });
@@ -42,7 +42,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             params: params,
             path: pm.getRoot().path + 'computes/' + params.id + '/',
             type: 'vm',
-            image: 'images/computer.png',
+            image: '../resources/images/computer.png',
             children: []
         });
         this.attachInfoWindow(vm);
@@ -56,7 +56,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             path: path,
             id: dc.id + 'pm'+params.id,
             type: 'pm',
-            image: 'images/network-server.png',
+            image: '../resources/images/network-server.png',
             children: [],
             params: params
         });

@@ -62,7 +62,7 @@ user_computers.add({
 
 store3.add(user);
 
-var user_icon = 'images/different_users/user_black.png';
+var user_icon = '../resources/images/different_users/user_black.png';
 
 function set_icon(x){
 	user_icon = x;
@@ -111,7 +111,7 @@ var grid_panel = Ext.create('Ext.grid.Panel', {
                         			xtype: 'fieldcontainer',
                         			fieldLabel: 'Show this user',
                         			defaultType: 'checkboxfield',
-                        			items: [{id  : 'checkbox4', image: 'add.png'} ],
+                        			items: [{id  : 'checkbox4', image: '../resources/images/add.png'} ],
                     			},   {
                     		        xtype     : 'textareafield',
                     		        width: 250,
@@ -188,7 +188,7 @@ var grid_panel = Ext.create('Ext.grid.Panel', {
                       rights_window.show();
                   }
               },{
-                  icon: 'images/list-remove.png',
+                  icon: '../resources/images/list-remove.png',
                   tooltip: 'Delete',
                   handler: function(grid, rowIndex, colIndex) {
                       var rec = grid.getStore().getAt(rowIndex);

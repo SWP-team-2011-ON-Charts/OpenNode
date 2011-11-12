@@ -85,10 +85,10 @@ pre.code{
 }
 /*buttons*/
 .x-btn-default-medium .remove {
-    background-image: url(images/list-remove.png) !important;
+    background-image: url(../resources/images/list-remove.png) !important;
 }
 .x-btn-default-medium .user {
-    background-image: url(images/user.png) !important;
+    background-image: url(../resources/images/user.png) !important;
 }
 
 div.x-item-selected {

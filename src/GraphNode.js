@@ -14,7 +14,7 @@ Ext.define('Funcman.GraphNode', {
 
     isCollapsed: false,
     visible: true,
-    image: 'images/computer.png', // default
+    image: '../resources/images/computer.png', // default
 
     items: [{
         xtype: 'container',

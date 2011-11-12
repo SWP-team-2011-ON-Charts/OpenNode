@@ -56,7 +56,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 button = Ext.create('Ext.Button', {
                     xtype: 'button',
                     text: 'Create VM',
-                    icon: 'images/computer-22.png',
+                    icon: '../resources/images/computer-22.png',
                     scale: 'medium',
                     margin: '0 10 0 0',
                     handler: function() {
@@ -72,7 +72,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 button = Ext.create('Ext.Button', {
                     xtype: 'button',
                     text: 'Delete VM',
-                    icon: 'images/delete.png',
+                    icon: '../resources/images/delete.png',
                     scale: 'medium',
                     margin: '0 10 0 0',
                 });
@@ -522,20 +522,20 @@ Ext.define('Funcman.NodeSettingsWindow', {
 
         if (state == 'running') {
             me.runButton.setText('Stop');
-            me.runButton.setIcon('images/stop.png');
+            me.runButton.setIcon('../resources/images/stop.png');
             me.suspendButton.setText('Suspend');
-            me.suspendButton.setIcon('images/suspend.png');
+            me.suspendButton.setIcon('../resources/images/suspend.png');
         } else if (state == 'suspended') {
             me.runButton.setText('Stop');
-            me.runButton.setIcon('images/stop.png');
+            me.runButton.setIcon('../resources/images/stop.png');
             me.suspendButton.setText('Resume');
-            me.suspendButton.setIcon('images/resume.png');
+            me.suspendButton.setIcon('../resources/images/resume.png');
         } else if (state == 'stopped') {
             me.runButton.setText('Run');
-            me.runButton.setIcon('images/stop.png');
+            me.runButton.setIcon('../resources/images/stop.png');
             me.suspendButton.disable();
             me.suspendButton.setText('Suspend');
-            me.suspendButton.setIcon('images/suspend.png');
+            me.suspendButton.setIcon('../resources/images/suspend.png');
         }
     }
 });

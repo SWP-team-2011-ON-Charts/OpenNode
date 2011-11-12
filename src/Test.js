@@ -15,19 +15,19 @@ var login = function (server, serverResponse, authString) {
     var button = Ext.widget('button', {
         text : 'Register datacenter',
         scale: 'medium',
-        icon: 'images/list-add.png'
+        icon: '../resources/images/list-add.png'
     });
 
     var switchLayout = Ext.widget('button', {
         text : 'Switch layout',
         scale: 'medium',
-        icon: 'images/view-refresh.png'
+        icon: '../resources/images/view-refresh.png'
     });
 
     var logoutButton = Ext.widget('button', {
         text : 'Log out',
         scale: 'medium',
-        icon: 'images/logout.png'
+        icon: '../resources/images/logout.png'
     });
 
     var buttonContainer = Ext.create('Ext.container.Container', {
@@ -42,7 +42,7 @@ var login = function (server, serverResponse, authString) {
     var user_button = Ext.widget('button', {
         text : 'Add User',
         scale: 'medium',
-        icon: 'images/list-add.png',
+        icon: '../resources/images/list-add.png',
         renderTo: body,
         cls: 'add_user_button',
     });
