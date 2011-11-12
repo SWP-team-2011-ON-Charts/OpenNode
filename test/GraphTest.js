@@ -26,7 +26,7 @@ jasmine.Matchers.prototype.toThrow = function(expected) {
   return result;
 };
 
-var node, graph;
+var node, node2, graph;
 var id = '0',
     name = 'OMS',
     image = 'images/network-server.png';
@@ -36,6 +36,9 @@ describe('Initialization', function() {
     expect (function () {
         node = Ext.create('GraphNode', {
             params: { id: id, name : name }
+        });
+        node2 = Ext.create('GraphNode', {
+            params: { id: '1', name : 'node 2' }
         });
     }).not.toThrow ("Ext.Error");
   });
@@ -57,12 +60,28 @@ describe('GraphNode tests', function() {
   it('can store name field', function() {
     expect(node.getName()).toEqual(name);
   });
+  it('can\'t add node to itself as child', function() {
+    node.addChild(node);
+    expect(node.children.length).toEqual(0);
+  });
+  it('can add child', function() {
+    node2.addChild(node);
+    expect(node2.children.length).toEqual(1);
+  });
+  it('can\'t add child twice', function() {
+    node2.addChild(node);
+    expect(node2.children.length).toEqual(1);
+  });
+  it('can\'t add parent node as a child', function() {
+    node.addChild(node2);
+    expect(node.children.length).toEqual(0);
+  });
 });
 
 describe('OpenNodeGraph tests', function() {
   it('can add node', function() {
     expect(function() {
-        graph.addNode(node)
+        graph.addNode(node);
     }).not.toThrow ("Ext.Error");
   });
 });

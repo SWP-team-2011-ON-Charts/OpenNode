@@ -30,8 +30,9 @@ Ext.define('Funcman.GraphNode', {
 
     initComponent: function() {
         var me = this;
-
         me.callParent(arguments);
+
+        me.children = me.children || [];
 
         me.initElement();
     },
@@ -69,7 +70,19 @@ Ext.define('Funcman.GraphNode', {
     },
 
     addChild: function(node) {
-        var me = this;
+        var me = this,
+            n = me;
+
+        if (node === me || me.children.indexOf(node) != -1) {
+            return;
+        }
+
+        while (n.parent) {
+            if (n.parent === node) {
+                return;
+            }
+            n = n.parent;
+        }
 
         // Add collapse button
         if (me.children.length == 0) {
@@ -81,6 +94,7 @@ Ext.define('Funcman.GraphNode', {
             });
         }
 
+        node.parent = me;
         me.children.push(node);
     },
 
@@ -177,7 +191,6 @@ Ext.define('Funcman.GraphNode', {
                 if (source.parent) {
                     source.parent.removeChild(source);
                 }
-                source.parent = me;
                 me.addChild(source);
                 me.view.layoutPlugin.refresh();
                 source.setMigrateTarget();
