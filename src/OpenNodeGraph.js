@@ -11,40 +11,11 @@ Ext.define('Funcman.OpenNodeGraph', {
     extend: 'Funcman.Graph',
     alias: 'OpenNodeGraph',
 
-    dcid: 0, vmid: 0,
-
-    initComponent: function() {
-        var me = this;
-        me.callParent();
-        
-        Ext.define('UsageData', {
-            extend: 'Ext.data.Model',
-            fields: ['usage', 'utype']
-        });
-
-        Ext.define('Ext.chart.theme.Usage', {
-            extend: 'Ext.chart.theme.Base',
-
-            constructor: function(config) {
-                this.callParent([Ext.apply({
-                    axis: {
-                        'stroke-width': 0
-                    },
-                    axisLabelBottom: {
-                        renderer: function(v) { return ''; }
-                    },
-                    axisLabelLeft: {
-                        renderer: function(v) { return ''; }
-                    },
-                }, config)]);
-            }
-        });
-    },
+    dcid: 0,
 
     attachInfoWindow: function(node) {
-        var me = this;
-
-        var iw = Ext.create('NodeInfoWindow', { node: node });
+        var me = this,
+            iw = Ext.create('NodeInfoWindow', { node: node });
 
         node.infowindow = iw;
         node.add(iw);
@@ -65,98 +36,26 @@ Ext.define('Funcman.OpenNodeGraph', {
         return dc;
     },
 
-    createVM: function(path, params, pm) {
+    createVM: function(pm, params) {
         var vm = Ext.create('GraphNode', {
             id: pm.id + 'vm'+params.id,
             params: params,
-            path: path,
+            path: pm.getRoot().path + 'computes/' + params.id + '/',
             type: 'vm',
             image: 'images/computer.png',
             parent: pm,
             children: []
         });
-        //this.attachInfoWindow(vm);
+        this.attachInfoWindow(vm);
         pm.addChild(vm);
 
         return vm;
-    },
-
-    addMachine: function(button) {
-        var node = button.node;
-        var newid = node.get('id')+'pm'+this.pmid;
-        
-        var pm = Ext.create('GraphNode', {
-            id: newid,
-            idnum: this.pmid,
-            type: 'pm',
-            name : 'Machine ' + this.pmid,
-            image: 'images/network-server.png',
-            top: 64,
-            left: this.pmid * 64,
-            parent: node
-        });
-        this.attachInfoWindow(pm);
-        pm.children = [];
-
-        node.addChild(pm);
-
-        this.addNode(pm);
-        this.pmid++;
-    },
-
-    addVM: function(button) {
-        var node = button.node;
-        var newid = node.get('id')+'vm'+this.vmid;
-
-        var vm = Ext.create('GraphNode', {
-            path: null,
-            id: newid,
-            res_id: this.vmid,
-            type: 'vm',
-            name : 'VM ' + this.vmid,
-            image: 'images/computer.png',
-            top: 128,
-            left: this.vmid * 64,
-            parent: node
-        });
-        this.attachInfoWindow(vm);
-        vm.children = [];
-
-        node.addChild(vm);
-        
-        this.addNode(vm);
-        //this.setSelectedNode(vm);
-        this.vmid++;
-    },
-
-    removeListener: function(button, e) {
-        var me = this,
-            node = button.node,
-            path = node.get('path');
-
-        if (!path) {
-            me.removeNode(button.node);
-            return;
-        }
-
-        Ext.Ajax.request({
-            cors: true,
-            method: 'DELETE',
-            url: path,
-            success: function(response, opts) {
-                me.removeNode(button.node);
-            },
-            failure: function(response, opts) {
-                alert('Could not connect to management server '+opts.url);
-            }
-        });
     },
 
     createMachineFromServer: function(path, params, dc) {
         var pm = Ext.create('GraphNode', {
             path: path,
             id: dc.id + 'pm'+params.id,
-            res_id: params.id,
             type: 'pm',
             image: 'images/network-server.png',
             parent: dc,
@@ -174,7 +73,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         var me = this;
 
         me.view.setLoading(true);
-        var dc = me.createDatacenter(server+'/networks/'+me.dcid+'/', authString, {id: me.dcid, name: 'datacenter'+me.dcid});
+        var dc = me.createDatacenter(server+'/', authString, {id: me.dcid, name: 'Datacenter '+me.dcid});
         me.dcid++;
         
         Ext.each(Ext.JSON.decode(serverResponse, true), function(m) {
@@ -206,36 +105,50 @@ Ext.define('Funcman.OpenNodeGraph', {
         });
     },
 
-    getComputeInfo: function(button, e) {
-        var me = this;
-        var node = button.node;
+    getUniqueID: function(dc, callback, scope) {
+        var me = this,
+            id = 0;
 
-        var infocontainer = node.infowindow.items.getAt(3);
+        // Temporary fix, check only locally stored machines
+        var foundId = false,
+            items = me.view.itemcontainer.items.items;
+        while (!foundId) {
+            foundId = true;
+            for (var item in items) {
+                if (items[item].params.id == id) {
+                    foundId = false;
+                    id++;
+                    break;
+                }
+            }
+        }
+        callback.call(scope, id);
+        return;
 
+        // Get the list of all computes and find an unused ID number
         Ext.Ajax.request({
             cors: true,
-            url: node.get('path'),
-            success: function(response, opts) {
-                var o = Ext.JSON.decode(response.responseText, true);
-                var text = '';
-                for(var i in o) {
-                    if (i == "arch") {
-                        infocontainer.add({xtype: 'label', text: 'Arch: '+o[i]});
-                    } else if (i == "state") {
-                        var statusButton = Ext.create('Ext.Button', {
-                            xtype: 'button',
-                            text: o[i],
-                            scale: 'medium',
-                            node: node
-                        });
-                        statusButton.setHandler(me.statusButtonListener, me);
-                        infocontainer.add(statusButton);
+            url: dc.path + 'computes/',
+            headers: {
+                'Authorization': dc.authString
+            },
+            success: function(response) {
+                var machines = Ext.JSON.decode(response.responseText, true),
+                    foundId = false;
+                while (!foundId) {
+                    foundId = true;
+                    for (var m in machines) {
+                        if (machines[m].id == id) {
+                            foundId = false;
+                            id++;
+                            break;
+                        }
                     }
-                    text += i+': '+o[i]+'\n';
                 }
+                callback.call(scope, id);
             },
             failure: function(response, opts) {
-                alert('Could not connect to management server '+opts.url);
+                callback.call(scope, id);
             }
         });
     },
@@ -245,7 +158,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             if (typeof btoa === 'function') {
                  return btoa(decStr);            
             }
-            var base64s = this.base64s;
+            var base64s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
             var bits;
             var dual;
             var i = 0;

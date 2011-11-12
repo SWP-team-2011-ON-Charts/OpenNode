@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 
 Copyright (c) 2011 OpenNode Interactive Charts team
@@ -8,6 +9,9 @@ This file may be used under the terms of the GNU General Public License version 
 */
 
 Ext.onReady(function() {
+=======
+Ext.onReady(loginScreen = function() {
+>>>>>>> 667a2e46d140f3a37df20482224785303ddbf9d6
     var body = Ext.getBody();
 
     var regHandler = function() {

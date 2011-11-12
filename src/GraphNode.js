@@ -210,25 +210,30 @@ Ext.define('Funcman.GraphNode', {
     },
 
     getX: function() {
-        return parseInt(this.el.getStyle('left'), 10);
+        return this.x;
     },
     getY: function() {
-        return parseInt(this.el.getStyle('top'), 10);
+        return this.y;
     },
     setX: function(x) {
+        this.x = x;
         return this.el.setLeft(x+'px');
     },
     setY: function(y) {
+        this.y = x;
         return this.el.setTop(y+'px');
     },
     setXY: function(x,y) {
+        this.x = x;
+        this.y = y;
         return this.el.applyStyles({left: x+'px', top: y+'px'});
     },
 
     getIconSize: function() {
-        return parseInt(this.getIcon().getEl().getStyle('width'), 10);
+        return this.iconSize;
     },
     setIconSize: function(s) {
+        this.iconSize = s;
         this.getIcon().getEl().applyStyles({
             width: s+'px',
             height: s+'px'}
@@ -293,5 +298,13 @@ Ext.define('Funcman.GraphNode', {
         if (this.infowindow) {
             this.infowindow.setInfo();
         }
+    },
+
+    getRoot: function() {
+        var root = this;
+        while (root.parent) {
+            root = root.parent;
+        }
+        return root;
     }
 });

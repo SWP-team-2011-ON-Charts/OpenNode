@@ -15,29 +15,44 @@ var login = function (server, serverResponse, authString) {
     var button = Ext.widget('button', {
         text : 'Register datacenter',
         scale: 'medium',
-        iconCls: 'add',
-        renderTo: body,
-    });
-    
-    var user_button = Ext.widget('button', {
-        text : 'Add User',
-        scale: 'medium',
-        iconCls: 'user',
-        renderTo: body,
-        cls: 'add_user_button',
+        icon: 'images/list-add.png'
     });
 
     var switchLayout = Ext.widget('button', {
         text : 'Switch layout',
         scale: 'medium',
-        iconCls: 'refresh',
+        icon: 'images/view-refresh.png'
+    });
+
+    var logoutButton = Ext.widget('button', {
+        text : 'Log out',
+        scale: 'medium',
+        icon: 'images/logout.png'
+    });
+
+    var buttonContainer = Ext.create('Ext.container.Container', {
+        items: [button, switchLayout, logoutButton],
+        layout: 'hbox',
+        defaults: {
+            style: { margin: '0px 10px 0px 0px' }
+        },
+        renderTo: body
+    });
+
+    var user_button = Ext.widget('button', {
+        text : 'Add User',
+        scale: 'medium',
+        icon: 'images/list-add.png',
         renderTo: body,
+        cls: 'add_user_button',
     });
 
     var graph = Ext.create('OpenNodeGraph', {
         renderTo: body,
     });
 
+    var user_id = 0;
+    
     graph.setHeight(600);
     graph.setWidth(900);
 
@@ -105,10 +120,24 @@ var login = function (server, serverResponse, authString) {
                 fieldLabel: 'Rights',
                 width: 250,
             }, {
+            	xtype: 'textfield',
+            	fieldLabel: 'Computers',
+            	width: 250,
+        	},{
                 xtype: 'button',
                 text: 'Add',
                 handler: function() {
-                    store2.add({ 'name': register.items.getAt(0).getValue(),  "rights-status": register.items.getAt(1).getValue()});
+                    //store2.add({ 'name': register.items.getAt(0).getValue(),  "rights-status": register.items.getAt(1).getValue()});
+                    
+                    user_id++;
+                    
+                    var user = Ext.ModelManager.create({id : user_id, name: register.items.getAt(0).getValue(), rights: register.items.getAt(1).getValue()}, 'User');
+                    var user_computers = user.User_computer();
+                    user_computers.add({
+                        name: register.items.getAt(2).getValue()
+                    });
+                    store3.add(user);
+                    
                     register.destroy();
                }
             }]
@@ -130,6 +159,13 @@ var login = function (server, serverResponse, authString) {
         view.layoutPlugin.init(view);
         view.layoutPlugin.refresh();
     }, graph);
-    
+
+    logoutButton.setHandler(function() {
+        graph.destroy();
+        buttonContainer.destroy();
+        user_button.destroy();
+        loginScreen();
+    });
+
     graph.syncWithServer(server, serverResponse, authString);
 }

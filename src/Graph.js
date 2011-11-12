@@ -20,23 +20,151 @@ This file may be used under the terms of the GNU General Public License version 
 *   user panel
 */
 
-var store2 = 	Ext.create('Ext.data.Store', {
-    storeId:'data_store',
-    fields:['name', 'rights-status', 'senority', 'dep', 'hired'],
-    data:{'items':[
-        { 'name': 'opennode',  "rights-status":"Super User"},
-        { 'name': 'Dummy 1', "rights-status":"Custom"},
-        { 'name': 'Dummy 2', "rights-status":"Custom"},
-        { 'name': 'Dummy 3', "rights-status":"Typical"}
-    ]},
-    proxy: {
-        type: 'memory',
-        reader: {
-            type: 'json',
-            root: 'items'
-        }
-    }
+var store3 = 	Ext.create('Ext.data.Store', {
+    storeId:'data_store3',
+    fields:['id', 'name', 'rights-status'],
+    
 });
+
+Ext.define('Users_computers', {
+    extend: 'Ext.data.Model',
+    fields: [
+        {name: 'coumputer_name',      type: 'string'}
+    ]
+});
+
+
+Ext.define('User', {
+	
+    extend: 'Ext.data.Model',
+    fields: [
+        {name: 'id', type: 'int'},    
+        {name: 'name', type: 'string'},
+        {name: 'rights', type: 'string'}
+    ],
+    hasMany: {model: 'Users_computers', name: 'User_computer'},
+    
+});
+
+var user = Ext.ModelManager.create({name: 'Admin', rights: 'rw'}, 'User');
+var user_computers = user.User_computer();
+user_computers.add({
+    name: 'vm0'
+});
+
+user_computers.add({
+    name: 'vm1'
+});
+
+store3.add(user);
+
+var user_icon = 'images/different_users/user_cyan.png';
+
+function set_icon(x){
+	user_icon = x;
+}
+
+function get_icon(){
+	return user_icon;
+}
+
+var grid_panel = Ext.create('Ext.grid.Panel', {
+	alias: 'grid_panel',
+    title: 'Users',
+    store: Ext.data.StoreManager.lookup('data_store3'),
+    columns: [
+          {text: 'Name',  dataIndex:'name'},
+          {text: 'Rights',  dataIndex:'rights'},
+          {text: 'mid',
+              xtype:'actioncolumn', 
+              width:70,
+              dataIndex:'icon',
+              items: [{
+            	  //icon: store2.data.getAt(0)[0].icon,
+                  icon: user_icon,
+                  handler: function(grid, rowIndex, colIndex) { 
+                	  
+                      var rec = grid.getStore().getAt(rowIndex);
+                      var appending_comp = '';
+                      var selected_user = store3.findRecord('id', rec.get('id'));                      
+                      
+                    	  selected_user.User_computer().each(function(child_el){
+                    		  appending_comp += child_el.get('name') + '\n' 
+                    	  });                      
+                      
+                      var rights_window = Ext.create('Ext.window.Window', {
+                    		title: 'User Rights',
+                    		height: 300,
+                    		width: 250,                    		
+                    		layout: {
+                    			type: 'table',
+                    			columns:1
+                    			},
+
+                    		items: [{
+                        			xtype: 'fieldcontainer',
+                        			fieldLabel: 'Show this user',
+                        			defaultType: 'checkboxfield',
+                        			items: [{id  : 'checkbox1', image: 'add.png'} ],
+                    			},   {
+                    		        xtype     : 'textareafield',
+                    		        width: 200,
+                    		        name      : 'computers',
+                    		        fieldLabel: 'computers',
+                    		        value: appending_comp,
+                    				
+                    		    },   {
+                    		    	xtype: 'textfield',
+                    		        width: 200,                    		        
+                    		        name      : 'computers',
+                    		        fieldLabel: 'computers',
+                    		        
+                    				
+                    		    }, {
+                                    xtype: 'button',
+                                    text: 'Add', handler: function(b) {
+                                    	//set_icon('images/different_users/user_'+rights_window.items.getAt(1).getValue()+'.png');
+                                    	//grid_panel.columns[2].items[0].icon = get_icon();
+                                    	
+                                    	selected_user.User_computer().add({
+                                            name: rights_window.items.getAt(2).getValue()
+                                        });
+                                    	rights_window.destroy();
+                                    }
+                                },  {
+                                    xtype: 'button',
+                                    text: 'OK', handler: function(b) {
+                                    	//set_icon('images/different_users/user_'+rights_window.items.getAt(1).getValue()+'.png');
+                                    	//grid_panel.columns[2].items[0].icon = get_icon();
+                                    	rights_window.destroy();
+                                    	
+                                    }
+                                }
+                    		]
+                  	
+                    	});
+                      rights_window.show();
+                  }
+              },{
+                  icon: 'images/list-remove.png',
+                  tooltip: 'Delete',
+                  handler: function(grid, rowIndex, colIndex) {
+                      var rec = grid.getStore().getAt(rowIndex);
+                      grid.getStore().remove(rec);
+                  }                
+              }
+              
+              ]
+          }
+          
+
+      ],
+    width: 274,
+    height: 600,
+    cls: 'userpanel',
+});
+
+
 
 Ext.define('Funcman.Graph', {
     alias: 'Graph',
@@ -73,42 +201,8 @@ Ext.define('Funcman.Graph', {
                 }
             }
         }),
-        Ext.create('Ext.grid.Panel', {
-            title: 'Users',
-            store: Ext.data.StoreManager.lookup('data_store'),
-            columns: [
-                  {text: 'Name',  dataIndex:'name'},
-                  {text: 'Rights',  dataIndex:'rights-status'},
-                  {text: 'mid',
-                      xtype:'actioncolumn', 
-                      width:80,
-                      items: [{
-                          icon: 'images/list-add.png',  // Use a URL in the icon config
-                          tooltip: 'Edit',
-                          handler: function(grid, rowIndex, colIndex) {
-                              var rec = grid.getStore().getAt(rowIndex);
-                              alert("Edit " + rec.get('name') + " rights.");
-                          }
-                      },{
-                          icon: 'images/list-remove.png',
-                          tooltip: 'Delete',
-                          handler: function(grid, rowIndex, colIndex) {
-                              var rec = grid.getStore().getAt(rowIndex);
-                              grid.getStore().remove(rec);
-                          }                
-                      },{
-                          icon: 'images/list-add.png',
-                          handler: function(grid, rowIndex, colIndex) {
-                              var rec = grid.getStore().getAt(rowIndex);
-                              alert("Showing " + rec.get('name') + " rights.");
-                          }                
-                      }]
-                  }
-              ],
-            width: 250,
-            height: 600,
-            cls: 'userpanel',
-        })
+
+        grid_panel,
     ],
 
     updateZoomLevel: function() {
@@ -200,6 +294,16 @@ Ext.define('Funcman.Graph', {
         }
 
         if (!norefresh) {
+            // Check if the new node is under a collapsed node
+            var n = node;
+            while (n.parent) {
+                if (n.isCollapsed) {
+                    node.hide();
+                    break;
+                }
+                n = n.parent;
+            }
+
             me.updateZoomLevel();
             me.view.layoutPlugin.refresh();
         }
