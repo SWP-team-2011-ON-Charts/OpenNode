@@ -100,7 +100,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 text: 'ID:',
             }, {
                 xtype: 'label',
-                text: node.params.id,
+                text: ''+node.params.id,
                 colspan: 2
             });
             

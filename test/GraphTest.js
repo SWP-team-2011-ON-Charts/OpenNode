@@ -76,12 +76,65 @@ describe('GraphNode tests', function() {
     node.addChild(node2);
     expect(node.children.length).toEqual(0);
   });
+  it('can get root node', function() {
+    expect(node.getRoot()).toBe(node2);
+  });
+  it('can see itself as root', function() {
+    expect(node2.getRoot()).toBe(node2);
+  });
+  it('can remove child', function() {
+    node2.removeChild(node);
+    expect(node2.children.length).toEqual(0);
+  });
 });
 
 describe('OpenNodeGraph tests', function() {
   it('can add node', function() {
     expect(function() {
-        graph.addNode(node);
+      graph.addNode(node2);
+      graph.addNode(node);
     }).not.toThrow ("Ext.Error");
+    expect(graph.view.itemcontainer.items.items.length).toEqual(2);
+  });
+  it('can apply highlight', function() {
+    expect(function() {
+      node2.hightlight();
+      node2.clearHightlight();
+    }).not.toThrow ("Ext.Error");
+  });
+  it('can apply select', function() {
+    expect(function() {
+      node2.select();
+      node2.deselect();
+    }).not.toThrow ("Ext.Error");
+  });
+  it('can remove node', function() {
+    expect(function() {
+      graph.removeNode(node2);
+      graph.removeNode(node);
+    }).not.toThrow ("Ext.Error");
+  });
+});
+
+var jsonData = '[{\
+    "state": "running", \
+    "name": "Physical", \
+    "template": "centos5", \
+    "memory": 0, \
+    "cores": 1, \
+    "arch": "x86", \
+    "id": 0, \
+    "cpu": 0.0\
+    }\
+    ]',
+    dc;
+
+describe('JSON communication tests', function() {
+  it('can read JSON compute data', function() {
+    expect(function() {
+      var authString = Funcman.OpenNodeGraph.base64encode('opennode:demo');
+      dc = graph.syncWithServer('http://localhost:8080', jsonData, authString)
+    }).not.toThrow ("Ext.Error");
+    expect(dc).not.toBeNull();
   });
 });

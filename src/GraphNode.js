@@ -13,7 +13,6 @@ Ext.define('Funcman.GraphNode', {
     cls: 'thumb-wrap',
 
     isCollapsed: false,
-    visible: true,
     image: '../resources/images/computer.png', // default
 
     items: [{

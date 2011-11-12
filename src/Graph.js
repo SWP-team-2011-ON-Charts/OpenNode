@@ -327,13 +327,8 @@ Ext.define('Funcman.Graph', {
     addNode: function(node, norefresh) {
         var me = this;
 
-        if (node.visible) {
-            me.view.itemcontainer.add(node);
-        }
-
-        if (node.children) {
-            me.addNodes(node.children, true);
-        }
+        me.view.itemcontainer.add(node);
+        me.addNodes(node.children, true);
 
         if (!norefresh) {
             // Check if the new node is under a collapsed node
@@ -368,13 +363,12 @@ Ext.define('Funcman.Graph', {
         var me = this,
             el = node.getEl();
 
-
         if (node === me.getSelectedNode()) {
             me.setSelectedNode(null);
         }
 
         if (node === me.view.highlightItem) {
-            me.view.highlightItem.clearHighlight();
+            node.clearHighlight();
             me.view.highlightItem = null;
         }
 
@@ -387,9 +381,7 @@ Ext.define('Funcman.Graph', {
             node.parent = null;
         }
 
-        if (node.children) {
-            me.removeNodes(node.children, true);
-        }
+        me.removeNodes(node.children, true);
 
         if (!norefresh) {
             me.updateZoomLevel();
