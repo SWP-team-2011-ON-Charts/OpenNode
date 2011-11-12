@@ -294,6 +294,16 @@ Ext.define('Funcman.Graph', {
         }
 
         if (!norefresh) {
+            // Check if the new node is under a collapsed node
+            var n = node;
+            while (n.parent) {
+                if (n.isCollapsed) {
+                    node.hide();
+                    break;
+                }
+                n = n.parent;
+            }
+
             me.updateZoomLevel();
             me.view.layoutPlugin.refresh();
         }

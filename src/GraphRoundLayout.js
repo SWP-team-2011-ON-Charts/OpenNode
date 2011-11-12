@@ -44,13 +44,24 @@ Ext.define('Funcman.GraphRoundLayout', {
         this.oldPositions = {};
         this.newPositions = {};
 
+
         // Set new positions
-        var rootleft = 0;
-        this.minLeft = 0;
-        this.minTop = 0;
+        var rootleft = 300,
+            minRootLeft = 10000,
+            minRootTop = 10000;
+
         Ext.each(roots, function(root) {
-            rootleft = this.setPositionRecursive(root, rootleft, 0, {left: 300, top: 100});
+            this.minLeft = 10000;
+            this.minTop = 10000;
+            this.maxLeft = -10000;
+
+            this.setPositionRecursive(root, 0, 0, {left: rootleft, top: 100});
+            rootleft += (this.maxLeft - this.minLeft) + 100;
+
+            if (this.minLeft < minRootLeft) minRootLeft = this.minLeft;
+            if (this.minTop < minRootTop) minRootTop = this.minTop;
         }, this);
+
 
         // find current positions of each element,
         // don't animate if oldPos == newPos
@@ -58,8 +69,8 @@ Ext.define('Funcman.GraphRoundLayout', {
             var item = this.itemCache[id],
                 left = item.getX();
 
-            newPos.left -= this.minLeft;
-            newPos.top -= this.minTop;
+            newPos.left -= minRootLeft;
+            newPos.top -= minRootTop;
 
             if (Ext.Array.contains(this.added, id) || isNaN(left)) {
                 item.setXY(newPos.left, newPos.top);
@@ -93,7 +104,10 @@ Ext.define('Funcman.GraphRoundLayout', {
     },
 
     setPositionRecursive: function(item, angle, radius, rootPos) {
-        var childCount = item.isCollapsed ? 0 : item.children.length;
+        var childCount = item.isCollapsed ? 0 : item.children.length,
+            childAngle = (childCount <= 1) ? 0 : (2 * Math.PI / childCount),
+            addAngle = (childCount % 2 == 0) ? (childAngle / 2) : 0,
+            chAngle = angle + addAngle;
 
         if (childCount) {
             radius += 100 + childCount;
@@ -107,12 +121,11 @@ Ext.define('Funcman.GraphRoundLayout', {
         };
 
         if (newPos.left < this.minLeft) this.minLeft = newPos.left;
+        if (newPos.left > this.maxLeft) this.maxLeft = newPos.left;
         if (newPos.top < this.minTop) this.minTop = newPos.top;
 
         if (!item.isCollapsed) {
-            var chAngle = angle,
-                childAngle = 2 * Math.PI / childCount,
-                childRadius = (60 + childCount*2);
+            var childRadius = (60 + childCount*2);
 
             var nextRadius = childRadius + 60 + childCount * 2;
             Ext.each(item.children, function(child) {
@@ -122,7 +135,7 @@ Ext.define('Funcman.GraphRoundLayout', {
         
         this.newPositions[item.id] = newPos;
 
-        return chAngle;
+        return chAngle - addAngle;
     },
 
     doAnimate: function() {

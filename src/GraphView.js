@@ -124,8 +124,9 @@ Ext.define('Funcman.GraphView', {
             body = Ext.getBody();
 
         me.addCls('movecursor');
-        body.on('mousemove', me.mousemovelistener, me, {element: 'el'});
-        body.on('mouseup', me.mouseuplistener, me, {element: 'el'});
+        var Event = Ext.EventManager;
+        Event.on(document, "mousemove", me.mousemovelistener, this, true);
+        Event.on(document, "mouseup", me.mouseuplistener, this, true);
 
         var containerpos = me.getPosition();
         var currentscroll = me.el.getScroll();
@@ -154,8 +155,9 @@ Ext.define('Funcman.GraphView', {
         me.isDragging = false;
 
         me.removeCls('movecursor');
-        body.un('mousemove', me.mousemovelistener, me);
-        body.un('mouseup', me.mouseuplistener, me);
+        var Event = Ext.EventManager;
+        Event.un(document, 'mousemove', me.mousemovelistener, this);
+        Event.un(document, 'mouseup', me.mouseuplistener, this);
         
         e.stopEvent();
     },
