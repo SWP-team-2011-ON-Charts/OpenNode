@@ -8,17 +8,6 @@ This file may be used under the terms of the GNU General Public License version 
 */
 
 
-/*
-* Layout of the component:
-* graph
-*   view
-*     nodecontainer
-*       nodes
-*     drawcomponent
-*       lines
-*   zoomslider
-*   user panel
-*/
 
 var store3 = 	Ext.create('Ext.data.Store', {
     storeId:'data_store3',
