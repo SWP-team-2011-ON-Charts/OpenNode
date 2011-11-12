@@ -30,7 +30,7 @@ Ext.define('Funcman.NodeInfoWindow', {
                         var params = me.node.params;
                         me.tip.update('CPU usage: ' + parseInt(params.cpu * 25.0) +
                             "%</br>Memory usage: " + parseInt(params.memory * 2.0) +
-                            "%</br>Network usage: " + parseInt(params.network) + "%" +
+                            "%</br>Network usage: " + parseInt(params.network) +
                             "%</br>Status: " + params.state);
                     }
                 }
@@ -115,7 +115,7 @@ Ext.define('Funcman.NodeInfoWindow', {
             }
 
             node.settingsWindow = Ext.create('NodeSettingsWindow', {
-                type: 'pm_settings',
+                type: 'settings',
                 node: node,
                 graph: me.up().up().up().up(),
             }).show();

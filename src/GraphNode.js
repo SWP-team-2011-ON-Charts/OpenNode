@@ -284,5 +284,13 @@ Ext.define('Funcman.GraphNode', {
         if (this.infowindow) {
             this.infowindow.setInfo();
         }
+    },
+
+    getRoot: function() {
+        var root = this;
+        while (root.parent) {
+            root = root.parent;
+        }
+        return root;
     }
 });

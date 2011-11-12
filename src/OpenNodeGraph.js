@@ -11,7 +11,7 @@ Ext.define('Funcman.OpenNodeGraph', {
     extend: 'Funcman.Graph',
     alias: 'OpenNodeGraph',
 
-    dcid: 0, vmid: 0,
+    dcid: 0,
 
     attachInfoWindow: function(node) {
         var me = this,
@@ -36,11 +36,11 @@ Ext.define('Funcman.OpenNodeGraph', {
         return dc;
     },
 
-    createVM: function(path, params, pm) {
+    createVM: function(pm, params) {
         var vm = Ext.create('GraphNode', {
             id: pm.id + 'vm'+params.id,
             params: params,
-            path: path,
+            path: pm.getRoot().path + 'computes/' + params.id + '/',
             type: 'vm',
             image: 'images/computer.png',
             parent: pm,
@@ -56,7 +56,6 @@ Ext.define('Funcman.OpenNodeGraph', {
         var pm = Ext.create('GraphNode', {
             path: path,
             id: dc.id + 'pm'+params.id,
-            res_id: params.id,
             type: 'pm',
             image: 'images/network-server.png',
             parent: dc,
@@ -74,7 +73,7 @@ Ext.define('Funcman.OpenNodeGraph', {
         var me = this;
 
         me.view.setLoading(true);
-        var dc = me.createDatacenter(server+'/networks/'+me.dcid+'/', authString, {id: me.dcid, name: 'datacenter'+me.dcid});
+        var dc = me.createDatacenter(server+'/', authString, {id: me.dcid, name: 'Datacenter '+me.dcid});
         me.dcid++;
         
         Ext.each(Ext.JSON.decode(serverResponse, true), function(m) {
@@ -102,6 +101,38 @@ Ext.define('Funcman.OpenNodeGraph', {
             failure: function(response, opts) {
                 alert('Could not connect to management server '+opts.url);
                 me.view.setLoading(false);
+            }
+        });
+    },
+
+    getUniqueID: function(dc, callback, scope) {
+        var me = this,
+            id = 0;
+
+        // Get the list of all computes and find an unused ID number
+        Ext.Ajax.request({
+            cors: true,
+            url: dc.path + 'computes/',
+            headers: {
+                'Authorization': dc.authString
+            },
+            success: function(response) {
+                var machines = Ext.JSON.decode(response.responseText, true),
+                    foundId = false;
+                while (!foundId) {
+                    foundId = true;
+                    for (var m in machines) {
+                        if (machines[m].id == id) {
+                            foundId = false;
+                            id++;
+                            break;
+                        }
+                    }
+                }
+                callback.call(scope, id);
+            },
+            failure: function(response, opts) {
+                callback.call(scope, id);
             }
         });
     },

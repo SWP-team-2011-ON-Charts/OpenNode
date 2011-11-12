@@ -15,9 +15,14 @@ Ext.define('Funcman.NodeSettingsWindow', {
 
         me.callParent();
 
-        if (me.type == 'pm_settings') {
-            me.setTitle(node.getName() + ': Physical Machine Settings');
-            me.setSize(320, 250);
+        if (me.type == 'settings') {
+            if (type == 'pm') {
+                me.setTitle(node.getName() + ': Physical Machine Settings');
+                me.setSize(320, 250);
+            } else {
+                me.setTitle(node.getName() + ': Virtual Machine Settings');
+                me.setSize(300, 200);
+            }
             me.animateTarget = node;
             
             me.runButton = Ext.create('Ext.Button', {
@@ -37,21 +42,36 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 colspan: 2
             });
 
-            me.add({
-                xtype: 'button',
-                text: 'Create VM',
-                icon: 'images/computer-22.png',
-                scale: 'medium',
-                margin: '0 10 0 0',
-                handler: function() {
-                    node.settingsWindow = Ext.create('NodeSettingsWindow', {
-                        type: 'vm_new',
-                        node: node,
-                        graph: me.graph
-                    }).show();
-                    me.destroy();
-                }
-            },
+            var button;
+            if (type == 'pm') {
+                button = Ext.create('Ext.Button', {
+                    xtype: 'button',
+                    text: 'Create VM',
+                    icon: 'images/computer-22.png',
+                    scale: 'medium',
+                    margin: '0 10 0 0',
+                    handler: function() {
+                        node.settingsWindow = Ext.create('NodeSettingsWindow', {
+                            type: 'vm_new',
+                            node: node,
+                            graph: me.graph
+                        }).show();
+                        me.destroy();
+                    }
+                });
+            } else if (type == 'vm') {
+                button = Ext.create('Ext.Button', {
+                    xtype: 'button',
+                    text: 'Delete VM',
+                    icon: 'images/delete.png',
+                    scale: 'medium',
+                    margin: '0 10 0 0',
+                });
+                button.setHandler(me.removeButtonListener, me);
+            }
+
+            me.add(
+            button,
             me.runButton,
             me.suspendButton,
             {
@@ -73,28 +93,35 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 xtype: 'label',
                 text: node.params.id,
                 colspan: 2
-            }, {
-                xtype: 'label',
-                text: 'Arch:',
-            }, {
-                xtype: 'label',
-                text: node.params.arch,
-                colspan: 2
-            }, {
-                xtype: 'label',
-                text: 'Cores:',
-            }, {
-                xtype: 'label',
-                text: node.params.cores,
-                colspan: 2
-            }, {
-                xtype: 'label',
-                text: 'Template:',
-            }, {
-                xtype: 'label',
-                text: node.params.template,
-                colspan: 2
-            }, {
+            });
+            
+            if (type == 'pm') {
+                me.add(
+                {
+                    xtype: 'label',
+                    text: 'Arch:',
+                }, {
+                    xtype: 'label',
+                    text: node.params.arch,
+                    colspan: 2
+                }, {
+                    xtype: 'label',
+                    text: 'Cores:',
+                }, {
+                    xtype: 'label',
+                    text: node.params.cores,
+                    colspan: 2
+                }, {
+                    xtype: 'label',
+                    text: 'Template:',
+                }, {
+                    xtype: 'label',
+                    text: node.params.template,
+                    colspan: 2
+                });
+            }
+
+            me.add({
                 xtype: 'button',
                 text: 'OK',
                 scale: 'medium',
@@ -107,28 +134,6 @@ Ext.define('Funcman.NodeSettingsWindow', {
             });
             me.setState();
 
-        } else if (me.type == 'vm_settings') {
-            setTitle(node.getName() + ": Virtual Machine Settings");
-            me.setSize(370, 470);
-            me.animateTarget = node;
-
-            me.add({
-                xtype: 'button',
-                text: 'Remove',
-                handler: function() {
-                    Ext.Msg.show({
-                        title:'Removing VM',
-                        msg: 'Are you sure you want to remove virtual machine "' + node.getName() + '"?',
-                        buttons: Ext.Msg.YESNO,
-                        icon: Ext.Msg.QUESTION,
-                        fn: {
-                            
-                        }
-                    });
-                    me.destroy();
-                }
-            });
-
         } else if (me.type == 'vm_new') {
             me.setTitle('New VM');
             me.setSize(370, 460);
@@ -139,14 +144,16 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     fieldLabel: 'VM hostname',
                     labelAlign: 'left',
                     labelWidth: 100,
-                    value: 'VM '+me.graph.vmid,
+                    disabled: true,
                     colspan:3
                 }, {
                     xtype: 'textfield',
+                    itemId: 'newVM_ID',
                     fieldLabel: 'VM ID',
                     labelAlign: 'left',
                     labelWidth: 100,
-                    value: me.graph.vmid,
+                    value: '0',
+                    disabled: true,
                     colspan:3
                 }, {
                     xtype: 'numberfield',
@@ -338,7 +345,16 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     handler: function(b) {
                         var me = this;
                         if(me.getComponent('newVM_psw1').value==me.getComponent('newVM_psw2').value) {
-                            vm = me.graph.createVM(null, {id: me.graph.vmid, name: me.getComponent('newVM_Name').value}, me.node);
+                            var params = {
+                                id: me.getComponent('newVM_ID').value,
+                                name: me.getComponent('newVM_Name').value,
+                                state: 'stopped',
+                                memory: me.getComponent('newVM_MB').value,
+                                cpu: 0,
+                                network: 0,
+                                parent: node.params.id
+                            };
+                            vm = me.graph.createVM(node, params);
                             me.graph.addNode(vm);
                             me.graph.vmid++;
                             me.destroy();
@@ -356,12 +372,23 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     scope: me,
                     node: node
             }]);
+
+            me.graph.getUniqueID(node.getRoot(), me.setID, me)
         }
     },
 
     destroy: function() {
         delete this.node.settingsWindow;
         this.callParent(arguments);
+    },
+
+    setID: function(id) {
+        var idField = this.getComponent('newVM_ID'),
+            nameField = this.getComponent('newVM_Name');
+        idField.setValue(id);
+        idField.enable();
+        nameField.setValue('VM '+id);
+        nameField.enable();
     },
 
     startServerCommand: function() {
@@ -387,7 +414,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
             jsonData: {state: newState},
             url: me.node.path,
             headers: {
-                'Authorization': me.node.parent.authString
+                'Authorization': me.node.getRoot().authString
             },
             success: function(response, opts) {
                 me.node.params.state = newState;
@@ -414,7 +441,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
             jsonData: {state: newState},
             url: me.node.path,
             headers: {
-                'Authorization': me.node.parent.authString
+                'Authorization': me.node.getRoot().authString
             },
             success: function(response, opts) {
                 me.node.params.state = newState;
@@ -425,6 +452,55 @@ Ext.define('Funcman.NodeSettingsWindow', {
             failure: function(response, opts) {
                 alert('Management server error with '+opts.url);
                 me.endServerCommand();
+            }
+        });
+    },
+
+    removeButtonListener: function() {
+        var me = this,
+            node = me.node;
+
+        Ext.Msg.show({
+            title:'Removing VM',
+            msg: 'Are you sure you want to remove virtual machine "' + node.getName() + '"?',
+            buttons: Ext.Msg.YESNO,
+            icon: Ext.Msg.QUESTION,
+            fn: function(res) {
+                if (res == 'yes') {
+                    me.removeNode();
+                }
+            }
+        });
+    },
+
+    removeNode: function() {
+        var me = this,
+            node = me.node,
+            path = node.path;
+
+        if (!path) {
+            me.graph.removeNode(button.node);
+            return;
+        }
+
+        Ext.Ajax.request({
+            cors: true,
+            method: 'DELETE',
+            url: path,
+            headers: {
+                'Authorization': me.node.getRoot().authString
+            },
+            success: function() {
+                me.graph.removeNode(node);
+                me.destroy();
+            },
+            failure: function(response, opts) {
+                if (response.status == 404) {
+                    me.graph.removeNode(node);
+                    me.destroy();
+                } else {
+                    alert('Could not connect to management server '+opts.url);
+                }
             }
         });
     },
