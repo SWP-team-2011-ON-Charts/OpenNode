@@ -29,14 +29,8 @@ Ext.define('Funcman.GraphRoundLayout', {
         if (!this.graph)
             this.graph = this.view.up();
 
-        var zoom = this.graph.getZoom(),
-            iconSize   = zoom * this.view.iconSize,
-            itemWidth   = zoom * this.view.iconSize + 10,
-            itemHeight  = iconSize + 40;
-
-        //stores the current left, top and iconSize values for each element (discovered below)
-        var oldPositions = {},
-            newPositions = {};
+        this.zoom = this.graph.getZoom();
+        this.iconSize = this.zoom * this.view.iconSize;
 
         // Get all root elements
         var roots = [];
@@ -46,115 +40,131 @@ Ext.define('Funcman.GraphRoundLayout', {
             }
         }, this);
 
-        // Recursive function to set new positions
-        var setPos = function(item, angle, radius, rootPos) {
-            var chAngle = angle,
-                childCount = item.isCollapsed ? 0 : item.children.length,
-                childRadius = (60 + childCount*2);
-
-            if (childCount) {
-                radius += 100 + childCount;
-            }
-
-            newPositions[item.id] = {
-                left: zoom * radius * Math.sin(angle) + rootPos.left,
-                top: zoom * radius * Math.cos(angle) + rootPos.top,
-                iconSize: iconSize
-            };
-
-            if (!item.isCollapsed) {
-                var childAngle = 2 * Math.PI / childCount;
-
-                var nextRadius = childRadius + 60 + childCount * 2;
-                Ext.each(item.children, function(child) {
-                    chAngle = setPos(child, chAngle + childAngle, childRadius, newPositions[item.id]);
-                }, this);
-            }
-
-            return chAngle;
-        };
+        //stores the current left, top and iconSize values for each element (discovered below)
+        this.oldPositions = {};
+        this.newPositions = {};
 
         // Set new positions
         var rootleft = 0;
+        this.minLeft = 0;
+        this.minTop = 0;
         Ext.each(roots, function(root) {
-            rootleft = setPos(root, rootleft, 0, {left: 300, top: 100});
+            rootleft = this.setPositionRecursive(root, rootleft, 0, {left: 300, top: 100});
         }, this);
 
         // find current positions of each element,
         // don't animate if oldPos == newPos
-        Ext.iterate(newPositions, function(id, newPos) {
+        Ext.iterate(this.newPositions, function(id, newPos) {
             var item = this.itemCache[id],
                 left = item.getX();
+
+            newPos.left -= this.minLeft;
+            newPos.top -= this.minTop;
+
             if (Ext.Array.contains(this.added, id) || isNaN(left)) {
                 item.setXY(newPos.left, newPos.top);
                 item.setIconSize(newPos.iconSize);
-                delete newPositions[id];
+                delete this.newPositions[id];
             } else {
-                oldPositions[id] = {left: left, top: item.getY(), iconSize: item.getIconSize()};
-                var oldPos = oldPositions[id];
+                var oldPos = {left: left, top: item.getY(), iconSize: item.getIconSize()};
                 if (left == newPos.left && oldPos.top == newPos.top && oldPos.iconSize == newPos.iconSize) {
-                    delete newPositions[id];
+                    delete this.newPositions[id];
+                } else {
+                    this.oldPositions[id] = oldPos;
                 }
             }
         }, this);
 
         //do the movements
-        var startTime  = new Date(),
-            duration   = this.duration;
+        this.startTime  = new Date();
 
-        var doAnimate = function() {
-            var elapsed  = new Date() - startTime,
-                fraction = elapsed / duration,
-                graph = this.graph,
-                zoom = graph.getZoom(),
-                selectedNode = graph.getSelectedNode();
-            
-            if (fraction >= 1) {
-                for (id in newPositions) {
-                    var node = this.itemCache[id],
-                        newPos = newPositions[id];
-
-                    node.setXY(newPos.left, newPos.top);
-                    node.setIconSize(newPos.iconSize);
-                }
-                this.view.drawLines();
-
-                Ext.TaskManager.stop(task);
-                delete task;
-
-            } else {
-                //move each item
-                for (id in newPositions) {
-                    var oldPos  = oldPositions[id],
-                        newPos  = newPositions[id],
-                        oldTop  = oldPos.top,
-                        oldLeft = oldPos.left,
-                        oldSize = oldPos.iconSize,
-                        midLeft = oldLeft +  fraction * (newPos.left - oldLeft),
-                        midTop = oldTop +  fraction * (newPos.top - oldTop);
-
-                    var node = this.itemCache[id];
-                    node.setXY(midLeft, midTop);
-
-                    //var midSize = oldSize +  fraction * (newPos.iconSize - oldSize);
-                    //node.setIconSize(midSize);
-                }
-                this.view.drawLines();
-            }
-        };
-
-        if (task) {
-            Ext.TaskManager.stop(task);
-            delete task;
+        if (this.task) {
+            Ext.TaskManager.stop(this.task);
+            delete this.task;
         }
 
-        var task = {
-            run     : doAnimate,
+        this.task = {
+            run     : this.doAnimate,
             interval: 20,
             scope   : this
         };
 
-        Ext.TaskManager.start(task);
+        Ext.TaskManager.start(this.task);
+    },
+
+    setPositionRecursive: function(item, angle, radius, rootPos) {
+        var childCount = item.isCollapsed ? 0 : item.children.length;
+
+        if (childCount) {
+            radius += 100 + childCount;
+        }
+        radius *= this.zoom;
+
+        var newPos = {
+            left: radius * Math.sin(angle) + rootPos.left,
+            top: radius * Math.cos(angle) + rootPos.top,
+            iconSize: this.iconSize
+        };
+
+        if (newPos.left < this.minLeft) this.minLeft = newPos.left;
+        if (newPos.top < this.minTop) this.minTop = newPos.top;
+
+        if (!item.isCollapsed) {
+            var chAngle = angle,
+                childAngle = 2 * Math.PI / childCount,
+                childRadius = (60 + childCount*2);
+
+            var nextRadius = childRadius + 60 + childCount * 2;
+            Ext.each(item.children, function(child) {
+                chAngle = this.setPositionRecursive(child, chAngle + childAngle, childRadius, newPos);
+            }, this);
+        }
+        
+        this.newPositions[item.id] = newPos;
+
+        return chAngle;
+    },
+
+    doAnimate: function() {
+        var elapsed  = new Date() - this.startTime,
+            fraction = elapsed / this.duration,
+            graph = this.graph,
+            zoom = graph.getZoom(),
+            oldPositions = this.oldPositions,
+            newPositions = this.newPositions;
+        
+        if (fraction >= 1) {
+            for (id in newPositions) {
+                var node = this.itemCache[id],
+                    newPos = newPositions[id];
+
+                node.setXY(newPos.left, newPos.top);
+                node.setIconSize(newPos.iconSize);
+            }
+            this.view.drawLines();
+
+            Ext.TaskManager.stop(this.task);
+            delete this.task;
+
+        } else {
+            //move each item
+            for (id in newPositions) {
+                var node = this.itemCache[id],
+                    oldPos  = oldPositions[id],
+                    newPos  = newPositions[id],
+                    oldTop  = oldPos.top,
+                    oldLeft = oldPos.left,
+                    midLeft = oldLeft +  fraction * (newPos.left - oldLeft),
+                    midTop = oldTop +  fraction * (newPos.top - oldTop);
+
+                node.setXY(midLeft, midTop);
+
+                var oldSize = oldPos.iconSize,
+                    midSize = oldSize +  fraction * (newPos.iconSize - oldSize);
+                node.setIconSize(midSize);
+            }
+            this.view.drawLines();
+        }
     },
 
     updateCache: function() {
