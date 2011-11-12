@@ -8,17 +8,6 @@ This file may be used under the terms of the GNU General Public License version 
 */
 
 
-/*
-* Layout of the component:
-* graph
-*   view
-*     nodecontainer
-*       nodes
-*     drawcomponent
-*       lines
-*   zoomslider
-*   user panel
-*/
 
 var store3 = 	Ext.create('Ext.data.Store', {
     storeId:'data_store3',
@@ -347,6 +336,16 @@ Ext.define('Funcman.Graph', {
         }
 
         if (!norefresh) {
+            // Check if the new node is under a collapsed node
+            var n = node;
+            while (n.parent) {
+                if (n.isCollapsed) {
+                    node.hide();
+                    break;
+                }
+                n = n.parent;
+            }
+
             me.updateZoomLevel();
             me.view.layoutPlugin.refresh();
         }

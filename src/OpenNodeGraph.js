@@ -109,6 +109,22 @@ Ext.define('Funcman.OpenNodeGraph', {
         var me = this,
             id = 0;
 
+        // Temporary fix, check only locally stored machines
+        var foundId = false,
+            items = me.view.itemcontainer.items.items;
+        while (!foundId) {
+            foundId = true;
+            for (var item in items) {
+                if (items[item].params.id == id) {
+                    foundId = false;
+                    id++;
+                    break;
+                }
+            }
+        }
+        callback.call(scope, id);
+        return;
+
         // Get the list of all computes and find an unused ID number
         Ext.Ajax.request({
             cors: true,
