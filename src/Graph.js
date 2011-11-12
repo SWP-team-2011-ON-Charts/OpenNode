@@ -26,11 +26,23 @@ var store3 = 	Ext.create('Ext.data.Store', {
     
 });
 
+Ext.define('Computers_rights', {
+    extend: 'Ext.data.Model',
+    fields: [
+        {name: 'Read',      type: 'string'},
+        {name: 'Write',      type: 'string'},
+        {name: 'Execute',      type: 'string'}
+    ]
+	
+});
+
 Ext.define('Users_computers', {
     extend: 'Ext.data.Model',
     fields: [
+        {name: 'id', type: 'int'},
         {name: 'coumputer_name',      type: 'string'}
-    ]
+    ],
+	hasMany: {model: 'Computers_rights', name: 'Computer_right'},
 });
 
 
@@ -43,22 +55,25 @@ Ext.define('User', {
         {name: 'rights', type: 'string'}
     ],
     hasMany: {model: 'Users_computers', name: 'User_computer'},
-    
 });
 
-var user = Ext.ModelManager.create({name: 'Admin', rights: 'rw'}, 'User');
+
+var user = Ext.ModelManager.create({name: 'Admin', rights: 'All'}, 'User');
 var user_computers = user.User_computer();
 user_computers.add({
-    name: 'vm0'
+    name: 'hostname_7 { r w e }',
+    items: [{Read: 'true', Write: 'true', Execute: 'true'}],
 });
 
+
 user_computers.add({
-    name: 'vm1'
+    name: 'hostname_8 { r w e }'
 });
+
 
 store3.add(user);
 
-var user_icon = 'images/different_users/user_cyan.png';
+var user_icon = 'images/different_users/user_black.png';
 
 function set_icon(x){
 	user_icon = x;
@@ -78,37 +93,39 @@ var grid_panel = Ext.create('Ext.grid.Panel', {
           {text: 'mid',
               xtype:'actioncolumn', 
               width:70,
-              dataIndex:'icon',
               items: [{
             	  //icon: store2.data.getAt(0)[0].icon,
                   icon: user_icon,
                   handler: function(grid, rowIndex, colIndex) { 
-                	  
+                	 
                       var rec = grid.getStore().getAt(rowIndex);
                       var appending_comp = '';
                       var selected_user = store3.findRecord('id', rec.get('id'));                      
+                      var me = this;
                       
                     	  selected_user.User_computer().each(function(child_el){
-                    		  appending_comp += child_el.get('name') + '\n' 
+                    		  appending_comp += child_el.get('name') + '\n' ;
+
+                    		  
                     	  });                      
                       
                       var rights_window = Ext.create('Ext.window.Window', {
                     		title: 'User Rights',
-                    		height: 300,
-                    		width: 250,                    		
+                    		height: 250,
+                    		width: 470,                    		
                     		layout: {
                     			type: 'table',
-                    			columns:1
+                    			columns: 2,
                     			},
 
                     		items: [{
                         			xtype: 'fieldcontainer',
                         			fieldLabel: 'Show this user',
                         			defaultType: 'checkboxfield',
-                        			items: [{id  : 'checkbox1', image: 'add.png'} ],
+                        			items: [{id  : 'checkbox4', image: 'add.png'} ],
                     			},   {
                     		        xtype     : 'textareafield',
-                    		        width: 200,
+                    		        width: 250,
                     		        name      : 'computers',
                     		        fieldLabel: 'computers',
                     		        value: appending_comp,
@@ -117,22 +134,58 @@ var grid_panel = Ext.create('Ext.grid.Panel', {
                     		    	xtype: 'textfield',
                     		        width: 200,                    		        
                     		        name      : 'computers',
-                    		        fieldLabel: 'computers',
+                    		        fieldLabel: 'Add computers',
+                    		    }, {},  {
+                    		    	xtype: 'fieldcontainer',
+                    		        width: 200,                    		        
+                    		        name      : 'computers',
+                    		        fieldLabel: 'Add rights',
+                    		        defaultType: 'checkboxfield',
                     		        
-                    				
-                    		    }, {
+                    		        items: [{id  : 'checkbox1', boxLabel: 'Read',width: 80},
+                    		                {id  : 'checkbox2', boxLabel: 'Write'},
+                    		                {id  : 'checkbox3', boxLabel: 'Execute'}]
+                        			
+                    		    },{
                                     xtype: 'button',
                                     text: 'Add', handler: function(b) {
                                     	//set_icon('images/different_users/user_'+rights_window.items.getAt(1).getValue()+'.png');
                                     	//grid_panel.columns[2].items[0].icon = get_icon();
+                                        
                                     	
+                                    	var checkbox1 = Ext.getCmp('checkbox1'),
+	                                        checkbox2 = Ext.getCmp('checkbox2'),
+	                                        checkbox3 = Ext.getCmp('checkbox3');
+                                        var rights = ' {';
+                                        if (checkbox1.getValue()){
+                                        	rights += ' r '
+                                        }
+                                        if (checkbox2.getValue()){
+                                        	rights += ' w '
+                                        }
+                                        if (checkbox3.getValue()){
+                                        	rights += ' e '
+                                        }
+                                        rights += '}';
+                                        
                                     	selected_user.User_computer().add({
-                                            name: rights_window.items.getAt(2).getValue()
+                                            
+                                            name: rights_window.items.getAt(2).getValue()+rights
                                         });
-                                    	rights_window.destroy();
+
+                                    	
+                                    	appending_comp = ''
+                                    	
+                                  	  selected_user.User_computer().each(function(child_el){
+                                		  appending_comp += child_el.get('name') + '\n' 
+                                	  });
+
+                                    	rights_window.items.getAt(1).setValue(appending_comp);
+                                    	
                                     }
-                                },  {
+                                },{
                                     xtype: 'button',
+                                    align: 'bottom',
                                     text: 'OK', handler: function(b) {
                                     	//set_icon('images/different_users/user_'+rights_window.items.getAt(1).getValue()+'.png');
                                     	//grid_panel.columns[2].items[0].icon = get_icon();

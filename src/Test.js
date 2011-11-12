@@ -107,7 +107,7 @@ var login = function (server, serverResponse, authString) {
         var me = this;
         var register = Ext.create('Ext.Window', {
             title: 'Add User',
-            height: 150,
+            height: 200,
             width: 300,
             layout: 'vbox',
             items: [{
@@ -116,10 +116,57 @@ var login = function (server, serverResponse, authString) {
                 width: 250,
                 
             }, {
-                xtype: 'textfield',
-                fieldLabel: 'Rights',
-                width: 250,
-            }, {
+		    	xtype: 'fieldcontainer',
+		        width: 200,                    		        
+		        name      : 'computers',
+		        fieldLabel: 'Add rights',
+		        defaultType: 'radiofield',
+		        
+		        items: [{id  : 'radio1', boxLabel: 'All',width: 80,
+		                handler: function() {
+		                    var radio1 = Ext.getCmp('radio1'),
+		                    	radio2 = Ext.getCmp('radio2'),
+		                        radio3 = Ext.getCmp('radio3');
+	                    
+		                    if (radio1.getValue()){
+			                    radio2.setValue(false);
+			                    radio3.setValue(false);	
+			                    register.items.getAt(2).hide();
+			                    return;
+		                    }
+		                }},
+		                {id  : 'radio2', boxLabel: 'None',
+		                	handler: function() {
+			                    var radio1 = Ext.getCmp('radio1'),
+			                    	radio2 = Ext.getCmp('radio2'),
+			                        radio3 = Ext.getCmp('radio3');
+			                    
+			                    if (radio2.getValue()){
+				                    radio1.setValue(false);
+				                    radio3.setValue(false);	
+				                    register.items.getAt(2).hide();
+				                    return;
+			                    }
+
+
+			                }},
+		                {id  : 'radio3', boxLabel: 'Custom',
+		                	handler: function() {
+			                    var radio1 = Ext.getCmp('radio1'),
+			                        radio2 = Ext.getCmp('radio2'),
+			                        radio3 = Ext.getCmp('radio3');
+			                    
+			                    if (radio3.getValue()){
+				                    radio1.setValue(false);
+				                    radio2.setValue(false);	
+				                    register.items.getAt(2).show();
+				                    return;
+			                    }
+
+			                }}],
+
+    			
+		    }, {
             	xtype: 'textfield',
             	fieldLabel: 'Computers',
             	width: 250,
@@ -130,8 +177,25 @@ var login = function (server, serverResponse, authString) {
                     //store2.add({ 'name': register.items.getAt(0).getValue(),  "rights-status": register.items.getAt(1).getValue()});
                     
                     user_id++;
+                   
+                    var rights;
                     
-                    var user = Ext.ModelManager.create({id : user_id, name: register.items.getAt(0).getValue(), rights: register.items.getAt(1).getValue()}, 'User');
+                    var radio1 = Ext.getCmp('radio1'),
+                    radio2 = Ext.getCmp('radio2'),
+                    radio3 = Ext.getCmp('radio3');
+
+                    if (radio1.getValue()){
+                    	rights = 'All';
+                    }
+                    if (radio2.getValue()){
+                    	rights = 'None';
+                    }
+                    if (radio3.getValue()){
+                    	rights = 'Custom';
+                    }
+
+                
+                    var user = Ext.ModelManager.create({id : user_id, name: register.items.getAt(0).getValue(), rights: rights}, 'User');
                     var user_computers = user.User_computer();
                     user_computers.add({
                         name: register.items.getAt(2).getValue()
