@@ -141,7 +141,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     me.close();
                 }
             });
-            me.setState();
+            me.setState(node.params.state);
 
         } else if (me.type == 'vm_new') {
             me.setTitle('New VM');
@@ -417,6 +417,14 @@ Ext.define('Funcman.NodeSettingsWindow', {
 
         me.startServerCommand();
 
+        // Temporary workaround
+        if (me.node.type == 'vm') {
+            me.setState(newState);
+            me.node.setInfo();
+            me.endServerCommand();
+            return;
+        }
+
         Ext.Ajax.request({
             cors: true,
             method: 'PUT',
@@ -426,8 +434,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 'Authorization': me.node.getRoot().authString
             },
             success: function(response, opts) {
-                me.node.params.state = newState;
-                me.setState();
+                me.setState(newState);
                 me.node.setInfo();
                 me.endServerCommand();
             },
@@ -444,6 +451,14 @@ Ext.define('Funcman.NodeSettingsWindow', {
 
         me.startServerCommand();
 
+        // Temporary workaround
+        if (me.node.type == 'vm') {
+            me.setState(newState);
+            me.node.setInfo();
+            me.endServerCommand();
+            return;
+        }
+
         Ext.Ajax.request({
             cors: true,
             method: 'PUT',
@@ -453,8 +468,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 'Authorization': me.node.getRoot().authString
             },
             success: function(response, opts) {
-                me.node.params.state = newState;
-                me.setState();
+                me.setState(newState);
                 me.node.setInfo();
                 me.endServerCommand();
             },
@@ -514,9 +528,9 @@ Ext.define('Funcman.NodeSettingsWindow', {
         });
     },
 
-    setState: function() {
-        var me = this,
-            state = me.node.params.state;
+    setState: function(state) {
+        var me = this;
+        me.node.params.state = state;
 
         me.stateLabel.setText(state);
 
