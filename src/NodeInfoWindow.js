@@ -130,6 +130,9 @@ Ext.define('Funcman.NodeInfoWindow', {
             }).show();
             //e.stopEvent();
         }, me, {element: 'el'});
+
+        node.infowindow = me;
+        node.add(me);
     },
 
     setInfo: function() {

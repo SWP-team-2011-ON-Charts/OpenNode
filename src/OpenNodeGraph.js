@@ -13,14 +13,6 @@ Ext.define('Funcman.OpenNodeGraph', {
 
     dcid: 0,
 
-    attachInfoWindow: function(node) {
-        var me = this,
-            iw = Ext.create('NodeInfoWindow', { node: node });
-
-        node.infowindow = iw;
-        node.add(iw);
-    },
-
     createDatacenter: function(path, authString, params) {
     	
         var dc = Ext.create('GraphNode', {
@@ -29,7 +21,6 @@ Ext.define('Funcman.OpenNodeGraph', {
             path: path,
             type: 'dc',
             image: '../resources/images/data-center.png',
-            children: [],
             authString: authString
         });
 
@@ -43,11 +34,11 @@ Ext.define('Funcman.OpenNodeGraph', {
             path: pm.getRoot().path + 'computes/' + params.id + '/',
             type: 'vm',
             image: '../resources/images/computer.png',
-            children: []
         });
-        this.attachInfoWindow(vm);
-        pm.addChild(vm);
 
+        Ext.create('NodeInfoWindow', { node: vm });
+
+        pm.addChild(vm);
         return vm;
     },
 
@@ -57,11 +48,11 @@ Ext.define('Funcman.OpenNodeGraph', {
             id: dc.id + 'pm'+params.id,
             type: 'pm',
             image: '../resources/images/network-server.png',
-            children: [],
             params: params
         });
         pm.params.network = 20;
-        this.attachInfoWindow(pm);
+
+        Ext.create('NodeInfoWindow', { node: pm });
 
         dc.addChild(pm);
         return pm;
@@ -70,7 +61,7 @@ Ext.define('Funcman.OpenNodeGraph', {
     syncWithServer: function(server, serverResponse, authString) {
         var me = this;
 
-        me.view.setLoading(true);
+        me.setLoading(true);
         var dc = me.createDatacenter(server+'/', authString, {id: me.dcid, name: 'Datacenter '+me.dcid});
         me.dcid++;
         
@@ -78,12 +69,14 @@ Ext.define('Funcman.OpenNodeGraph', {
             me.createMachineFromServer(server+'/computes/'+m.id+'/', m, dc);
         });
         me.addNode(dc);
-        me.view.setLoading(false);
+        me.setLoading(false);
+
+        return dc;
     },
 
     syncWithNewServer: function(server, username, password) {
         var me = this;
-        me.view.setLoading(true);
+        me.setLoading(true);
 
         var authString = 'Basic ' + Funcman.OpenNodeGraph.base64encode(username + ':' + password);
 
@@ -98,7 +91,7 @@ Ext.define('Funcman.OpenNodeGraph', {
             },
             failure: function(response, opts) {
                 alert('Could not connect to management server '+opts.url);
-                me.view.setLoading(false);
+                me.setLoading(false);
             }
         });
     },
