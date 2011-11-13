@@ -283,6 +283,18 @@ Ext.define('Funcman.GraphNode', {
         me.showInfoWindow();
         me.showName();
         me.setMigrateSource();
+        
+        me.view = me.up().up();
+        del_nupp = Ext.create('Ext.util.KeyNav', Ext.getDoc(), {
+            del: function(){
+            	items = me.view.itemcontainer.items;
+                items.each(function(item) {
+                    if (item == me){
+                    	me.up().up().up().removeNode(me);
+                    }
+                });            	
+            }
+        });  
     },
     deselect: function() {
         var me = this;
@@ -293,6 +305,7 @@ Ext.define('Funcman.GraphNode', {
             delete me.dragZone;
             delete me.dropTarget;
             me.setMigrateTarget();
+            del_nupp.destroy();
         }
     },
 
