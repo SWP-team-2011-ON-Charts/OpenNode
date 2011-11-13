@@ -30,7 +30,7 @@ Ext.define('Funcman.GraphRoundLayout', {
             this.graph = this.view.up();
 
         this.zoom = this.graph.getZoom();
-        this.iconSize = this.zoom * this.view.iconSize;
+        this.iconSize = this.zoom * this.view.iconSize / 1.66;
 
         // Get all root elements
         var roots = [];
@@ -110,9 +110,9 @@ Ext.define('Funcman.GraphRoundLayout', {
             chAngle = angle + addAngle;
 
         if (childCount) {
-            radius += 100 + childCount;
+            radius += 120 + childCount;
         }
-        radius *= this.zoom;
+        radius = radius * this.zoom + 50;
 
         var newPos = {
             left: radius * Math.sin(angle) + rootPos.left,

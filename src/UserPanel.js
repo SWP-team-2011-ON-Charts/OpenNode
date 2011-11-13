@@ -59,7 +59,13 @@ Ext.define('Funcman.UserPanel', {
     },
     columns: [
         {text: 'Name',  dataIndex:'name'},
-        {text: 'Rights',  dataIndex:'rights'},
+        {text: 'Admin',  dataIndex:'rights',
+            renderer: function(value) {
+                if (value == 'All')
+                    return 'yes';
+                return 'no';
+            },
+        },
         {header: 'Actions',
             xtype:'actioncolumn', 
             width:70,

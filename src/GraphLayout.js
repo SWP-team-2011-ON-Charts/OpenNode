@@ -30,8 +30,8 @@
 
         var zoom = this.graph.getZoom(),
             iconSize   = zoom * this.view.iconSize,
-            itemWidth   = zoom * this.view.iconSize + 10,
-            itemHeight  = iconSize + 40;
+            itemWidth   = zoom * this.view.iconSize + 30,
+            itemHeight  = iconSize + 70;
 
         //stores the current top and left values for each element (discovered below)
         var oldPositions = {},

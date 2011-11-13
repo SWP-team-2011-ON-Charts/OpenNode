@@ -16,7 +16,7 @@ Ext.define('Funcman.GraphView', {
     isDragging: false,
     isMigrating: false,
     
-    iconSize: 40,
+    iconSize: 32,
     items_remove: [],
     items: [
         {xtype: 'container'},
