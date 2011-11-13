@@ -195,7 +195,7 @@ Ext.define('Funcman.GraphView', {
         }
     },
 
-    drawLines: function() {
+    drawLines: function(user) {
         var me = this,
             max = {x: 0, y: 0, h: 0}
 
@@ -203,7 +203,7 @@ Ext.define('Funcman.GraphView', {
         // Also find graph area
         me.itemcontainer.items.each( function(item) {
             if (!item.parent) {
-                me.drawLine(item, max, me.draw.surface);
+                me.drawLine(item, max, me.draw.surface, user);
             }
         });
 
@@ -211,7 +211,7 @@ Ext.define('Funcman.GraphView', {
         me.draw.setSize(max.x + me.iconSize, max.y + max.h);
     },
 
-    drawLine: function(item, max, surface) {
+    drawLine: function(item, max, surface, user) {
         var me = this,
             ic1 = item.getIconCenter(),
             height = item.getHeight();
@@ -230,12 +230,20 @@ Ext.define('Funcman.GraphView', {
                   'M ' + ic1.x + ' ' + ic1.y + ' ' +
                   'L ' + ic2.x + ' ' + ic2.y + ' z',
                     color;
-
-                if (child.type == "pm") {
-                    color = "#0CC";
-                } else {
+				
+				if (user == 0) {color = "#C00";}
+				else if (user == 1) {color = "#0C0";}
+				else if (user == 2) {color = "#00C";}
+				
+                else {
+					if (child.type == "pm") {
+						color = "#0CC";
+					} else {
                     color = "#C00";
-                }
+					}
+				}
+				
+				
 
                 if (!child.pathSprite) {
                     child.pathSprite = Ext.create('Ext.draw.Sprite', {
@@ -247,7 +255,7 @@ Ext.define('Funcman.GraphView', {
                 }
                 child.pathSprite.setAttributes({path: path, stroke: color}, true);
                 
-                me.drawLine(child, max, surface);
+                me.drawLine(child, max, surface, user);
             });
         }
     }

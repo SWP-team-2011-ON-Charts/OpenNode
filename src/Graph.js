@@ -7,7 +7,7 @@ This file may be used under the terms of the GNU General Public License version 
 
 */
 
-
+var graph_layout;
 
 var store3 = 	Ext.create('Ext.data.Store', {
     storeId:'data_store3',
@@ -76,6 +76,11 @@ var grid_panel = Ext.create('Ext.grid.Panel', {
 	alias: 'grid_panel',
     title: 'Users',
     store: Ext.data.StoreManager.lookup('data_store3'),
+	listeners:{
+        selectionchange: function(selectionModel, selected, options){
+			graph_layout.view.drawLines(selected[0].data.id);
+        }
+    },
     columns: [
           {text: 'Name',  dataIndex:'name'},
           {text: 'Rights',  dataIndex:'rights'},

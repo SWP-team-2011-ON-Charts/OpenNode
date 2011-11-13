@@ -1,7 +1,6 @@
 // Copied largely from ux/DataView/Animated.js
 
-Ext.define('Funcman.GraphLayout', {
-
+ Ext.define('Funcman.GraphLayout', {
     defaults: {
         duration  : 200,
     },
@@ -13,6 +12,7 @@ Ext.define('Funcman.GraphLayout', {
      */
     constructor: function(config) {
         Ext.apply(this, config || {}, this.defaults);
+		graph_layout = this;
     },
 
     // Initializes the plugin
@@ -108,7 +108,7 @@ Ext.define('Funcman.GraphLayout', {
                     node.setXY(newPos.left, newPos.top);
                     node.setIconSize(newPos.iconSize);
                 }
-                this.view.drawLines();
+                this.view.drawLines(null);
 
                 Ext.TaskManager.stop(task);
                 delete task;
@@ -130,7 +130,7 @@ Ext.define('Funcman.GraphLayout', {
                     node.setXY(midLeft, midTop);
                     //node.setIconSize(midSize);
                 }
-                this.view.drawLines();
+                this.view.drawLines(null);
             }
         };
 
