@@ -58,18 +58,19 @@ Ext.define('Funcman.UserPanel', {
         }
     },
     columns: [
-          {text: 'Name',  dataIndex:'name'},
-          {text: 'Rights',  dataIndex:'rights'},
-          {header: 'Actions',
-              xtype:'actioncolumn', 
-              width:70,
-              renderer: function(value, metaData, record) {
-                  this.columns[2].items[0].icon = record.get('icon');
-                  return value;
-              },
-              xtype:'actioncolumn', 
-              width:70,
-              getRights: function(user) {
+        {text: 'Name',  dataIndex:'name'},
+        {text: 'Rights',  dataIndex:'rights'},
+        {header: 'Actions',
+            xtype:'actioncolumn', 
+            width:70,
+            renderer: function(value, metaData, record) {
+              this.columns[2].items[0].icon = record.get('icon');
+              return value;
+            },
+            xtype:'actioncolumn', 
+            width:70,
+
+            getRights: function(user) {
                 var r = '';
                 user.computes().each(function(compute) {
                     r += compute.get('computer_name') + ' {' ;
@@ -85,7 +86,18 @@ Ext.define('Funcman.UserPanel', {
                     r += '}\n' ;
                 });
                 return r;
-              },
+            },
+
+            getComputeData: function() {
+                var computes = [],
+                    items = this.up().up().up().view.itemcontainer.items.items;
+                for (var item in items) {
+                    item = items[item];
+                    computes.push([item.id, item.params.name]);
+                }
+                return computes;
+            },
+
               items: [{
             	  //icon: store2.data.getAt(0)[0].icon,
                   icon: '../resources/images/different_users/user_black.png',
@@ -96,28 +108,38 @@ Ext.define('Funcman.UserPanel', {
                       
                       var rights_window = Ext.create('Ext.window.Window', {
                     		title: 'User Rights',
-                    		height: 250,
-                    		width: 470,                    		
+                    		height: 350,
+                    		width: 300,                    		
                     		layout: 'vbox',
 
                     		items: [{
                     		        xtype     : 'textareafield',
                     		        width: 250,
-                    		        name      : 'computers',
-                    		        fieldLabel: 'computers',
+                    		        height: 120,
+                    		        fieldLabel: 'computes',
                     		        value: this.getRights(selected_user),
                     				readOnly  : true
                     		    }, {
-                    		    	xtype: 'textfield',
-                    		        width: 200,                    		        
-                    		        name      : 'computer',
-                    		        fieldLabel: 'Add computer',
+                    		    	xtype: 'combobox',
+                    		        width: 250,
+                    		        name: 'computer',
+                    		        queryMode: 'local',
+                    		        valueField: 'compute_id',
+                                    displayField: 'compute_name',
+                    		        store: new Ext.data.ArrayStore({
+                                        id: 0,
+                                        fields: [
+                                            'compute_id',
+                                            'compute_name'
+                                        ],
+                                        data: me.getComputeData()
+                                    }),
+                    		        fieldLabel: 'Add compute',
                     		    }, {
                                     xtype: 'splitter'
                                 }, {
                     		    	xtype: 'fieldcontainer',
-                    		        width: 200,                    		        
-                    		        name      : 'computers',
+                    		        width: 200,
                     		        fieldLabel: 'Add rights',
                     		        defaultType: 'checkboxfield',
                     		        
@@ -154,14 +176,19 @@ Ext.define('Funcman.UserPanel', {
                                         }
                                         rights += '}';
                                         
+                                        var cb = rights_window.items.getAt(1),
+                                            compute_id = cb.getValue();
+                                        
                                     	selected_user.computes().add({
-                                            computer_name: rights_window.items.getAt(1).getValue(),
+                                            computer_id: compute_id,
+                                            computer_name: cb.findRecordByValue(compute_id).get('compute_name'),
 											Read: read,
 											Write: write,
 											Execute: execute
                                         });
 
                                     	rights_window.items.getAt(0).setValue(me.getRights(selected_user));
+                                    	rights_window.items.getAt(1).setValue('');
                                     	me.up().up().up().view.layoutPlugin.refresh();
                                     }
                                 }, {
@@ -169,6 +196,7 @@ Ext.define('Funcman.UserPanel', {
                                 }, {
                                     xtype: 'button',
                                     align: 'bottom',
+                                    scale: 'medium',
                                     text: 'OK', handler: function(b) {
                                     	//set_icon('images/different_users/user_'+rights_window.items.getAt(1).getValue()+'.png');
                                     	//grid_panel.columns[2].items[0].icon = get_icon();
