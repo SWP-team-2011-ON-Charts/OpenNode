@@ -179,17 +179,31 @@ Ext.define('Funcman.UserPanel', {
                                         var cb = rights_window.items.getAt(1),
                                             compute_id = cb.getValue();
                                         
-                                    	selected_user.computes().add({
-                                            computer_id: compute_id,
-                                            computer_name: cb.findRecordByValue(compute_id).get('compute_name'),
-											Read: read,
-											Write: write,
-											Execute: execute
-                                        });
-
+										var rights_defined = false;
+										var pos_of_defined_rights = -1;
+										var i = -1;
+										selected_user.computes().each (function(compute) {
+											i++;
+											if(compute.get('computer_id')==compute_id) {
+												rights_defined = true;
+												pos_of_defined_rights=i;
+											}
+										});
+										
+										if (selected_user.computes() && compute_id!='') {
+											if (rights_defined){selected_user.computes().removeAt(pos_of_defined_rights)};
+											
+											selected_user.computes().add({
+												computer_id: compute_id,
+												computer_name: cb.findRecordByValue(compute_id).get('compute_name'),
+												Read: read,
+												Write: write,
+												Execute: execute
+											});
+											
                                     	rights_window.items.getAt(0).setValue(me.getRights(selected_user));
                                     	rights_window.items.getAt(1).setValue('');
-                                    	me.up().up().up().view.layoutPlugin.refresh();
+                                    	me.up().up().up().view.layoutPlugin.refresh();}
                                     }
                                 }, {
                                     xtype: 'splitter'
@@ -232,8 +246,8 @@ Ext.define('Funcman.UserPanel', {
         var user = Ext.create('User', {name: 'opennode', rights: 'All', icon: '../resources/images/different_users/user_black.png'});
         var computes = user.computes();
         computes.add({
-            computer_id: 'dc0pm7',
-            computer_name: 'hostname_7',
+            computer_id: 'dc0pm6',
+            computer_name: 'hostname_6',
             Read: 'true', Write: 'true', Execute: 'true'
         });
 
