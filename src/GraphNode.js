@@ -293,7 +293,18 @@ Ext.define('Funcman.GraphNode', {
                     	me.up().up().up().removeNode(me);
                     }
                 });            	
-            }
+            },
+        	enter: function(){
+        		
+                me.collapsebtn.setType(me.isCollapsed ? 'minus' : 'plus');
+                me.isCollapsed = !me.isCollapsed;
+
+                Ext.each(me.children, function(child) {
+                    me.collapseRecursive(child, !me.isCollapsed);
+                });
+
+                me.view.layoutPlugin.refresh();                
+        	}
         });  
     },
     deselect: function() {

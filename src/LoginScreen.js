@@ -11,31 +11,37 @@ Ext.onReady(loginScreen = function() {
     var body = Ext.getBody();
 
     var regHandler = function() {
-        var server = register.items.getAt(0).getValue();
-        //register.destroy();
-
-        register.setLoading(true);
-
-        // Username:password pair
-        var authString = 'Basic ' + Funcman.OpenNodeGraph.base64encode(
-            register.items.getAt(1).getValue() + ':' +
-            register.items.getAt(2).getValue());
-
-        Ext.Ajax.request({
-            cors: true,
-            url: server + '/computes/',
-            headers: {
-                'Authorization': authString
-            },
-            success: function(response, opts) {
-                register.destroy();
-                login(server, response.responseText, authString);
-            },
-            failure: function(response, opts) {
-                alert('Could not connect to management server '+opts.url);
-                register.setLoading(false);
-            }
-        });
+    	if (Ext.getCmp('server_field').getValue() != ''){
+    		
+	        var server = register.items.getAt(0).getValue();
+	        //register.destroy();
+	
+	        register.setLoading(true);
+	
+	        // Username:password pair
+	        var authString = 'Basic ' + Funcman.OpenNodeGraph.base64encode(
+	            register.items.getAt(1).getValue() + ':' +
+	            register.items.getAt(2).getValue());
+	
+	        Ext.Ajax.request({
+	            cors: true,
+	            url: server + '/computes/',
+	            headers: {
+	                'Authorization': authString
+	            },
+	            success: function(response, opts) {
+	                register.destroy();
+	                login(server, response.responseText, authString);
+	            },
+	            failure: function(response, opts) {
+	                alert('Could not connect to management server '+opts.url);
+	                register.setLoading(false);
+	            }	        
+	        });
+    	}
+    	else{
+    		alert('Fill in atleast servers name');
+    	}
     };
 
     var register = Ext.create('Ext.Window', {
@@ -48,13 +54,15 @@ Ext.onReady(loginScreen = function() {
             fieldLabel: 'server',
             value: 'http://anthrax11.homeip.net:8080',
             width: 350,
-            margin: 3
+            margin: 3,
+            id: 'server_field'
         }, {
             xtype: 'textfield',
             fieldLabel: 'username',
             value: 'opennode',
             width: 200,
-            margin: 3
+            margin: 3,
+            id: 'user_field'
         }, {
             xtype: 'textfield',
             fieldLabel: 'password',
