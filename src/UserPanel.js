@@ -7,7 +7,6 @@ This file may be used under the terms of the GNU General Public License version 
 
 */
 
-var curr_selected_user=null;
 
 Ext.define('Users_computers', {
     extend: 'Ext.data.Model',
@@ -43,9 +42,10 @@ function get_icon(){
 Ext.define('Funcman.UserPanel', {
     extend: 'Ext.grid.Panel',
 	alias: 'UserPanel',
-
+	curr_user: 'null',
     title: 'Users',
     user_icon: '../resources/images/different_users/user_black.png',
+	
 
     store: Ext.create('Ext.data.Store', {
         storeId:'data_store3',
@@ -53,9 +53,9 @@ Ext.define('Funcman.UserPanel', {
     }),
 	listeners:{
         selectionchange: function(selectionModel, selected, options){
-			curr_selected_user=selected[0].data.id;
-			alert(selected[0].User_computerStore.data.items[0].data.name)
-            this.up().view.layoutPlugin.view.drawLines(curr_selected_user);
+			this.curr_user = selected[0].data.id;
+			
+            this.up().view.layoutPlugin.view.drawLines();
         }
     },
     columns: [

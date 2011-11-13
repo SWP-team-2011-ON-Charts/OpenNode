@@ -107,7 +107,7 @@
                     node.setXY(newPos.left, newPos.top);
                     node.setIconSize(newPos.iconSize);
                 }
-                this.view.drawLines(curr_selected_user);
+                this.view.drawLines();
 
                 Ext.TaskManager.stop(task);
                 delete task;
@@ -129,7 +129,7 @@
                     node.setXY(midLeft, midTop);
                     //node.setIconSize(midSize);
                 }
-                this.view.drawLines(curr_selected_user);
+                this.view.drawLines();
             }
         };
 

@@ -195,9 +195,11 @@ Ext.define('Funcman.GraphView', {
         }
     },
 
-    drawLines: function(user) {
+    drawLines: function() {
         var me = this,
-            max = {x: 0, y: 0, h: 0}
+            max = {x: 0, y: 0, h: 0},
+			user = this.up().userpanel.curr_user;
+			
 
         // Connect nodes with their child nodes starting from the root elements
         // Also find graph area
