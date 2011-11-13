@@ -209,7 +209,7 @@ var login = function (server, serverResponse, authString) {
                     user_computers.add({
                         name: register.items.getAt(2).getValue()
                     });
-                    store3.add(user);
+                    graph.userpanel.store.add(user);
                     
                     register.destroy();
                }
