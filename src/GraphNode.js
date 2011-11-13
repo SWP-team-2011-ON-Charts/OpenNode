@@ -285,14 +285,9 @@ Ext.define('Funcman.GraphNode', {
         me.setMigrateSource();
         
         me.view = me.up().up();
-        del_nupp = Ext.create('Ext.util.KeyNav', Ext.getDoc(), {
+        me.keynav = Ext.create('Ext.util.KeyNav', Ext.getDoc(), {
             del: function(){
-            	items = me.view.itemcontainer.items;
-                items.each(function(item) {
-                    if (item == me){
-                    	me.up().up().up().removeNode(me);
-                    }
-                });            	
+                me.up().up().up().removeNode(me);
             },
         	enter: function(){
         		
@@ -304,6 +299,46 @@ Ext.define('Funcman.GraphNode', {
                 });
 
                 me.view.layoutPlugin.refresh();                
+        	},
+        	up: function(){
+                if (me.parent) {
+                    me.up().up().up().setSelectedNode(me.parent);
+                }
+        	},
+        	down: function(){
+                if (me.children.length != 0) {
+                    me.up().up().up().setSelectedNode(me.children[parseInt(me.children.length / 2)]);
+                }
+        	},
+        	left: function(){
+                if (!me.parent || me.parent.children.length == 1) {
+                    return;
+                }
+                var i = me.parent.children.indexOf(me),
+                    graph = me.up().up().up();
+                if (i == 0) {
+                    graph.setSelectedNode(me.parent.children[me.parent.children.length - 1]);
+                } else {
+                    graph.setSelectedNode(me.parent.children[i-1]);
+                }
+        	},
+        	right: function(){
+                if (!me.parent || me.parent.children.length == 1) {
+                    return;
+                }
+                var i = me.parent.children.indexOf(me),
+                    graph = me.up().up().up();
+                if (i == me.parent.children.length - 1) {
+                    graph.setSelectedNode(me.parent.children[0]);
+                } else {
+                    graph.setSelectedNode(me.parent.children[i+1]);
+                }
+        	},
+        	pageUp: function() {
+                var root = me.getRoot();
+                if (root !== me) {
+                    me.up().up().up().setSelectedNode(root);
+                }
         	}
         });  
     },
@@ -316,7 +351,7 @@ Ext.define('Funcman.GraphNode', {
             delete me.dragZone;
             delete me.dropTarget;
             me.setMigrateTarget();
-            del_nupp.destroy();
+            me.keynav.destroy();
         }
     },
 
