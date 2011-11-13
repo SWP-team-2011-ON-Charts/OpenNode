@@ -9,36 +9,29 @@ This file may be used under the terms of the GNU General Public License version 
 
 var curr_selected_user=null;
 
-Ext.define('Users_computers', {
+Ext.define('Funcman.ComputeRights', {
+    alias: 'ComputeRights',
     extend: 'Ext.data.Model',
     fields: [
-        {name: 'id', type: 'int'},
-        {name: 'coumputer_name',      type: 'string'},
-        {name: 'Read',      type: 'boolean', value: false},
-        {name: 'Write',      type: 'boolean', value: false},
-        {name: 'Execute',      type: 'boolean', value: false}
-    ]
+        {name: 'computer_id', type: 'int'},
+        {name: 'computer_name', type: 'string'},
+        {name: 'Read', type: 'string'},
+        {name: 'Write', type: 'string'},
+        {name: 'Execute', type: 'string'}
+    ],
+    belongsTo: 'Funcman.User'
 });
 
-
-Ext.define('User', {
+Ext.define('Funcman.User', {
+    alias: 'User',
     extend: 'Ext.data.Model',
     fields: [
         {name: 'id', type: 'int'},    
         {name: 'name', type: 'string'},
         {name: 'rights', type: 'string'}
     ],
-    hasMany: {model: 'Users_computers', name: 'User_computer'},
+    hasMany: {model: 'Funcman.ComputeRights', name: 'computes'},
 });
-
-function set_icon(x){
-	user_icon = x;
-}
-
-function get_icon(){
-	return user_icon;
-}
-
 
 Ext.define('Funcman.UserPanel', {
     extend: 'Ext.grid.Panel',
@@ -48,13 +41,20 @@ Ext.define('Funcman.UserPanel', {
     user_icon: '../resources/images/different_users/user_black.png',
 
     store: Ext.create('Ext.data.Store', {
-        storeId:'data_store3',
-        fields:['id', 'name', 'rights-status'],
+        model: 'User',
+        storeId:'users',
+        proxy: {
+            type: 'memory',
+            reader: {
+                type: 'json',
+                root: 'users'
+            }
+        }
     }),
 	listeners:{
         selectionchange: function(selectionModel, selected, options){
 			curr_selected_user=selected[0].data.id;
-			alert(selected[0].User_computerStore.data.items[0].data.name)
+			alert(selected[0].computes().data.items[0].data.name)
             this.up().view.layoutPlugin.view.drawLines(curr_selected_user);
         }
     },
@@ -199,14 +199,14 @@ Ext.define('Funcman.UserPanel', {
         var me = this;
         me.callParent();
 
-        var user = Ext.ModelManager.create({name: 'Admin', rights: 'All'}, 'User');
-        var user_computers = user.User_computer();
-        user_computers.add({
+        var user = Ext.create('User', {name: 'Admin', rights: 'All'});
+        var computes = user.computes();
+        computes.add({
             name: 'hostname_7 { r w e }',
             items: [{Read: 'true', Write: 'true', Execute: 'true'}],
         });
 
-        user_computers.add({
+        computes.add({
             name: 'hostname_8 { r w e }'
         });
 
