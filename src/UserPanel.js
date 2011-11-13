@@ -64,8 +64,8 @@ Ext.define('Funcman.UserPanel', {
           {header: 'Actions',
               xtype:'actioncolumn', 
               width:70,
-              renderer: function(value) {
-                  this.columns[2].items[0].icon = '../resources/images/different_users/user_cyan.png';
+              renderer: function(value, metaData, record) {
+                  this.columns[2].items[0].icon = record.get('icon');
                   return value;
               },
               xtype:'actioncolumn', 
@@ -152,7 +152,7 @@ Ext.define('Funcman.UserPanel', {
                                         }
                                         rights += '}';
                                         
-                                    	selected_user.User_computer().add({
+                                    	selected_user.computes().add({
                                             
                                             name: rights_window.items.getAt(2).getValue()+rights,
 											Read: read,
@@ -163,7 +163,7 @@ Ext.define('Funcman.UserPanel', {
                                     	
                                     	appending_comp = ''
                                     	
-                                  	  selected_user.User_computer().each(function(child_el){
+                                  	  selected_user.computes().each(function(child_el){
                                 		  appending_comp += child_el.get('name') + '\n' 
                                 	  });
 
