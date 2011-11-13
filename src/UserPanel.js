@@ -27,7 +27,8 @@ Ext.define('Funcman.User', {
     fields: [
         {name: 'id', type: 'int'},    
         {name: 'name', type: 'string'},
-        {name: 'rights', type: 'string'}
+        {name: 'rights', type: 'string'},
+        {name: 'icon', type: 'string'}
     ],
     hasMany: {model: 'Funcman.ComputeRights', name: 'computes'},
 });
@@ -37,8 +38,6 @@ Ext.define('Funcman.UserPanel', {
 	alias: 'UserPanel',
 	curr_user: 'null',
     title: 'Users',
-    user_icon: '../resources/images/different_users/user_black.png',
-	
 
     store: Ext.create('Ext.data.Store', {
         model: 'User',
@@ -62,7 +61,13 @@ Ext.define('Funcman.UserPanel', {
     columns: [
           {text: 'Name',  dataIndex:'name'},
           {text: 'Rights',  dataIndex:'rights'},
-          {text: 'mid',
+          {header: 'Actions',
+              xtype:'actioncolumn', 
+              width:70,
+              renderer: function(value) {
+                  this.columns[2].items[0].icon = '../resources/images/different_users/user_cyan.png';
+                  return value;
+              },
               xtype:'actioncolumn', 
               width:70,
               items: [{
@@ -72,10 +77,10 @@ Ext.define('Funcman.UserPanel', {
                 	 
                       var rec = grid.getStore().getAt(rowIndex);
                       var appending_comp = '';
-                      var selected_user = grid.store.findRecord('id', rec.get('id'));                      
+                      var selected_user = grid.store.findRecord('id', rec.get('id'));
                       var me = this;
                       
-                    	  selected_user.User_computer().each(function(child_el){
+                    	  selected_user.computes().each(function(child_el){
                     		  appending_comp += child_el.get('name') + '\n' ;
 
                     		  
@@ -200,7 +205,7 @@ Ext.define('Funcman.UserPanel', {
         var me = this;
         me.callParent();
 
-        var user = Ext.create('User', {name: 'Admin', rights: 'All'});
+        var user = Ext.create('User', {name: 'Admin', rights: 'All', icon: '../resources/images/different_users/user_black.png'});
         var computes = user.computes();
         computes.add({
             name: 'hostname_7 { r w e }',

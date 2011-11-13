@@ -204,9 +204,13 @@ var login = function (server, serverResponse, authString) {
                     }
 
                 
-                    var user = Ext.ModelManager.create({id : user_id, name: register.items.getAt(0).getValue(), rights: rights}, 'User');
-                    var user_computers = user.User_computer();
-                    user_computers.add({
+                    var user = Ext.create('User', {id: user_id,
+                        name: register.items.getAt(0).getValue(),
+                        rights: rights,
+                        icon: '../resources/images/different_users/user_black.png'
+                    });
+                    var computes = user.computes();
+                    computes.add({
                         name: register.items.getAt(2).getValue()
                     });
                     graph.userpanel.store.add(user);
