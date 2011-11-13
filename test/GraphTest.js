@@ -1,32 +1,6 @@
-jasmine.Matchers.prototype.toThrow = function(expected) {
-  var result = false;
-  var exception;
-  if (typeof this.actual != 'function') {
-    throw new Error('Actual is not a function');
-  }
-  try {
-    this.actual();
-  } catch (e) {
-    exception = e;
-  }
-  if (exception) {
-      result = (expected === jasmine.undefined || this.env.equals_(exception.message || exception, expected.message || expected) || this.env.equals_(exception.name, expected));
-  }
 
-  var not = this.isNot ? "not " : "";
-
-  this.message = function() {
-    if (exception && (expected === jasmine.undefined || !this.env.equals_(exception.message || exception, expected.message || expected))) {
-      return ["Expected function " + not + "to throw", expected ? expected.name || expected.message || expected : " an exception", ", but it threw", exception.name || exception.message || exception].join(' ');
-    } else {
-      return "Expected function to throw an exception.";
-    }
-  };
-
-  return result;
-};
-
-var node, node2, graph;
+var node, node2, graph,
+    body = Ext.getBody();
 var id = '0',
     name = 'OMS',
     image = 'images/network-server.png';
@@ -41,15 +15,18 @@ describe('Initialization', function() {
             params: { id: '1', name : 'node 2' }
         });
     }).not.toThrow ("Ext.Error");
+    expect(node).toBeDefined();
+    expect(node2).toBeDefined();
   });
   it('can create OpenNodeGraph', function() {
     expect (function () {
         graph = Ext.create('OpenNodeGraph', {
-            renderTo: Ext.getBody(),
+            renderTo: body,
             width: 900,
             height: 600,
         });
     }).not.toThrow ("Ext.Error");
+    expect(graph).toBeDefined();
   });
 });
 
