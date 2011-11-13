@@ -236,11 +236,15 @@ Ext.define('Funcman.GraphView', {
 				if (!user) {
                     color = "#0CC";
                 } else {
-                    var compute = user.computes().findRecord('computer_name', child.params.name);
-                    if (compute && compute.get('Write') == 'true') {
-                        color = "#C00";
-                    } else if (compute && compute.get('Read') == 'true') {
-                        color = "#0C0";
+                    var compute = user.computes().findRecord('computer_id', child.id, 0, false, false, true);
+                    if (compute) {
+                        if (compute.get('Write') == 'true') {
+                            color = "#C00";
+                        } else if (compute.get('Read') == 'true') {
+                            color = "#0C0";
+                        } else {
+                            color = "#0CC";
+                        }
                     } else {
                         color = "#0CC";
                     }

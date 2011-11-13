@@ -12,7 +12,7 @@ Ext.define('Funcman.ComputeRights', {
     alias: 'ComputeRights',
     extend: 'Ext.data.Model',
     fields: [
-        {name: 'computer_id', type: 'int'},
+        {name: 'computer_id', type: 'string'},
         {name: 'computer_name', type: 'string'},
         {name: 'Read', type: 'string'},
         {name: 'Write', type: 'string'},
