@@ -126,6 +126,7 @@ Ext.define('Funcman.UserPanel', {
                     		        queryMode: 'local',
                     		        valueField: 'compute_id',
                                     displayField: 'compute_name',
+                                    value: 'Select one...',
                     		        store: new Ext.data.ArrayStore({
                                         id: 0,
                                         fields: [
@@ -193,17 +194,23 @@ Ext.define('Funcman.UserPanel', {
 										if (selected_user.computes() && compute_id!='') {
 											if (rights_defined){selected_user.computes().removeAt(pos_of_defined_rights)};
 											
-											selected_user.computes().add({
-												computer_id: compute_id,
-												computer_name: cb.findRecordByValue(compute_id).get('compute_name'),
-												Read: read,
-												Write: write,
-												Execute: execute
-											});
-											
-                                    	rights_window.items.getAt(0).setValue(me.getRights(selected_user));
-                                    	rights_window.items.getAt(1).setValue('');
-                                    	me.up().up().up().view.layoutPlugin.refresh();}
+											if (cb.findRecordByValue(compute_id)){
+												selected_user.computes().add({
+													computer_id: compute_id,
+													computer_name: cb.findRecordByValue(compute_id).get('compute_name'),
+													Read: read,
+													Write: write,
+													Execute: execute
+												});
+												
+	                                    	rights_window.items.getAt(0).setValue(me.getRights(selected_user));
+	                                    	rights_window.items.getAt(1).setValue('');
+	                                    	me.up().up().up().view.layoutPlugin.refresh();}
+											}
+										else{
+											alert('No item has been selected');
+										}
+
                                     }
                                 }, {
                                     xtype: 'splitter'
@@ -212,6 +219,7 @@ Ext.define('Funcman.UserPanel', {
                                     align: 'bottom',
                                     scale: 'medium',
                                     text: 'OK', handler: function(b) {
+                                    	
                                     	//set_icon('images/different_users/user_'+rights_window.items.getAt(1).getValue()+'.png');
                                     	//grid_panel.columns[2].items[0].icon = get_icon();
                                     	rights_window.destroy();

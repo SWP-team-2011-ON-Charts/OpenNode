@@ -141,14 +141,18 @@ var login = function (server, serverResponse, authString) {
                     	rights = 'None';
                     }
 
-                    var user = Ext.create('User', {id: user_id,
-                        name: Ext.getCmp('user_username').getValue(),
-                        rights: rights,
-                        icon: '../resources/images/different_users/user_black.png'
-                    });
-                    graph.userpanel.store.add(user);
-                    
-                    register.destroy();
+                    if (Ext.getCmp('user_username').getValue() != ''){
+                        var user = Ext.create('User', {id: user_id,
+                            name: Ext.getCmp('user_username').getValue(),
+                            rights: rights,
+                            icon: '../resources/images/different_users/user_black.png'
+                        });
+                        graph.userpanel.store.add(user);
+                        register.destroy();
+                    }
+                    else{
+                    	alert('Please enter Username');
+                    }
                }
             }]
         });
