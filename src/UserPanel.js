@@ -7,24 +7,17 @@ This file may be used under the terms of the GNU General Public License version 
 
 */
 
-var selected_user=null;
-
-Ext.define('Computers_rights', {
-    extend: 'Ext.data.Model',
-    fields: [
-        {name: 'Read',      type: 'string'},
-        {name: 'Write',      type: 'string'},
-        {name: 'Execute',      type: 'string'}
-    ]
-});
+var curr_selected_user=null;
 
 Ext.define('Users_computers', {
     extend: 'Ext.data.Model',
     fields: [
         {name: 'id', type: 'int'},
-        {name: 'coumputer_name',      type: 'string'}
-    ],
-	hasMany: {model: 'Computers_rights', name: 'Computer_right'},
+        {name: 'coumputer_name',      type: 'string'},
+        {name: 'Read',      type: 'boolean', value: false},
+        {name: 'Write',      type: 'boolean', value: false},
+        {name: 'Execute',      type: 'boolean', value: false}
+    ]
 });
 
 
@@ -53,7 +46,6 @@ Ext.define('Funcman.UserPanel', {
 
     title: 'Users',
     user_icon: '../resources/images/different_users/user_black.png',
-	current_user: null,
 
     store: Ext.create('Ext.data.Store', {
         storeId:'data_store3',
@@ -61,8 +53,9 @@ Ext.define('Funcman.UserPanel', {
     }),
 	listeners:{
         selectionchange: function(selectionModel, selected, options){
-			selected_user=selected[0].data.id;
-            this.up().view.layoutPlugin.view.drawLines(selected_user);
+			curr_selected_user=selected[0].data.id;
+			alert(selected[0].User_computerStore.data.items[0].data.name)
+            this.up().view.layoutPlugin.view.drawLines(curr_selected_user);
         }
     },
     columns: [
@@ -133,22 +126,32 @@ Ext.define('Funcman.UserPanel', {
                                     	
                                     	var checkbox1 = Ext.getCmp('checkbox1'),
 	                                        checkbox2 = Ext.getCmp('checkbox2'),
-	                                        checkbox3 = Ext.getCmp('checkbox3');
+	                                        checkbox3 = Ext.getCmp('checkbox3'),
+											read = false,
+											write = false,
+											execute=false;
+											
                                         var rights = ' {';
                                         if (checkbox1.getValue()){
-                                        	rights += ' r '
+                                        	rights += ' r ';
+											read = true;
                                         }
                                         if (checkbox2.getValue()){
-                                        	rights += ' w '
+                                        	rights += ' w ';
+											write = true;
                                         }
                                         if (checkbox3.getValue()){
                                         	rights += ' e '
+											execute = true;
                                         }
                                         rights += '}';
                                         
                                     	selected_user.User_computer().add({
                                             
-                                            name: rights_window.items.getAt(2).getValue()+rights
+                                            name: rights_window.items.getAt(2).getValue()+rights,
+											Read: read,
+											Write: write,
+											Execute: execute
                                         });
 
                                     	

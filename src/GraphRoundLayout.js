@@ -154,7 +154,7 @@ Ext.define('Funcman.GraphRoundLayout', {
                 node.setXY(newPos.left, newPos.top);
                 node.setIconSize(newPos.iconSize);
             }
-            this.view.drawLines(selected_user);
+            this.view.drawLines(curr_selected_user);
 
             Ext.TaskManager.stop(this.task);
             delete this.task;
@@ -176,7 +176,7 @@ Ext.define('Funcman.GraphRoundLayout', {
                     midSize = oldSize +  fraction * (newPos.iconSize - oldSize);
                 node.setIconSize(midSize);
             }
-            this.view.drawLines(selected_user);
+            this.view.drawLines(curr_selected_user);
         }
     },
 
