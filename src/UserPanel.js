@@ -95,17 +95,12 @@ Ext.define('Funcman.UserPanel', {
                     			},
 
                     		items: [{
-                        			xtype: 'fieldcontainer',
-                        			fieldLabel: 'Show this user',
-                        			defaultType: 'checkboxfield',
-                        			items: [{id  : 'checkbox4', image: '../resources/images/add.png'} ],
-                    			},   {
                     		        xtype     : 'textareafield',
                     		        width: 250,
                     		        name      : 'computers',
                     		        fieldLabel: 'computers',
                     		        value: appending_comp,
-                    				
+                    				readOnly  : true
                     		    },   {
                     		    	xtype: 'textfield',
                     		        width: 200,                    		        

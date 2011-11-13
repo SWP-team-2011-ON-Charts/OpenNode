@@ -234,15 +234,13 @@ Ext.define('Funcman.GraphView', {
                     color;
 				
 				if (!user) {
-                    if (child.type == "pm") {
-						color = "#0CC";
-					} else {
-                        color = "#C00";
-					}
+                    color = "#0CC";
                 } else {
                     var compute = user.computes().findRecord('computer_name', child.params.name);
-                    if (compute && compute.get('Read') == 'true') {
+                    if (compute && compute.get('Write') == 'true') {
                         color = "#C00";
+                    } else if (compute && compute.get('Read') == 'true') {
+                        color = "#0C0";
                     } else {
                         color = "#0CC";
                     }
