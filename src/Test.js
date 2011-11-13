@@ -10,9 +10,10 @@ This file may be used under the terms of the GNU General Public License version 
 
 var login = function (server, serverResponse, authString) {
 
-    var body = Ext.getBody();
+    var body = Ext.getBody(),
+        graphWidth = 850;
 
-    var button = Ext.widget('button', {
+    var registerButton = Ext.widget('button', {
         text : 'Register datacenter',
         scale: 'medium',
         icon: '../resources/images/list-add.png'
@@ -24,6 +25,23 @@ var login = function (server, serverResponse, authString) {
         icon: '../resources/images/view-refresh.png'
     });
 
+    var userButton = Ext.widget('button', {
+        text : 'Add User',
+        scale: 'medium',
+        icon: '../resources/images/list-add.png',
+        style: { margin: '0px 10px 0px '+(graphWidth-258)+'px' }
+    });
+
+    var helpButton = Ext.widget('button', {
+        text : 'Help',
+        scale: 'medium',
+        icon: '../resources/images/help.png',
+        style: { margin: '0px 10px 0px 36px' },
+        handler: function() {
+            window.open('../doc/Help.html');
+        }
+    });
+
     var logoutButton = Ext.widget('button', {
         text : 'Log out',
         scale: 'medium',
@@ -31,32 +49,23 @@ var login = function (server, serverResponse, authString) {
     });
 
     var buttonContainer = Ext.create('Ext.container.Container', {
-        items: [button, switchLayout, logoutButton],
+        items: [registerButton, switchLayout, userButton, helpButton, logoutButton],
         layout: 'hbox',
         defaults: {
-            style: { margin: '0px 10px 0px 0px' }
+            style: { margin: '0px 10px 5px 0px' }
         },
         renderTo: body
     });
 
-    var user_button = Ext.widget('button', {
-        text : 'Add User',
-        scale: 'medium',
-        icon: '../resources/images/list-add.png',
-        renderTo: body,
-        cls: 'add_user_button',
-    });
-
     var graph = Ext.create('OpenNodeGraph', {
         renderTo: body,
+        width: graphWidth,
+        height: 600
     });
 
     var user_id = 0;
-    
-    graph.setHeight(600);
-    graph.setWidth(900);
 
-    button.setHandler(function() {
+    registerButton.setHandler(function() {
         var me = this;
         var register = Ext.create('Ext.Window', {
             title: 'Register datacenter',
@@ -103,7 +112,7 @@ var login = function (server, serverResponse, authString) {
         register.show();
     }, graph);
     
-    user_button.setHandler(function() {
+    userButton.setHandler(function() {
         var me = this;
         var register = Ext.create('Ext.Window', {
             title: 'Add User',
@@ -227,7 +236,6 @@ var login = function (server, serverResponse, authString) {
     logoutButton.setHandler(function() {
         graph.destroy();
         buttonContainer.destroy();
-        user_button.destroy();
         loginScreen();
     });
 

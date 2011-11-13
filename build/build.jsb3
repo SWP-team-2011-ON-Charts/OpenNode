@@ -8,6 +8,10 @@
             "files": [
                 {
                     "path": "../src/",
+                    "name": "UserPanel.js"
+                },
+                {
+                    "path": "../src/",
                     "name": "GraphLayout.js"
                 },
                 {

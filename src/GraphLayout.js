@@ -12,7 +12,6 @@
      */
     constructor: function(config) {
         Ext.apply(this, config || {}, this.defaults);
-		graph_layout = this;
     },
 
     // Initializes the plugin
