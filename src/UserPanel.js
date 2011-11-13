@@ -36,7 +36,7 @@ Ext.define('Funcman.User', {
 Ext.define('Funcman.UserPanel', {
     extend: 'Ext.grid.Panel',
 	alias: 'UserPanel',
-	curr_user: 'null',
+	curr_user: null,
     title: 'Users',
 
     store: Ext.create('Ext.data.Store', {
@@ -52,10 +52,9 @@ Ext.define('Funcman.UserPanel', {
     }),
 	listeners:{
         selectionchange: function(selectionModel, selected, options){
-			this.curr_user = selected[0].data.id;
+			this.curr_user = (selected.length == 0) ? null : selected[0];
 			
             this.up().view.layoutPlugin.view.drawLines();
-
         }
     },
     columns: [
@@ -205,15 +204,18 @@ Ext.define('Funcman.UserPanel', {
         var me = this;
         me.callParent();
 
-        var user = Ext.create('User', {name: 'Admin', rights: 'All', icon: '../resources/images/different_users/user_black.png'});
+        var user = Ext.create('User', {name: 'opennode', rights: 'All', icon: '../resources/images/different_users/user_black.png'});
         var computes = user.computes();
         computes.add({
-            name: 'hostname_7 { r w e }',
-            items: [{Read: 'true', Write: 'true', Execute: 'true'}],
+            computer_id: 'dc0pm7',
+            computer_name: 'hostname_7',
+            Read: 'true', Write: 'true', Execute: 'true'
         });
 
         computes.add({
-            name: 'hostname_8 { r w e }'
+            computer_id: 'dc0pm9',
+            computer_name: 'hostname_8',
+            Read: 'true', Write: 'true', Execute: 'true'
         });
 
         me.store.add(user);

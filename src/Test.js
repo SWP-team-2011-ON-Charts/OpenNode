@@ -211,7 +211,7 @@ var login = function (server, serverResponse, authString) {
                     });
                     var computes = user.computes();
                     computes.add({
-                        name: register.items.getAt(2).getValue()
+                        computer_name: register.items.getAt(2).getValue()
                     });
                     graph.userpanel.store.add(user);
                     

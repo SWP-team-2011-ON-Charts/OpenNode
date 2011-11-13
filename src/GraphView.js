@@ -233,19 +233,22 @@ Ext.define('Funcman.GraphView', {
                   'L ' + ic2.x + ' ' + ic2.y + ' z',
                     color;
 				
-				if (user == 0) {color = "#C00";}
-				else if (user == 1) {color = "#0C0";}
-				else if (user == 2) {color = "#00C";}
-				
-                else {
-					if (child.type == "pm") {
+				if (!user) {
+                    if (child.type == "pm") {
 						color = "#0CC";
 					} else {
-                    color = "#C00";
+                        color = "#C00";
 					}
-				}
-				
-				
+                } else {
+                    var compute = user.computes().findRecord('computer_name', child.params.name);
+                    if (compute) {
+                        if (compute.get('Read') == 'true') {
+                            color = "#C00";
+                        } else {
+                            color = "#0CC";
+                        }
+                    }
+                }
 
                 if (!child.pathSprite) {
                     child.pathSprite = Ext.create('Ext.draw.Sprite', {
