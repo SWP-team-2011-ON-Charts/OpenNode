@@ -1,3 +1,14 @@
+/*
+
+Copyright (c) 2011 OpenNode Interactive Charts team
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as published by the Free Software Foundation and appearing in the file LICENSE included in the packaging of this file.  Please review the following information to ensure the GNU General Public License version 3.0 requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+*/
+
+var selected_user=null;
+
 Ext.define('Computers_rights', {
     extend: 'Ext.data.Model',
     fields: [
@@ -35,12 +46,14 @@ function get_icon(){
 	return user_icon;
 }
 
+
 Ext.define('Funcman.UserPanel', {
     extend: 'Ext.grid.Panel',
 	alias: 'UserPanel',
 
     title: 'Users',
     user_icon: '../resources/images/different_users/user_black.png',
+	current_user: null,
 
     store: Ext.create('Ext.data.Store', {
         storeId:'data_store3',
@@ -48,7 +61,8 @@ Ext.define('Funcman.UserPanel', {
     }),
 	listeners:{
         selectionchange: function(selectionModel, selected, options){
-            this.up().view.layoutPlugin.view.drawLines(selected[0].data.id);
+			selected_user=selected[0].data.id;
+            this.up().view.layoutPlugin.view.drawLines(selected_user);
         }
     },
     columns: [
