@@ -69,44 +69,52 @@ Ext.define('Funcman.UserPanel', {
               },
               xtype:'actioncolumn', 
               width:70,
+              getRights: function(user) {
+                var r = '';
+                user.computes().each(function(compute) {
+                    r += compute.get('computer_name') + ' {' ;
+                    if (compute.get('Read') == 'true') {
+                        r += 'r';
+                    }
+                    if (compute.get('Write') == 'true') {
+                        r += 'w';
+                    }
+                    if (compute.get('Execute') == 'true') {
+                        r += 'x';
+                    }
+                    r += '}\n' ;
+                });
+                return r;
+              },
               items: [{
             	  //icon: store2.data.getAt(0)[0].icon,
                   icon: '../resources/images/different_users/user_black.png',
                   handler: function(grid, rowIndex, colIndex) { 
-                	 
-                      var rec = grid.getStore().getAt(rowIndex);
-                      var appending_comp = '';
-                      var selected_user = grid.store.findRecord('id', rec.get('id'));
-                      var me = this;
-                      
-                    	  selected_user.computes().each(function(child_el){
-                    		  appending_comp += child_el.get('name') + '\n' ;
-
-                    		  
-                    	  });                      
+                      var me = this,
+                        rec = grid.getStore().getAt(rowIndex),
+                        selected_user = grid.store.findRecord('id', rec.get('id'));
                       
                       var rights_window = Ext.create('Ext.window.Window', {
                     		title: 'User Rights',
                     		height: 250,
                     		width: 470,                    		
-                    		layout: {
-                    			type: 'table',
-                    			columns: 2,
-                    			},
+                    		layout: 'vbox',
 
                     		items: [{
                     		        xtype     : 'textareafield',
                     		        width: 250,
                     		        name      : 'computers',
                     		        fieldLabel: 'computers',
-                    		        value: appending_comp,
+                    		        value: this.getRights(selected_user),
                     				readOnly  : true
-                    		    },   {
+                    		    }, {
                     		    	xtype: 'textfield',
                     		        width: 200,                    		        
-                    		        name      : 'computers',
-                    		        fieldLabel: 'Add computers',
-                    		    }, {},  {
+                    		        name      : 'computer',
+                    		        fieldLabel: 'Add computer',
+                    		    }, {
+                                    xtype: 'splitter'
+                                }, {
                     		    	xtype: 'fieldcontainer',
                     		        width: 200,                    		        
                     		        name      : 'computers',
@@ -117,7 +125,7 @@ Ext.define('Funcman.UserPanel', {
                     		                {id  : 'checkbox2', boxLabel: 'Write'},
                     		                {id  : 'checkbox3', boxLabel: 'Execute'}]
                         			
-                    		    },{
+                    		    }, {
                                     xtype: 'button',
                                     text: 'Add', handler: function(b) {
                                     	//set_icon('images/different_users/user_'+rights_window.items.getAt(1).getValue()+'.png');
@@ -147,24 +155,18 @@ Ext.define('Funcman.UserPanel', {
                                         rights += '}';
                                         
                                     	selected_user.computes().add({
-                                            
-                                            name: rights_window.items.getAt(2).getValue()+rights,
+                                            computer_name: rights_window.items.getAt(1).getValue(),
 											Read: read,
 											Write: write,
 											Execute: execute
                                         });
 
-                                    	
-                                    	appending_comp = ''
-                                    	
-                                  	  selected_user.computes().each(function(child_el){
-                                		  appending_comp += child_el.get('name') + '\n' 
-                                	  });
-
-                                    	rights_window.items.getAt(1).setValue(appending_comp);
-                                    	
+                                    	rights_window.items.getAt(0).setValue(me.getRights(selected_user));
+                                    	me.up().up().up().view.layoutPlugin.refresh();
                                     }
-                                },{
+                                }, {
+                                    xtype: 'splitter'
+                                }, {
                                     xtype: 'button',
                                     align: 'bottom',
                                     text: 'OK', handler: function(b) {
@@ -208,7 +210,7 @@ Ext.define('Funcman.UserPanel', {
         });
 
         computes.add({
-            computer_id: 'dc0pm9',
+            computer_id: 'dc0pm8',
             computer_name: 'hostname_8',
             Read: 'true', Write: 'true', Execute: 'true'
         });

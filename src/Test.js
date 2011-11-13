@@ -134,6 +134,7 @@ var login = function (server, serverResponse, authString) {
                 handler: function() {
                     user_id++;
 
+                    var rights;
                     if (Ext.getCmp('user_isAdmin').getValue()){
                     	rights = 'All';
                     } else {
