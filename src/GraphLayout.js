@@ -138,6 +138,16 @@
             delete task;
         }
 
+        var hasNew = false;
+        for (id in newPositions) {
+            hasNew = true;
+            break;
+        }
+        if (!hasNew) {
+            this.view.drawLines();
+            return;
+        }
+
         var task = {
             run     : doAnimate,
             interval: 20,

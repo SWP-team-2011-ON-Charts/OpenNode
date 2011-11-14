@@ -63,6 +63,36 @@ var login = function (server, serverResponse, authString) {
         height: 600
     });
 
+    var tt1 = Ext.create('Ext.tip.ToolTip', {
+        target: registerButton.el,
+        html: 'Click to register another datacenter. It will appear next to the existing ones.',
+        renderTo: body
+    });
+
+    var tt2 = Ext.create('Ext.tip.ToolTip', {
+        target: switchLayout.el,
+        html: 'Click to switch between tree view and radial view.',
+        renderTo: body
+    });
+
+    var tt3 = Ext.create('Ext.tip.ToolTip', {
+        target: userButton.el,
+        html: 'Click to add another user.',
+        renderTo: body
+    });
+
+    var tt4 = Ext.create('Ext.tip.ToolTip', {
+        target: helpButton.el,
+        html: 'Click to access help document.',
+        renderTo: body
+    });
+
+    var tt5 = Ext.create('Ext.tip.ToolTip', {
+        target: logoutButton.el,
+        html: 'Click to go back to the login screen.',
+        renderTo: body
+    });
+
     registerButton.setHandler(function() {
         var me = this;
         var register = Ext.create('Ext.Window', {
@@ -145,7 +175,9 @@ var login = function (server, serverResponse, authString) {
                         var user = Ext.create('User', {id: user_id,
                             name: Ext.getCmp('user_username').getValue(),
                             rights: rights,
-                            icon: '../resources/images/different_users/user_black.png'
+                            icon: (rights == 'All') ?
+                                '../resources/images/different_users/user_black.png' :
+                                '../resources/images/different_users/user_red.png'
                         });
                         graph.userpanel.store.add(user);
                         register.destroy();
@@ -177,6 +209,11 @@ var login = function (server, serverResponse, authString) {
     logoutButton.setHandler(function() {
         graph.destroy();
         buttonContainer.destroy();
+        tt1.destroy();
+        tt2.destroy();
+        tt3.destroy();
+        tt4.destroy();
+        tt5.destroy();
         loginScreen();
     });
 
