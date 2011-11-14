@@ -113,7 +113,7 @@ Ext.define('Funcman.UserPanel', {
                         selected_user = grid.store.findRecord('id', rec.get('id'));
                       
                       var rights_window = Ext.create('Ext.window.Window', {
-                    		title: 'User Rights',
+                    		title: 'User Rights for "' + selected_user.get('name') + '"',
                     		height: 350,
                     		width: 300,                    		
                     		layout: 'vbox',
