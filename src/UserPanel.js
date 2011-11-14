@@ -134,7 +134,7 @@ Ext.define('Funcman.UserPanel', {
                                     displayField: 'compute_name',
                                     value: 'Select one...',
                     		        store: new Ext.data.ArrayStore({
-                                        id: 0,
+                                        id: 4,
                                         fields: [
                                             'compute_id',
                                             'compute_name'
@@ -258,7 +258,7 @@ Ext.define('Funcman.UserPanel', {
         me.callParent();
 
         //super user
-        var user = Ext.create('User', {id: 1, name: 'Opennode', rights: 'All', icon: '../resources/images/different_users/user_black.png'});
+        var user = Ext.create('User', {id: 2000, name: 'Opennode', rights: 'All', icon: '../resources/images/different_users/user_black.png'});
         var computes = user.computes();
         for (i = 0; i < 20; i++){
             computes.add({
@@ -271,7 +271,7 @@ Ext.define('Funcman.UserPanel', {
         me.store.add(user);
         
         //custom user
-        var user2 = Ext.create('User', {id: 2, name: 'Custom user', rights: 'Custom', icon: '../resources/images/different_users/user_green.png'});
+        var user2 = Ext.create('User', {id: 2001, name: 'Custom user', rights: 'Custom', icon: '../resources/images/different_users/user_green.png'});
         var computes2 = user2.computes();
         computes2.add({
             computer_id: 'dc0pm6',
@@ -293,7 +293,7 @@ Ext.define('Funcman.UserPanel', {
 
         me.store.add(user2);
         
-        var user3 = Ext.create('User', {id: 3, name: 'Custom user 2', rights: 'None', icon: '../resources/images/different_users/user_cyan.png'});
+        var user3 = Ext.create('User', {id: 2002, name: 'Custom user 2', rights: 'None', icon: '../resources/images/different_users/user_cyan.png'});
 
         me.store.add(user3);
         
