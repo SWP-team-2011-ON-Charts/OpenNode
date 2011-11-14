@@ -118,21 +118,28 @@ Ext.define('Funcman.NodeInfoWindow', {
             if (e.button == 2) {
                 return;
             }
-            if (node.settingsWindow) {
-                node.settingsWindow.destroy();
-                return;
-            }
-
-            node.settingsWindow = Ext.create('NodeSettingsWindow', {
-                type: 'settings',
-                node: node,
-                graph: me.up().up().up().up(),
-            }).show();
+            me.toggleSettingsWindow();
             //e.stopEvent();
         }, me, {element: 'el'});
 
         node.infowindow = me;
         node.add(me);
+    },
+
+    toggleSettingsWindow: function() {
+        var me = this,
+            node = me.node;
+
+        if (node.settingsWindow) {
+            node.settingsWindow.destroy();
+            return;
+        }
+
+        node.settingsWindow = Ext.create('NodeSettingsWindow', {
+            type: 'settings',
+            node: node,
+            graph: me.up().up().up().up(),
+        }).show();
     },
 
     setInfo: function() {

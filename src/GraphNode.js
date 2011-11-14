@@ -44,6 +44,12 @@ Ext.define('Funcman.GraphNode', {
             return;
         }
 
+        me.on('dblclick', function() {
+            if (me.infowindow) {
+                me.infowindow.toggleSettingsWindow();
+            }
+        }, me, {element: 'el'});
+
         me.view = me.up().up();
 
         me.setName(me.params.name);
