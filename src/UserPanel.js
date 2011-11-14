@@ -257,21 +257,45 @@ Ext.define('Funcman.UserPanel', {
         var me = this;
         me.callParent();
 
-        var user = Ext.create('User', {name: 'opennode', rights: 'All', icon: '../resources/images/different_users/user_black.png'});
+        //super user
+        var user = Ext.create('User', {id: 1, name: 'Opennode', rights: 'All', icon: '../resources/images/different_users/user_black.png'});
         var computes = user.computes();
-        computes.add({
+        for (i = 0; i < 20; i++){
+            computes.add({
+                computer_id: 'dc0pm'+i,
+                computer_name: 'hostname_'+i,
+                Read: 'true', Write: 'true', Execute: 'true'
+            });
+        };
+
+        me.store.add(user);
+        
+        //custom user
+        var user2 = Ext.create('User', {id: 2, name: 'Custom user', rights: 'Custom', icon: '../resources/images/different_users/user_green.png'});
+        var computes2 = user2.computes();
+        computes2.add({
             computer_id: 'dc0pm6',
             computer_name: 'hostname_6',
             Read: 'true', Write: 'true', Execute: 'true'
         });
 
-        computes.add({
+        computes2.add({
             computer_id: 'dc0pm8',
             computer_name: 'hostname_8',
+            Read: 'true', Write: 'false', Execute: 'false'
+        });
+        
+        computes2.add({
+            computer_id: 'dc0pm2',
+            computer_name: 'hostname_2',
             Read: 'true', Write: 'true', Execute: 'true'
         });
 
-        me.store.add(user);
+        me.store.add(user2);
+        
+        var user3 = Ext.create('User', {id: 3, name: 'Custom user 2', rights: 'None', icon: '../resources/images/different_users/user_cyan.png'});
+
+        me.store.add(user3);
         
         me.on('render', function() {
             me.el.setStyle({left: me.up().width+'px'});
