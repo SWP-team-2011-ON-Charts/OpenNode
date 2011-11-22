@@ -30,7 +30,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 me.setSize(320, 250);
             } else {
                 me.setTitle(node.getName() + ': Virtual Machine Settings');
-                me.setSize(300, 200);
+                me.setSize(370, 300);
             }
             me.animateTarget = node;
             
@@ -128,6 +128,62 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     text: node.params.template,
                     colspan: 2
                 });
+            } else if (type == 'vm') {
+                me.add({
+                    xtype: 'numberfield',
+                    itemId: 'VM_MB',
+                    fieldLabel: 'Memory GB',
+                    width: 170,
+                    labelAlign: 'left',
+                    labelWidth: 100,
+                    value: node.params.memory,
+                    minValue: 1,
+                    maxValue: 64,
+                    colspan:2,
+                    listeners: {
+                        change: function(el, val) {
+                            me.getComponent('VM_MB_slider').setValue(this.getValue());
+                        }
+                    }
+                }, {
+                    xtype: 'slider',
+                    itemId: 'VM_MB_slider',
+                    width: 150,
+                    value: node.params.memory,
+                    increment: 1,
+                    minValue: 1,
+                    maxValue: 64,
+                    colspan:1,
+                    listeners: {
+                        change: function(el, val) {
+                            me.getComponent('VM_MB').setValue(this.getValue());
+                        }
+                    }
+                }, {
+                    xtype: 'textfield',
+                    itemId: 'VM_IP',
+                    fieldLabel: 'IP address',
+                    labelAlign: 'left',
+                    labelWidth: 100,
+                    colspan:3,
+                    value: node.params.ip
+                }, {
+                    xtype: 'textfield',
+                    itemId: 'VM_DNS1',
+                    fieldLabel: 'DNS 1',
+                    labelAlign: 'left',
+                    labelWidth: 100,
+                    colspan:3,
+                    value: node.params.dns1
+                }, {
+                    xtype: 'textfield',
+                    itemId: 'VM_DNS2',
+                    fieldLabel: 'DNS 2',
+                    labelAlign: 'left',
+                    labelWidth: 100,
+                    colspan:3,
+                    value: node.params.dns2
+                });
             }
 
             me.add({
@@ -138,6 +194,24 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 margin: '10 0 0 0',
                 colspan: 3,
                 handler: function() {
+                    if (node.type == 'vm') {
+                        var ip = me.getComponent('VM_IP').value,
+                            dns1 = me.getComponent('VM_DNS1').value,
+                            dns2 = me.getComponent('VM_DNS2').value;
+
+                        var ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/,
+                            ipArray = ip.match(ipPattern);
+                        if (ipArray == null) {
+                            alert('Invalid IP address');
+                            me.getComponent('VM_ip').focus();
+                            return;
+                        }
+
+                        node.params.ip = ip;
+                        node.params.dns1 = dns1;
+                        node.params.dns2 = dns2;
+                        node.params.memory = me.getComponent('VM_MB').value;
+                    }
                     me.close();
                 }
             });
@@ -150,7 +224,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
             me.add([{
                     xtype: 'textfield',
                     itemId: 'newVM_Name',
-                    fieldLabel: 'VM hostname',
+                    fieldLabel: 'hostname',
                     labelAlign: 'left',
                     labelWidth: 100,
                     disabled: true,
@@ -158,7 +232,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                 }, {
                     xtype: 'textfield',
                     itemId: 'newVM_ID',
-                    fieldLabel: 'VM ID',
+                    fieldLabel: 'ID',
                     labelAlign: 'left',
                     labelWidth: 100,
                     value: '0',
@@ -267,7 +341,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     colspan:2,
                     listeners: {
                         change: function(el, val) {
-                            newVmParams.getComponent('newVM_HDD_slider').setValue(this.getValue());
+                            me.getComponent('newVM_HDD_slider').setValue(this.getValue());
                         }
                     }
                 }, {
@@ -281,7 +355,7 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     colspan:1,
                     listeners: {
                         change: function(el, val) {
-                            newVmParams.getComponent('newVM_HDD').setValue(this.getValue());
+                            me.getComponent('newVM_HDD').setValue(this.getValue());
                         }
                     }
                 }, /*{
@@ -298,18 +372,21 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     ]
                 }, */{
                     xtype: 'textfield',
+                    itemId: 'newVM_IP',
                     fieldLabel: 'IP address',
                     labelAlign: 'left',
                     labelWidth: 100,
                     colspan:3
                 }, {
                     xtype: 'textfield',
+                    itemId: 'newVM_DNS1',
                     fieldLabel: 'DNS 1',
                     labelAlign: 'left',
                     labelWidth: 100,
                     colspan:3
                 }, {
                     xtype: 'textfield',
+                    itemId: 'newVM_DNS2',
                     fieldLabel: 'DNS 2',
                     labelAlign: 'left',
                     labelWidth: 100,
@@ -352,24 +429,65 @@ Ext.define('Funcman.NodeSettingsWindow', {
                     xtype: 'button',
                     text: 'Create',
                     handler: function(b) {
-                        var me = this;
-                        if(me.getComponent('newVM_psw1').value==me.getComponent('newVM_psw2').value) {
-                            var params = {
-                                id: me.getComponent('newVM_ID').value,
-                                name: me.getComponent('newVM_Name').value,
-                                state: 'stopped',
-                                memory: me.getComponent('newVM_MB').value,
-                                cpu: 0,
-                                network: 0,
-                                parent: node.params.id
-                            };
-                            vm = me.graph.createVM(node, params);
-                            me.graph.addNode(vm);
-                            me.graph.vmid++;
-                            me.destroy();
-                        } else {
-                            alert('Passwords do not match. Please re-type both passwords.')
+                        var me = this,
+                            password = me.getComponent('newVM_psw1').value,
+                            name = me.getComponent('newVM_Name').value,
+                            id = me.getComponent('newVM_ID').value,
+                            ip = me.getComponent('newVM_IP').value,
+                            dns1 = me.getComponent('newVM_DNS1').value,
+                            dns2 = me.getComponent('newVM_DNS2').value;
+
+                        if(name == '') {
+                            alert('Please enter a name.');
+                            me.getComponent('newVM_Name').focus();
+                            return;
                         }
+                        
+                        if(id == '') {
+                            alert('Please enter an ID number.');
+                            me.getComponent('newVM_ID').focus();
+                            return;
+                        }
+
+                        if(password != me.getComponent('newVM_psw2').value) {
+                            alert('Passwords do not match. Please re-type both passwords.');
+                            me.getComponent('newVM_psw1').focus();
+                            return;
+                        }
+
+                        var ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/,
+                            ipArray = ip.match(ipPattern);
+                        if (ipArray == null) {
+                            alert('Invalid IP address');
+                            me.getComponent('newVM_ip').focus();
+                            return;
+                        }
+/*
+                        for (i = 0; i < 4; i++) {
+                            thisSegment = ipArray[i];
+                            if (thisSegment > 255) {
+                                alert('Invalid IP address');
+                                return;
+                            }
+                            i = 4;
+                        }
+*/
+                        var params = {
+                            id: id,
+                            ip: ip,
+                            dns1: dns1,
+                            dns2: dns2,
+                            name: name,
+                            state: 'stopped',
+                            memory: me.getComponent('newVM_MB').value,
+                            cpu: 0,
+                            network: 0,
+                            parent: node.params.id
+                        };
+                        vm = me.graph.createVM(node, params);
+                        me.graph.addNode(vm);
+                        me.graph.vmid++;
+                        me.destroy();
                     },
                     scope: me,
                     node: node
@@ -393,11 +511,14 @@ Ext.define('Funcman.NodeSettingsWindow', {
 
     setID: function(id) {
         var idField = this.getComponent('newVM_ID'),
-            nameField = this.getComponent('newVM_Name');
+            nameField = this.getComponent('newVM_Name'),
+            addressField = this.getComponent('newVM_IP');
         idField.setValue(id);
         idField.enable();
         nameField.setValue('VM '+id);
         nameField.enable();
+        addressField.setValue('192.168.0.'+id);
+        addressField.enable();
     },
 
     startServerCommand: function() {

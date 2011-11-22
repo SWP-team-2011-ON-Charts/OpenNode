@@ -37,10 +37,10 @@ Ext.define('Funcman.NodeInfoWindow', {
                 listeners: {
                     beforeshow: function(tip) {
                         var params = me.node.params;
-                        me.tip.update('CPU usage: ' + parseInt(params.cpu * 25.0) +
-                            "%</br>Memory usage: " + parseInt(params.memory * 2.0) +
-                            "%</br>Network usage: " + parseInt(params.network) +
-                            "%</br>Status: " + params.state);
+                        me.tip.update('Status: ' + params.state +
+                            '</br>CPU usage: ' + parseInt(params.cpu * 25.0) +
+                            '%</br>Memory usage: ' + parseInt(params.memory * 2.0) +
+                            '%</br>Network usage: ' + parseInt(params.network) + '%');
                     }
                 }
             });

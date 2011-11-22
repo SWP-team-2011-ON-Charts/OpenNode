@@ -54,6 +54,7 @@ var login = function (server, serverResponse, authString) {
         defaults: {
             style: { margin: '0px 10px 5px 0px' }
         },
+        width: 1124,
         renderTo: body
     });
 
